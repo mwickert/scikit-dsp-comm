@@ -17,4 +17,4 @@ Presently the collection of modules contains about 125 functions and classes. Th
 ## Background
  The origin of this package comes from the writing the book Signals and Systems for Dummies, published by Wiley in 2013. The original module for this book is named `ssd.py`. In `scikit-dsp-comm` this module is renamed to `sigsys.py` to better reflect the fact that signal processing and communications theory is founded in signals and systems, a traditional subject in electrical engineering curricula.
  
- Until new documentation is ready to post, from the original `ssd.py` module can be found at http://www.eas.uccs.edu/~wickert/ssd/.
+ Until new documentation is ready to post, from the original `ssd.py` module can be found at http://www.eas.uccs.edu/~mwickert/ssd/.

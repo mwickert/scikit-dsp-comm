@@ -558,22 +558,20 @@ def GMSK_bb(N_bits, Ns, MSK = 0,BT = 0.35):
 
 def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
     """
-    Generate non-return-to-zero (NRZ) data bits with pulse shaping.
-
-    A baseband digital data signal using +/-1 amplitude signal values
-    and including pulse shaping.
+    Generate a complex baseband MPSK signal with pulse shaping.
 
     Parameters
     ----------
-    N_bits : number of NRZ +/-1 data bits to produce
+    N_bits : number of MPSK symbols to produce
     Ns : the number of samples per bit,
+    M : MPSK modulation order, e.g., 4, 8, 16, ...
     pulse_type : 'rect' , 'rc', 'src' (default 'rect')
     alpha : excess bandwidth factor(default 0.25)
-    M : single sided pulse duration (default = 6) 
+    MM : single sided pulse duration (default = 6) 
 
     Returns
     -------
-    x : ndarray of the NRZ signal values
+    x : ndarray of the MPSK signal values
     b : ndarray of the pulse shape
     data : ndarray of the underlying data bits
 
@@ -585,9 +583,14 @@ def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
 
     Examples
     --------
-    >>> x,b,data = NRZ_bits(100,10)
-    >>> t = arange(len(x))
-    >>> plot(t,x)
+    >>> import scipy.signal as signal
+    >>> x,b,data = MPSK_bb(500,10,8,'src',0.35)
+    >>> # Matched filter received signal x
+    >>> y = signal.lfilter(b,1,x)
+    >>> plot(y.real[12*10:],y.imag[12*10:])
+    >>> axis('equal')
+    >>> # Sample once per symbol
+    >>> plot(y.real[12*10::10],y.imag[12*10::10],'r.')
     """
     data = np.random.randint(0,M,N_symb) 
     xs = np.exp(1j*2*np.pi/M*data)
@@ -600,7 +603,7 @@ def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
     elif pulse.lower() == 'src':
         b = sqrt_rc_imp(Ns,alpha,MM)
     else:
-        print 'pulse type must be rec, rc, or src'
+        print('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     if M == 4:
         x = x*np.exp(1j*np.pi/4); # For QPSK points in quadrants
@@ -611,11 +614,11 @@ def QPSK_rx(fc,N_symb,Rs,EsN0=100,fs=125,lfsr_len=10,phase=0,pulse='src'):
     This function generates
     """
     Ns = int(np.round(fs/Rs))
-    print 'Ns = ', Ns
-    print 'Rs = ', fs/float(Ns)
-    print 'EsN0 = ', EsN0, 'dB'
-    print 'phase = ', phase, 'degrees'
-    print 'pulse = ', pulse
+    print('Ns = ', Ns)
+    print('Rs = ', fs/float(Ns))
+    print('EsN0 = ', EsN0, 'dB')
+    print('phase = ', phase, 'degrees')
+    print('pulse = ', pulse)
     x, b, data = QPSK_bb(N_symb,Ns,lfsr_len,pulse)
     # Add AWGN to x
     x = cpx_AWGN(x,EsN0,Ns)
@@ -628,9 +631,9 @@ def QPSK_tx(fc,N_symb,Rs,fs=125,lfsr_len=10,pulse='src'):
 
     """
     Ns = int(np.round(fs/Rs))
-    print 'Ns = ', Ns
-    print 'Rs = ', fs/float(Ns)
-    print 'pulse = ', pulse
+    print('Ns = ', Ns)
+    print('Rs = ', fs/float(Ns))
+    print('pulse = ', pulse)
     x, b, data = QPSK_bb(N_symb,Ns,lfsr_len,pulse)
     n = np.arange(len(x))
     xc = x*np.exp(1j*2*np.pi*fc/float(fs)*n)
@@ -650,7 +653,7 @@ def QPSK_bb(N_symb,Ns,lfsr_len=5,pulse='src',alpha=0.25,M=6):
         data = np.zeros(2*N_symb)
         xI, b, data[0::2] = NRZ_bits(N_symb,Ns,pulse,alpha,M)
         xQ, b, data[1::2] = NRZ_bits(N_symb,Ns,pulse,alpha,M)        
-    #print 'P_I: ',np.var(xI), 'P_Q: ',np.var(xQ)
+    #print('P_I: ',np.var(xI), 'P_Q: ',np.var(xQ))
     x = (xI + 1j*xQ)/np.sqrt(2.)
     return x, b, data
 
@@ -954,7 +957,7 @@ def RZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
     elif pulse.lower() == 'src':
         b = sqrt_rc_imp(Ns,alpha,M)
     else:
-        print 'pulse type must be rec, rc, or src'
+        print('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     return x,b/float(Ns),data
 
@@ -1001,7 +1004,7 @@ def NRZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
     elif pulse.lower() == 'src':
         b = sqrt_rc_imp(Ns,alpha,M)
     else:
-        print 'pulse type must be rec, rc, or src'
+        print('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     return x,b/float(Ns),data
 
@@ -1046,7 +1049,7 @@ def NRZ_bits2(data,Ns,pulse='rect',alpha = 0.25,M=6):
     elif pulse.lower() == 'src':
         b = sqrt_rc_imp(Ns,alpha,M)
     else:
-        print 'pulse type must be rec, rc, or src'
+        print('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     return x,b/float(Ns)
     
@@ -1138,7 +1141,7 @@ def m_seq(m):
     elif m == 16:
         taps = np.array([1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1])
     else:
-        print 'Invalid length specified'
+        print('Invalid length specified')
     for n in range(Q):
         tap_xor = 0
         c[n] = sr[-1]

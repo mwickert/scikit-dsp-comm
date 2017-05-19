@@ -299,7 +299,7 @@ def position_CD(Ka,out_type = 'fb_exact'):
         b = np.array([4000*Ka*rs])
         a = np.array([1, 1250+25, 25*1250, 4000*Ka*rs])
     else:
-        print 'out_type must be: open_loop, fb_approx, or fc_exact'
+        print('out_type must be: open_loop, fb_approx, or fc_exact')
         return 1
     return b, a
 
@@ -345,8 +345,8 @@ def cruise_control(wn,zeta,T,vcruise,vmax,tf_mode='H'):
     Kp = T/vmax*(2*zeta*wn-1/tau)
     Ki = T/vmax*wn**2
     K = Kp*vmax/T
-    print 'wn = ', np.sqrt(K/(Kp/Ki))
-    print 'zeta = ', (K + 1/tau)/(2*wn)
+    print('wn = ', np.sqrt(K/(Kp/Ki)))
+    print('zeta = ', (K + 1/tau)/(2*wn))
     a = np.array([1, 2*zeta*wn, wn**2])
     if tf_mode == 'H':
         b = np.array([K, wn**2])      
@@ -358,7 +358,7 @@ def cruise_control(wn,zeta,T,vcruise,vmax,tf_mode='H'):
     elif tf_mode == 'HED':
         b = np.array([g, 0])
     else:
-        print 'tf_mode must be: H, HE, HVU, or HED'
+        print('tf_mode must be: H, HE, HVU, or HED')
         return 1
     return b, a
 
@@ -598,7 +598,7 @@ def lp_samp(fb,fs,fmax,N,shape='tri',fsize=(6,4)):
         plt.plot([fb, fb],line_ampl,'b', linewidth=2)
         plt.plot([-fb, -fb],line_ampl,'b', linewidth=2)
     else:
-        print 'shape must be tri or line'
+        print('shape must be tri or line')
     # overlay positive and negative frequency translates
     for n in range(N):
         if shape.lower() == 'tri':
@@ -610,7 +610,7 @@ def lp_samp(fb,fs,fmax,N,shape='tri',fsize=(6,4)):
             plt.plot([fb-(n+1)*fs, fb-(n+1)*fs],line_ampl,'--g', linewidth=2)
             plt.plot([-fb-(n+1)*fs, -fb-(n+1)*fs],line_ampl,'--g', linewidth=2)
         else:
-            print 'shape must be tri or line'
+            print('shape must be tri or line')
     #plt.title('Lowpass Sampling Theorem for a Real Signal: Blk = orig, dotted = translates')
     plt.ylabel('Spectrum Magnitude')
     plt.xlabel('Frequency in Hz')
@@ -721,7 +721,7 @@ def simpleQuant(x,Btot,Xmax,Limit):
     elif Limit.lower() == 'none':
         xq = np.round(x*2**B)/2**B
     else:
-        print 'limit must be the string over, sat, or none'
+        print('limit must be the string over, sat, or none')
     return xq*Xmax
 
 
@@ -920,7 +920,7 @@ def fir_iir_notch(fi,fs,r=0.95):
     """
     w0 = 2*np.pi*fi/float(fs)
     if r >= 1:
-        print 'Poles on or outside unit circle.'
+        print('Poles on or outside unit circle.')
     if r == 0:
         a = np.array([1.0])
     else:
@@ -965,9 +965,9 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
     """
     Nx = len(x)
     K = Nx/NS
-    print 'K = ', K
+    print('K = ', K)
     if NAVG > K:
-        print 'NAVG exceeds number of available subrecords'
+        print('NAVG exceeds number of available subrecords')
         return 0,0
     if window.lower() == 'boxcar' or window.lower() == 'rectangle':
         w = signal.boxcar(NS)
@@ -1048,14 +1048,14 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
             elif fk[k] > 0 and sides == 1:
                 plt.plot([fk[k], fk[k]],[0, 2.*np.abs(Xk[k])],linetype, linewidth=lwidth)
             else:
-                print 'Invalid sides type'
+                print('Invalid sides type')
         plt.grid()
         if sides == 2:
             plt.axis([-1.2*max(fk), 1.2*max(fk), 0, 1.05*max(abs(Xk))])        
         elif sides == 1:
             plt.axis([0, 1.2*max(fk), 0, 1.05*2*max(abs(Xk))])
         else:
-            print 'Invalid sides type'
+            print('Invalid sides type')
         plt.ylabel('Magnitude')
         plt.xlabel('Frequency (Hz)')
     elif mode == 'magdB':
@@ -1071,7 +1071,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
             elif fk[k] > 0 and sides == 1:
                 plt.plot([fk[k], fk[k]],[floor_dB, Xk_dB[k]+6.02],linetype, linewidth=lwidth)
             else:
-                print 'Invalid sides type'
+                print('Invalid sides type')
         plt.grid()
         max_dB = np.ceil(max(Xk_dB/10.))*10
         min_dB = max(floor_dB,np.floor(min(Xk_dB/10.))*10)
@@ -1080,7 +1080,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
         elif sides == 1:
             plt.axis([0, 1.2*max(fk), min_dB, max_dB])
         else:
-            print 'Invalid sides type'
+            print('Invalid sides type')
         plt.ylabel('Magnitude (dB)')
         plt.xlabel('Frequency (Hz)')
     elif mode == 'magdBn':
@@ -1096,7 +1096,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
             elif fk[k] > 0 and sides == 1:
                 plt.plot([fk[k], fk[k]],[floor_dB, Xk_dB[k]+6.02],linetype, linewidth=lwidth)
             else:
-                print 'Invalid sides type'
+                print('Invalid sides type')
         plt.grid()
         max_dB = np.ceil(max(Xk_dB/10.))*10
         min_dB = max(floor_dB,np.floor(min(Xk_dB/10.))*10)
@@ -1105,7 +1105,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
         elif sides == 1:
             plt.axis([0, 1.2*max(fk), min_dB, max_dB])
         else:
-            print 'Invalid sides type'
+            print('Invalid sides type')
         plt.ylabel('Normalized Magnitude (dB)')
         plt.xlabel('Frequency (Hz)')    
     elif mode == 'phase':
@@ -1120,7 +1120,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
             elif fk[k] > 0 and sides == 1:
                 plt.plot([fk[k], fk[k]],[0, np.angle(Xk[k])],linetype, linewidth=lwidth)
             else:
-                print 'Invalid sides type'
+                print('Invalid sides type')
         plt.grid()
         if sides == 2:
             plt.plot([-1.2*max(fk), 1.2*max(fk)], [0, 0],'k')
@@ -1129,11 +1129,11 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
             plt.plot([0, 1.2*max(fk)], [0, 0],'k')
             plt.axis([0, 1.2*max(fk), -1.1*max(np.abs(np.angle(Xk))), 1.1*max(np.abs(np.angle(Xk)))])
         else:
-            print 'Invalid sides type'
+            print('Invalid sides type')
         plt.ylabel('Phase (rad)')
         plt.xlabel('Frequency (Hz)')
     else:
-        print 'Invalid mode type'
+        print('Invalid mode type')
 
 def fs_coeff(xp,N,f0,one_side=True):
     """
@@ -1169,7 +1169,7 @@ def fs_coeff(xp,N,f0,one_side=True):
     """
     Nint = len(xp)
     if Nint < 2*N+1:
-        print 'Number of samples in xp insufficient for requested N.'
+        print('Number of samples in xp insufficient for requested N.')
         return 0,0
     Xp = fft.fft(xp,Nint)/float(Nint)
     # To interface with the line_spectra function use one_side mode
@@ -1287,11 +1287,11 @@ def conv_sum(x1,nx1,x2,nx2,extent=('f','f')):
         nny = np.arange(max(n1+n4,n2+n3),n2+1+n4+1-1)
         ny = nny + max(nx1[0]+nx2[-1],nx1[-1]+nx2[0])
     else:
-        print 'Invalid x1 x2 extents specified or valid extent not found!'
+        print('Invalid x1 x2 extents specified or valid extent not found!')
         return 0,0
     # Finally convolve the sequences
     y = signal.convolve(x1, x2)
-    print "Output support: (%+d, %+d)" % (ny[0],ny[-1])
+    print('Output support: (%+d, %+d)' % (ny[0],ny[-1]))
     return y[nny], ny
 
 def conv_integral(x1,tx1,x2,tx2,extent = ('f','f')):
@@ -1365,11 +1365,11 @@ def conv_integral(x1,tx1,x2,tx2,extent = ('f','f')):
         ny = np.arange(max(n1+n4,n2+n3),n2+1+n4+1-1)
         ty = ny*dt + max(tx1[0]+tx2[-1],tx1[-1]+tx2[0])
     else:
-        print 'Invalid x1 x2 extents specified or valid extent not found!'
+        print('Invalid x1 x2 extents specified or valid extent not found!')
         return 0,0
     # Finally convolve the sampled sequences and scale by dt
     y = signal.convolve(x1, x2)*dt
-    print "Output support: (%+2.2f, %+2.2f)" % (ty[0],ty[-1])
+    print('Output support: (%+2.2f, %+2.2f)' % (ty[0],ty[-1]))
     return y[ny], ty
 
 def delta_eps(t,eps):
@@ -1760,7 +1760,7 @@ def m_seq(m):
     elif m == 16:
         taps = np.array([1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1])
     else:
-        print 'Invalid length specified'
+        print('Invalid length specified')
     for n in range(Q):
         tap_xor = 0
         c[n] = sr[-1]
@@ -1858,7 +1858,7 @@ def NRZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
     elif pulse.lower() == 'src':
         b = sqrt_rc_imp(Ns,alpha,M)
     else:
-        print 'pulse type must be rec, rc, or src'
+        print('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     return x,b/float(Ns),data
 
@@ -1903,7 +1903,7 @@ def NRZ_bits2(data,Ns,pulse='rect',alpha = 0.25,M=6):
     elif pulse.lower() == 'src':
         b = sqrt_rc_imp(Ns,alpha,M)
     else:
-        print 'pulse type must be rec, rc, or src'
+        print('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     return x,b/float(Ns)
 
@@ -2610,12 +2610,12 @@ def to_wav(filename,rate,x):
 if __name__ == '__main__':
     
     b = CIC(10,1)
-    print b
+    print(b)
      
     
     """
     x = np.random.randn(10)
-    print x
+    print(x)
     
     b = signal.remez(16,[0,.1,.2,.5], [1,0], [1,1], 1)
     w,H = signal.freqz(b,[1],512)
@@ -2624,7 +2624,7 @@ if __name__ == '__main__':
     #plot(arange(0,len(b)),b)
     
     y = signal.lfilter(b, [1], x,)
-    print y
+    print(y)
     
     zplane([1,1,1,1,1],[1,-.8],1.25)
     """

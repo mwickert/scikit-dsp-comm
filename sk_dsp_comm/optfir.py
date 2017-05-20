@@ -237,10 +237,10 @@ def remezord (fcuts, mags, devs, fsamp = 2):
     nbands = nm
 
     if nm != nd:
-        raise ValueError, "Length of mags and devs must be equal"
+        raise ValueError('Length of mags and devs must be equal')
 
     if nf != 2 * (nbands - 1):
-        raise ValueError, "Length of f must be 2 * len (mags) - 2"
+        raise ValueError('Length of f must be 2 * len (mags) - 2')
 
     for i in range (len (mags)):
         if mags[i] != 0:                        # if not stopband, get relative deviation

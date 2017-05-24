@@ -140,8 +140,8 @@ def downsample(x,M,p=0):
     >>> y = downsample(x,3)
     >>> y = downsample(x,3,1)
     """
-    x = x[0:np.floor(len(x)/M)*M]
-    x = x.reshape((len(x)/M,M))
+    x = x[0:int(np.floor(len(x)/M))*M]
+    x = x.reshape((int(np.floor(len(x)/M)),M))
     y = x[:,p]
     return y
     

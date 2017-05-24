@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 import os
 import codecs
 
@@ -25,5 +25,7 @@ setup(name='scikit-dsp-comm',
           'numpy',
           'matplotlib',
           'scipy'
-          ]
+          ],
+      test_suite='nose.collector',
+      tests_require=['nose']
      )

@@ -126,7 +126,7 @@ def ten_band_eq_filt(x,GdB,Q=3.5):
         [b,a] = peaking(GdB[k],Fc[k],Q)
         B[k,:] = b
         A[k,:] = a
-    #Pass signal x through the cascade of ten filters
+    # Pass signal x through the cascade of N filters
     y = np.zeros(len(x))
     for k in range(NB):
         if k == 0:

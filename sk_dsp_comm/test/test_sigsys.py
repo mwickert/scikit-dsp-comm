@@ -1,6 +1,8 @@
 from unittest import TestCase
 
 import numpy as np
+from numpy.random import randn
+import numpy.testing as npt
 from sk_dsp_comm import sigsys as ss
 
 
@@ -20,3 +22,10 @@ class TestSigsys(TestCase):
         diff = correct - b
         diff = np.sum(diff)
         self.assertEqual(diff, 0)
+
+    def test_ten_band_equalizer(self):
+        w = randn(1000000)
+        gdB = [x for x in range(1, 11)]
+        y = ss.ten_band_eq_filt(w,gdB)
+        yavg = np.average(y)
+        npt.assert_almost_equal(abs(yavg), 0.001, decimal=2)

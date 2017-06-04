@@ -6,9 +6,6 @@ from sk_dsp_comm import sigsys as ss
 
 class TestSigsys(TestCase):
 
-    def first_test(self):
-        self.assertEqual(0, 0)
-
     def test_cic_case_1(self):
         correct = np.ones(10) / 10
         b = ss.CIC(10,1)

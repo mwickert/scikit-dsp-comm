@@ -29,3 +29,9 @@ class TestSigsys(TestCase):
         y = ss.ten_band_eq_filt(w,gdB)
         yavg = np.average(y)
         npt.assert_almost_equal(abs(yavg), 0.001, decimal=2)
+
+    def test_ten_band_equalizer_gdb_exception(self):
+        w = randn(1000000)
+        gdB = [x for x in range(1, 9)]
+        with self.assertRaisesRegexp(ValueError, "GdB length not equal to ten") as ten_err:
+            ss.ten_band_eq_filt(w,gdB)

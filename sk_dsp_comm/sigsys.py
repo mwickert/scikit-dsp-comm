@@ -117,7 +117,9 @@ def ten_band_eq_filt(x,GdB,Q=3.5):
     """
     fs = 44100.0 # Hz
     NB = len(GdB)
-    Fc = 31.25*2**np.arange(10)
+    if not NB == 10:
+        raise ValueError("GdB length not equal to ten")
+    Fc = 31.25*2**np.arange(NB)
     B = np.zeros((NB,3))
     A = np.zeros((NB,3))
     
@@ -126,7 +128,7 @@ def ten_band_eq_filt(x,GdB,Q=3.5):
         [b,a] = peaking(GdB[k],Fc[k],Q)
         B[k,:] = b
         A[k,:] = a
-    # Pass signal x through the cascade of N filters
+    # Pass signal x through the cascade of ten filters
     y = np.zeros(len(x))
     for k in range(NB):
         if k == 0:
@@ -156,8 +158,10 @@ def ten_band_eq_resp(GdB,Q=3.5):
     >>> ten_band_eq_resp([0,10.0,0,0,-1,0,5,0,-4,0])
     """
     fs = 44100.0 # Hz
-    Fc = 31.25*2**np.arange(10)
     NB = len(GdB)
+    if not NB == 10:
+        raise ValueError("GdB length not equal to ten")
+    Fc = 31.25*2**np.arange(NB)
     B = np.zeros((NB,3));
     A = np.zeros((NB,3));
     

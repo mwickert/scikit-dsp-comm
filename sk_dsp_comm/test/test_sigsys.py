@@ -35,3 +35,12 @@ class TestSigsys(TestCase):
         gdB = [x for x in range(1, 9)]
         with self.assertRaisesRegexp(ValueError, "GdB length not equal to ten") as ten_err:
             ss.ten_band_eq_filt(w,gdB)
+
+    def test_peaking(self):
+        b,a = ss.peaking(2.0, 500, 3.5, 44100)
+        b_check = np.array([ 1.00458357, -1.95961252,  0.96001185])
+        a_check = np.array([ 1.        , -1.95961252,  0.96459542])
+        diff = np.sum(b_check - b)
+        npt.assert_almost_equal(diff, 0., decimal=8)
+        diff = np.sum(a_check - a)
+        npt.assert_almost_equal(diff, 0., decimal=8)

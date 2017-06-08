@@ -939,8 +939,8 @@ def fir_iir_notch(fi,fs,r=0.95):
     """
     w0 = 2*np.pi*fi/float(fs)
     if r >= 1:
-        print('Poles on or outside unit circle.')
-    if r == 0:
+        raise ValueError('Poles on or outside unit circle.')
+    elif r == 0:
         a = np.array([1.0])
     else:
         a = np.array([1, -2*r*np.cos(w0), r**2])

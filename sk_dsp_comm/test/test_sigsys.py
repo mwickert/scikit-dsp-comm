@@ -161,3 +161,20 @@ class TestSigsys(TestCase):
        -1.55360419,  0.20541481]))
         npt.assert_almost_equal(b,b_check)
         npt.assert_almost_equal(a,a_check)
+
+    def test_fir_iir_notch_1(self):
+        with self.assertRaisesRegexp(ValueError, 'Poles on or outside unit circle.') as nfi_err:
+            b,a = ss.fir_iir_notch(1000,8000,1)
+
+    def test_fir_iir_notch_0(self):
+        b_FIR, a_FIR = ss.fir_iir_notch(1000, 8000, 0)
+        b_FIR_check, a_FIR_check = (np.array([ 1.        , -1.41421356,  1.        ]), np.array([ 1.]))
+        npt.assert_almost_equal(b_FIR, b_FIR_check)
+        npt.assert_almost_equal(a_FIR, a_FIR_check)
+
+    def test_fir_iir_notch_095(self):
+        b_IIR, a_IIR = ss.fir_iir_notch(1000, 8000, r=0.95)
+        b_IIR_check, a_IIR_check = (np.array([ 1.        , -1.41421356,  1.        ]),
+                                    np.array([ 1.        , -1.34350288,  0.9025    ]))
+        npt.assert_almost_equal(b_IIR, b_IIR_check)
+        npt.assert_almost_equal(a_IIR, a_IIR_check)

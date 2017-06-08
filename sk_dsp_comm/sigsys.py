@@ -1190,8 +1190,7 @@ def fs_coeff(xp,N,f0,one_side=True):
     """
     Nint = len(xp)
     if Nint < 2*N+1:
-        print('Number of samples in xp insufficient for requested N.')
-        return 0,0
+        raise ValueError('Number of samples in xp insufficient for requested N.')
     Xp = fft.fft(xp,Nint)/float(Nint)
     # To interface with the line_spectra function use one_side mode
     if one_side:

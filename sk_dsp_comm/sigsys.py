@@ -480,7 +480,7 @@ def OS_filter(x,h,N,mode=0):
     Examples
     --------
     >>> n = arange(0,100)
-    >>> x cos(2*pi*0.05*n)
+    >>> x = cos(2*pi*0.05*n)
     >>> b = ones(10)
     >>> y = OS_filter(x,h,N)
     >>> # set mode = 1

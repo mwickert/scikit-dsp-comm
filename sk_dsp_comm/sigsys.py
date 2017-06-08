@@ -351,8 +351,8 @@ def cruise_control(wn,zeta,T,vcruise,vmax,tf_mode='H'):
     tau = T/2.*vmax/vcruise
     g = 9.8
     g *= 3*60**2/5280. # m/s to mph conversion
-    Kp = T/vmax*(2*zeta*wn-1/tau)
-    Ki = T/vmax*wn**2
+    Kp = T*(2*zeta*wn-1/tau)/vmax
+    Ki = T*wn**2./vmax
     K = Kp*vmax/T
     print('wn = ', np.sqrt(K/(Kp/Ki)))
     print('zeta = ', (K + 1/tau)/(2*wn))
@@ -367,8 +367,7 @@ def cruise_control(wn,zeta,T,vcruise,vmax,tf_mode='H'):
     elif tf_mode == 'HED':
         b = np.array([g, 0])
     else:
-        print('tf_mode must be: H, HE, HVU, or HED')
-        return 1
+        raise ValueError('tf_mode must be: H, HE, HVU, or HED')
     return b, a
 
 

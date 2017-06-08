@@ -89,3 +89,56 @@ class TestSigsys(TestCase):
         Ka = 50
         with self.assertRaisesRegexp(ValueError, 'out_type must be: open_loop, fb_approx, or fc_exact') as cd_err:
             b, a = ss.position_CD(Ka, 'value_error')
+
+    def test_cruise_control_H(self):
+        wn = 0.1
+        zeta = 1.0
+        T = 10
+        vcruise = 75
+        vmax = 120
+        b_check, a_check = (np.array([ 0.075,  0.01 ]), np.array([ 1.  ,  0.2 ,  0.01]))
+        b,a = ss.cruise_control(wn, zeta, T, vcruise, vmax, tf_mode='H')
+        npt.assert_almost_equal(b, b_check)
+        npt.assert_almost_equal(a, a_check)
+
+    def test_cruise_control_HE(self):
+        wn = 0.1
+        zeta = 1.0
+        T = 10
+        vcruise = 75
+        vmax = 120
+        b_check, a_check = (np.array([ 1.   ,  0.125,  0.   ]), np.array([ 1.  ,  0.2 ,  0.01]))
+        b,a = ss.cruise_control(wn, zeta, T, vcruise, vmax, tf_mode='HE')
+        npt.assert_almost_equal(b, b_check)
+        npt.assert_almost_equal(a, a_check)
+
+    def test_cruise_control_HVW(self):
+        wn = 0.1
+        zeta = 1.0
+        T = 10
+        vcruise = 75
+        vmax = 120
+        b_check, a_check = (np.array([ 0.00625   ,  0.00161458,  0.00010417]), np.array([ 1.  ,  0.2 ,  0.01]))
+        b,a = ss.cruise_control(wn, zeta, T, vcruise, vmax, tf_mode='HVW')
+        npt.assert_almost_equal(b, b_check)
+        npt.assert_almost_equal(a, a_check)
+
+    def test_cruise_control_HED(self):
+        wn = 0.1
+        zeta = 1.0
+        T = 10
+        vcruise = 75
+        vmax = 120
+        b_check, a_check = (np.array([ 20.04545455,   0.        ]), np.array([ 1.  ,  0.2 ,  0.01]))
+        b,a = ss.cruise_control(wn, zeta, T, vcruise, vmax, tf_mode='HED')
+        npt.assert_almost_equal(b, b_check)
+        npt.assert_almost_equal(a, a_check)
+
+    def test_cruise_control_tf_mode_value_error(self):
+        wn = 0.1
+        zeta = 1.0
+        T = 10
+        vcruise = 75
+        vmax = 120
+        with self.assertRaisesRegexp(ValueError, 'tf_mode must be: H, HE, HVU, or HED') as cc_err:
+            b, a = ss.cruise_control(wn, zeta, T, vcruise, vmax, tf_mode='value_error')

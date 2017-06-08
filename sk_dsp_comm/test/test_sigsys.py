@@ -44,3 +44,12 @@ class TestSigsys(TestCase):
         npt.assert_almost_equal(diff, 0., decimal=8)
         diff = np.sum(a_check - a)
         npt.assert_almost_equal(diff, 0., decimal=8)
+
+    def test_ex6_2(self):
+        n = np.arange(-5,8)
+        x = ss.ex6_2(n)
+        x_check = np.array([0., 0., 0., 10., 9., 8., 7., 6., 5., 4., 3.,
+                            0., 0.])
+        diff = x_check - x
+        diff = np.sum(diff)
+        self.assertEqual(diff, 0)

@@ -40,10 +40,8 @@ class TestSigsys(TestCase):
         b,a = ss.peaking(2.0, 500, 3.5, 44100)
         b_check = np.array([ 1.00458357, -1.95961252,  0.96001185])
         a_check = np.array([ 1.        , -1.95961252,  0.96459542])
-        diff = np.sum(b_check - b)
-        npt.assert_almost_equal(diff, 0., decimal=8)
-        diff = np.sum(a_check - a)
-        npt.assert_almost_equal(diff, 0., decimal=8)
+        npt.assert_almost_equal(b, b_check)
+        npt.assert_almost_equal(a, a_check)
 
     def test_ex6_2(self):
         n = np.arange(-5,8)
@@ -59,10 +57,8 @@ class TestSigsys(TestCase):
         b,a = ss.position_CD(Ka, 'fb_approx')
         b_check = np.array([ 254.64790895])
         a_check = np.array([   1.        ,   25.        ,  254.64790895])
-        diff = np.sum(b_check - b)
-        npt.assert_almost_equal(diff, 0, decimal=8)
-        diff = np.sum(a_check - a)
-        npt.assert_almost_equal(diff, 0, decimal=8)
+        npt.assert_almost_equal(b, b_check)
+        npt.assert_almost_equal(a, a_check)
 
     def test_position_CD_fb_exact(self):
         Ka = 50
@@ -70,20 +66,16 @@ class TestSigsys(TestCase):
         b_check = np.array([318309.88618379])
         a_check = np.array([1.00000000e+00, 1.27500000e+03, 3.12500000e+04,
                             3.18309886e+05])
-        diff = np.sum(b_check - b)
-        npt.assert_almost_equal(diff, 0, decimal=8)
-        diff = np.sum(a_check - a)
-        npt.assert_almost_equal(diff, 0, decimal=3)
+        npt.assert_almost_equal(b, b_check)
+        npt.assert_almost_equal(a, a_check, decimal=3)
 
     def test_position_CD_open_loop(self):
         Ka = 50
         b, a = ss.position_CD(Ka, 'open_loop')
         b_check = np.array([ 318309.88618379])
         a_check = np.array([    1,  1275, 31250,     0])
-        diff = np.sum(b_check - b)
-        npt.assert_almost_equal(diff, 0, decimal=8)
-        diff = np.sum(a_check - a)
-        self.assertEqual(diff, 0)
+        npt.assert_almost_equal(b, b_check)
+        npt.assert_almost_equal(a, a_check)
 
     def test_position_CD_out_type_value_error(self):
         Ka = 50

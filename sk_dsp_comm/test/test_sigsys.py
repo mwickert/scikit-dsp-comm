@@ -2,6 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 from numpy.random import randn
+from scipy import signal
 import numpy.testing as npt
 from sk_dsp_comm import sigsys as ss
 
@@ -149,3 +150,14 @@ class TestSigsys(TestCase):
         0.1])
         f_out = ss.prin_alias(f_in,10)
         npt.assert_almost_equal(f_out, f_out_check)
+
+    def test_cascade_filters(self):
+        b1,a1 = signal.butter(3,0.1)
+        b2,a2 = signal.butter(3,0.15)
+        b,a = ss.cascade_filters(b1,a1,b2,a2)
+        b_check,a_check = (np.array([  2.49206659e-05,   1.49523995e-04,   3.73809988e-04,
+         4.98413317e-04,   3.73809988e-04,   1.49523995e-04,
+         2.49206659e-05]), np.array([ 1.        , -4.43923453,  8.35218582, -8.51113443,  4.94796745,
+       -1.55360419,  0.20541481]))
+        npt.assert_almost_equal(b,b_check)
+        npt.assert_almost_equal(a,a_check)

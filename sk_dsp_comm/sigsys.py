@@ -308,8 +308,7 @@ def position_CD(Ka,out_type = 'fb_exact'):
         b = np.array([4000*Ka*rs])
         a = np.array([1, 1250+25, 25*1250, 4000*Ka*rs])
     else:
-        print('out_type must be: open_loop, fb_approx, or fc_exact')
-        return 1
+        raise ValueError('out_type must be: open_loop, fb_approx, or fc_exact')
     return b, a
 
 

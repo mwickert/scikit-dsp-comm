@@ -1387,8 +1387,7 @@ def conv_integral(x1,tx1,x2,tx2,extent=('f','f')):
         ny = np.arange(max(n1+n4,n2+n3),n2+1+n4+1-1)
         ty = ny*dt + max(tx1[0]+tx2[-1],tx1[-1]+tx2[0])
     else:
-        print('Invalid x1 x2 extents specified or valid extent not found!')
-        return 0,0
+        raise ValueError('Invalid x1 x2 extents specified or valid extent not found!')
     # Finally convolve the sampled sequences and scale by dt
     y = signal.convolve(x1, x2)*dt
     print('Output support: (%+2.2f, %+2.2f)' % (ty[0],ty[-1]))

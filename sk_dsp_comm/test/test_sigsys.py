@@ -271,3 +271,28 @@ class TestSigsys(TestCase):
         x = ss.drect(nx, 4)
         with self.assertRaisesRegexp(ValueError, 'Invalid x1 x2 extents specified or valid extent not found!') as cs_err:
             y, ny = ss.conv_sum(x, nx, x, nx, extent=('v', 'v'))
+
+    def test_conv_integral(self):
+        tx = np.arange(-5, 10, .5)
+        x = ss.rect(tx - 2, 4)
+        y, ty = ss.conv_integral(x, tx, x, tx)
+        y_check = [0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5, 4., 3.5, 3., 2.5, 2., 1.5,1.]
+        ty_check = [0., 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 5.5, 6., 6.5, 7., 7.5]
+        npt.assert_almost_equal(y[20:36], y_check)
+        npt.assert_almost_equal(ty[20:36], ty_check)
+
+    def test_conv_integral_fr(self):
+        tx = np.arange(-5, 10, .5)
+        x = ss.rect(tx - 2, 4)
+        h = 4 * np.exp(-4 * tx) * ss.step(tx)
+        y, ty = ss.conv_integral(x, tx, h, tx, extent=('f', 'r'))
+        y_check = [2., 2.27067057, 2.30730184, 2.31225935, 2.31293027, 2.31302107, 2.31303336, 2.31303503, 2.31303525]
+        ty_check = [0., 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4.]
+        npt.assert_almost_equal(y[20:29], y_check)
+        npt.assert_almost_equal(ty[20:29], ty_check)
+
+    def test_conv_integral_value_error(self):
+        tx = np.arange(-5, 10, 0.01)
+        x = ss.rect(tx - 2, 4)
+        with self.assertRaisesRegexp(ValueError, 'Invalid x1 x2 extents specified or valid extent not found!') as ci_err:
+            ss.conv_integral(x, tx, x, tx, extent=('v', 'v'))

@@ -1309,8 +1309,7 @@ def conv_sum(x1,nx1,x2,nx2,extent=('f','f')):
         nny = np.arange(max(n1+n4,n2+n3),n2+1+n4+1-1)
         ny = nny + max(nx1[0]+nx2[-1],nx1[-1]+nx2[0])
     else:
-        print('Invalid x1 x2 extents specified or valid extent not found!')
-        return 0,0
+        raise ValueError('Invalid x1 x2 extents specified or valid extent not found!')
     # Finally convolve the sequences
     y = signal.convolve(x1, x2)
     print('Output support: (%+d, %+d)' % (ny[0],ny[-1]))

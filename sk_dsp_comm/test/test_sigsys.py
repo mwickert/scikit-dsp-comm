@@ -254,3 +254,20 @@ class TestSigsys(TestCase):
         x_rect = ss.rect(t - .1, 0.2)
         with self.assertRaisesRegexp(ValueError, 'Number of samples in xp insufficient for requested N.') as fsc_err:
             Xk, fk = ss.fs_coeff(x_rect, 2 ** 13, 10)
+
+    def test_conv_sum(self):
+        nx = np.arange(-5, 10)
+        x = ss.drect(nx, 4)
+        y, ny = ss.conv_sum(x, nx, x, nx)
+        ny_check, y_check = (np.array([-10,  -9,  -8,  -7,  -6,  -5,  -4,  -3,  -2,  -1,   0,   1,   2, 3,   4,   5,
+                                       6,   7,   8,   9,  10,  11,  12,  13,  14,  15, 16,  17,  18]),
+                             np.array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  1.,  2.,  3., 4.,  3.,  2.,
+                                        1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0., 0.,  0.,  0.]))
+        npt.assert_almost_equal(y, y_check)
+        npt.assert_almost_equal(ny, ny_check)
+
+    def test_conv_sum_value_error(self):
+        nx = np.arange(-5, 10)
+        x = ss.drect(nx, 4)
+        with self.assertRaisesRegexp(ValueError, 'Invalid x1 x2 extents specified or valid extent not found!') as cs_err:
+            y, ny = ss.conv_sum(x, nx, x, nx, extent=('v', 'v'))

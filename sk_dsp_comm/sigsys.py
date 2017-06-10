@@ -1805,7 +1805,7 @@ def m_seq(m):
 
 def BPSK_tx(N_bits,Ns,ach_fc=2.0,ach_lvl_dB=-100,pulse='rect',alpha = 0.25,M=6):
     """
-    Genrates biphase shift keyed (BPSK) transmitter with adjacent channel interference.
+    Generates biphase shift keyed (BPSK) transmitter with adjacent channel interference.
 
     Generates three BPSK signals with rectangular or square root raised cosine (SRC) 
     pulse shaping of duration N_bits and Ns samples per bit. The desired signal is
@@ -1998,7 +1998,7 @@ def scatter(x,Ns,start):
     Notes
     -----
     Normally the signal is complex, so the scatter plot contains 
-    clusters at point  in the complex plane. For a binary signal 
+    clusters at points in the complex plane. For a binary signal
     such as BPSK, the point centers are nominally +/-1 on the real
     axis. Start is used to eliminate transients from the FIR
     pulse shaping filters from appearing in the scatter plot.

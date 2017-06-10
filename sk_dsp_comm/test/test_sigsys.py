@@ -310,3 +310,9 @@ class TestSigsys(TestCase):
         x = ss.step(t)
         x_check = np.array([ 0.,  0.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.])
         npt.assert_almost_equal(x, x_check)
+
+    def test_rect(self):
+        t = np.arange(-1, 5, .5)
+        x = ss.rect(t, 1.0)
+        x_check = np.array([ 0.,  1.,  1.,  1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.])
+        npt.assert_almost_equal(x, x_check)

@@ -407,3 +407,14 @@ class TestSigsys(TestCase):
     def test_m_seq_value_error(self):
         with self.assertRaisesRegexp(ValueError, 'Invalid length specified') as ms_err:
             ss.m_seq(-1)
+
+    def test_BPSK_tx(self):
+        x,b,data0 = ss.BPSK_tx(1000, 10,pulse='src')
+        bit_vals = [0, 1]
+        for bit in data0:
+            val_check = bit in bit_vals
+            self.assertEqual(val_check, True)
+
+    def test_BPSK_tx_value_error(self):
+        with self.assertRaisesRegexp(ValueError, 'Pulse shape must be \'rect\' or \'src\'''') as bpsk_err:
+            ss.BPSK_tx(1000, 10, pulse='rc')

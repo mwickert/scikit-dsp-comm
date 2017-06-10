@@ -1834,8 +1834,11 @@ def BPSK_tx(N_bits,Ns,ach_fc=2.0,ach_lvl_dB=-100,pulse='rect',alpha = 0.25,M=6):
 
     Examples
     --------
-    >>> x,b,data0 = BPSK_tx(1000,10,'src')
+    >>> x,b,data0 = BPSK_tx(1000,10,pulse='src')
     """
+    pulse_types = ['rect', 'src']
+    if pulse not in pulse_types:
+        raise ValueError('Pulse shape must be \'rect\' or \'src\'''')
     x0,b,data0 = NRZ_bits(N_bits,Ns,pulse,alpha,M)
     x1p,b,data1p = NRZ_bits(N_bits,Ns,pulse,alpha,M)
     x1m,b,data1m = NRZ_bits(N_bits,Ns,pulse,alpha,M)

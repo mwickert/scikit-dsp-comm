@@ -1761,12 +1761,6 @@ def m_seq(m):
     --------
     >>> c = m_seq(5)
     """
-    # Load shift register with all ones to start
-    sr = np.ones(m)
-    # M-squence length is:
-    Q = 2**m - 1
-    c = np.zeros(Q)
-
     if m == 2:
         taps = np.array([1, 1, 1])
     elif m == 3:
@@ -1792,7 +1786,12 @@ def m_seq(m):
     elif m == 16:
         taps = np.array([1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1])
     else:
-        print('Invalid length specified')
+        raise ValueError('Invalid length specified')
+    # Load shift register with all ones to start
+    sr = np.ones(m)
+    # M-squence length is:
+    Q = 2**m - 1
+    c = np.zeros(Q)
     for n in range(Q):
         tap_xor = 0
         c[n] = sr[-1]

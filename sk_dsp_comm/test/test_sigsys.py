@@ -396,3 +396,14 @@ class TestSigsys(TestCase):
         1.,  0.,  0.,  0.,  1.,  1.,  1.,  1.,  0.,  1.,  0.,  1.,  1.,
         0.,  0.,  1.,  0.,  0.,  0.,  1.,  1.,  1.,  1.,  0.])
         npt.assert_almost_equal(PN, PN_check)
+
+    def test_m_seq(self):
+        c = ss.m_seq(5)
+        c_check = np.array([1., 1., 1., 1., 1., 0., 0., 1., 1., 0., 1., 0., 0.,
+                            1., 0., 0., 0., 0., 1., 0., 1., 0., 1., 1., 1., 0.,
+                            1., 1., 0., 0., 0.])
+        npt.assert_almost_equal(c, c_check)
+
+    def test_m_seq_value_error(self):
+        with self.assertRaisesRegexp(ValueError, 'Invalid length specified') as ms_err:
+            ss.m_seq(-1)

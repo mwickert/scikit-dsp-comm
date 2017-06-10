@@ -296,3 +296,11 @@ class TestSigsys(TestCase):
         x = ss.rect(tx - 2, 4)
         with self.assertRaisesRegexp(ValueError, 'Invalid x1 x2 extents specified or valid extent not found!') as ci_err:
             ss.conv_integral(x, tx, x, tx, extent=('v', 'v'))
+
+    def test_delta_eps(self):
+        t = np.arange(-2, 2, .001)
+        d = ss.delta_eps(t, .1)
+        d_check = np.ones(99) * 10
+        npt.assert_almost_equal(d[1951:2050], d_check)
+        npt.assert_almost_equal(t[1951], -0.0490000000002)
+        npt.assert_almost_equal(t[2050], 0.0499999999998)

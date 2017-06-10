@@ -304,3 +304,9 @@ class TestSigsys(TestCase):
         npt.assert_almost_equal(d[1951:2050], d_check)
         npt.assert_almost_equal(t[1951], -0.0490000000002)
         npt.assert_almost_equal(t[2050], 0.0499999999998)
+
+    def test_step(self):
+        t = np.arange(-1, 5, .5)
+        x = ss.step(t)
+        x_check = np.array([ 0.,  0.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.])
+        npt.assert_almost_equal(x, x_check)

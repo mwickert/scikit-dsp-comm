@@ -341,3 +341,9 @@ class TestSigsys(TestCase):
         x = ss.dimpulse(n)
         x_check = np.array([ 0.,  0.,  0.,  0.,  0.,  1.,  0.,  0.,  0.,  0.])
         npt.assert_almost_equal(x, x_check)
+
+    def test_dstep(self):
+        n = np.arange(-5, 5)
+        x = ss.dstep(n)
+        x_check = np.array([ 0.,  0.,  0.,  0.,  0.,  1.,  1.,  1.,  1.,  1.])
+        npt.assert_almost_equal(x, x_check)

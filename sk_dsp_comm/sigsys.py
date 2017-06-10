@@ -1599,10 +1599,10 @@ def drect(n,N):
     Examples
     --------
     >>> n = arange(-5,5)
-    >>> x = drect(n)
+    >>> x = drect(n, N=3)
     >>> stem(n,x)
     >>> # shift the delta left by 2
-    >>> x = drect(n+2)
+    >>> x = drect(n+2, N=3)
     >>> stem(n,x)
     """ 
     x = np.zeros(len(n))

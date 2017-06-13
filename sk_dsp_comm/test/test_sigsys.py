@@ -549,3 +549,20 @@ class TestSigsys(TestCase):
     def test_BPSK_tx_value_error(self):
         with self.assertRaisesRegexp(ValueError, 'Pulse shape must be \'rect\' or \'src\'''') as bpsk_err:
             ss.BPSK_tx(1000, 10, pulse='rc')
+
+    def test_NRZ_bits(self):
+        x, b, data = ss.NRZ_bits(25, 8)
+        b_check = np.array([ 0.125,  0.125,  0.125,  0.125,  0.125,  0.125,  0.125,  0.125])
+        x_vals = [-1, 1]
+        data_vals = [0, 1]
+        for bit in x:
+            x_check = bit in x_vals
+            self.assertEqual(x_check, True)
+        npt.assert_equal(b, b_check)
+        for bit in data:
+            data_check = bit in data_vals
+            self.assertEqual(data_check, True)
+
+    def test_NRZ_bits_value_error(self):
+        with self.assertRaisesRegexp(ValueError, 'pulse type must be rec, rc, or src') as NRZ_err:
+            x,b,data = ss.NRZ_bits(100, 10, pulse='value')

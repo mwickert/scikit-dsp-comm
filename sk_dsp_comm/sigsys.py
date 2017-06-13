@@ -1892,7 +1892,7 @@ def NRZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
     elif pulse.lower() == 'src':
         b = sqrt_rc_imp(Ns,alpha,M)
     else:
-        print('pulse type must be rec, rc, or src')
+        raise ValueError('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     return x,b/float(Ns),data
 

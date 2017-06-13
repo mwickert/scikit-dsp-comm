@@ -585,3 +585,10 @@ class TestSigsys(TestCase):
     def test_NRZ_bits_value_error(self):
         with self.assertRaisesRegexp(ValueError, 'pulse type must be rec, rc, or src') as NRZ_err:
             x,b = ss.NRZ_bits2(ss.m_seq(5), 10, pulse='val')
+
+    def test_bit_errors(self):
+        x, b, data = ss.NRZ_bits(1000000, 10)
+        y = ss.cpx_AWGN(x, 12, 10)
+        z = signal.lfilter(b, 1, y)
+        Pe_hat = ss.bit_errors(z, data, 10, 10)
+        npt.assert_almost_equal(Pe_hat, 3.0000030000030001e-06, decimal=5)

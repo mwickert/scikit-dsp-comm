@@ -2271,7 +2271,7 @@ def env_det(x):
     >>> n = arange(0,100)
     >>> # 1 kHz message signal
     >>> m = cos(2*pi*1000/8000.*n)
-    >>> x192, t192 = am_tx(m,0.8,fc=75e3)
+    >>> x192, t192, m24 = am_tx(m,0.8,fc=75e3)
     >>> y = env_det(x192)
     """
     y = np.zeros(len(x))

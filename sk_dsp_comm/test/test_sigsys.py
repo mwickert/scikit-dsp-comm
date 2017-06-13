@@ -592,3 +592,17 @@ class TestSigsys(TestCase):
         z = signal.lfilter(b, 1, y)
         Pe_hat = ss.bit_errors(z, data, 10, 10)
         npt.assert_almost_equal(Pe_hat, 3.0000030000030001e-06, decimal=5)
+
+    def test_env_det(self):
+        n = np.arange(0, 100)
+        m = np.cos(2*np.pi*1000/8000.*n)
+        x192, t192, m24 = ss.am_tx(m, 0.8)
+        y = ss.env_det(x192)
+        y_check = np.array([ 1.        ,  0.        ,  0.19509032,  0.47139675,  0.        ,
+        0.95694061,  0.        ,  0.        ,  0.70710867,  0.        ,
+        0.83147726,  0.        ,  0.        ,  0.88195786,  0.        ,
+        0.63445526,  0.        ,  0.        ,  0.98107017,  0.        ,
+        0.38289154,  0.29049525,  0.        ,  0.99642382,  0.        ,
+        0.09821644,  0.55699691,  0.        ,  0.92757216,  0.        ,
+        0.        ,  0.77872869])
+        npt.assert_almost_equal(y[:32], y_check)

@@ -566,3 +566,22 @@ class TestSigsys(TestCase):
     def test_NRZ_bits_value_error(self):
         with self.assertRaisesRegexp(ValueError, 'pulse type must be rec, rc, or src') as NRZ_err:
             x,b,data = ss.NRZ_bits(100, 10, pulse='value')
+
+    def test_NRZ_bits2(self):
+        x,b = ss.NRZ_bits2(ss.m_seq(3), 10)
+        x_check = np.array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
+        1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
+        1.,  1.,  1.,  1., -1., -1., -1., -1., -1., -1., -1., -1., -1.,
+       -1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1., -1., -1.,
+       -1., -1., -1., -1., -1., -1., -1., -1., -1., -1., -1., -1., -1.,
+       -1., -1., -1., -1., -1.])
+        b_check = np.array([ 0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1])
+        x_vals = [-1, 1]
+        for bit in x:
+            x_check = bit in x_vals
+            self.assertEqual(x_check, True)
+        npt.assert_equal(b, b_check)
+
+    def test_NRZ_bits_value_error(self):
+        with self.assertRaisesRegexp(ValueError, 'pulse type must be rec, rc, or src') as NRZ_err:
+            x,b = ss.NRZ_bits2(ss.m_seq(5), 10, pulse='val')

@@ -1924,7 +1924,7 @@ def NRZ_bits2(data,Ns,pulse='rect',alpha = 0.25,M=6):
 
     Examples
     --------
-    >>> x,b = NRZ_bits2([m_seq(5),10)
+    >>> x,b = NRZ_bits2(m_seq(5),10)
     >>> t = arange(len(x))
     >>> plot(t,x)
     """
@@ -1938,7 +1938,7 @@ def NRZ_bits2(data,Ns,pulse='rect',alpha = 0.25,M=6):
     elif pulse.lower() == 'src':
         b = sqrt_rc_imp(Ns,alpha,M)
     else:
-        print('pulse type must be rec, rc, or src')
+        raise ValueError('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     return x,b/float(Ns)
 

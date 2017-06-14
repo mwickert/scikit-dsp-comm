@@ -654,3 +654,10 @@ class TestSigsys(TestCase):
         x = np.zeros(3)
         y = ss.downsample(x, 3)
         npt.assert_equal(y, np.zeros(1))
+
+    def test_rect_conv(self):
+        n = np.arange(-5, 20)
+        y = ss.rect_conv(n, 6)
+        y_check = np.array([ 0.,  0.,  0.,  0.,  0.,  1.,  2.,  3.,  4.,  5.,  6.,  5.,  4.,
+        3.,  2.,  1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.])
+        npt.assert_equal(y, y_check)

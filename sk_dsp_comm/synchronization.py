@@ -219,7 +219,7 @@ def NDA_symb_sync(z,Ns,L,BnTs,zeta=0.707,I_ord=3):
     e_tau = e_tau[:-(len(e_tau)-mm+1)]
     return zz, e_tau
 
-def  DD_carrier_sync(z,M,BnTs,zeta=0.707,type=0):
+def DD_carrier_sync(z,M,BnTs,zeta=0.707,type=0):
     """
     z_prime,a_hat,e_phi = DD_carrier_sync(z,M,BnTs,zeta=0.707,type=0)
     Decision directed carrier phase tracking
@@ -390,7 +390,7 @@ def PLL1(theta,fs,loop_type,Kv,fn,zeta,non_lin):
                 # hold-in range in Hz, as it is assumed that Kp = 1
                 # and KLF = 1.
         tau1 = K/((2*np.pi*fn)^2);
-        tau2 = 2*zeta/(2*np.pi*fn)*(1 - 2*pi*fn/K*1/(2*zeta))
+        tau2 = 2*zeta/(2*np.pi*fn)*(1 - 2*np.pi*fn/K*1/(2*zeta))
     else:
         print('Loop type must be 1, 2, or 3')
 
@@ -492,7 +492,7 @@ def PLL_cbb(x,fs,loop_type,Kv,fn,zeta):
                 # hold-in range in Hz, as it is assumed that Kp = 1
                 # and KLF = 1.
         tau1 = K/((2*np.pi*fn)^2);
-        tau2 = 2*zeta/(2*np.pi*fn)*(1 - 2*pi*fn/K*1/(2*zeta))
+        tau2 = 2*zeta/(2*np.pi*fn)*(1 - 2*np.pi*fn/K*1/(2*zeta))
     else:
         print('Loop type must be 1, 2, or 3')
 

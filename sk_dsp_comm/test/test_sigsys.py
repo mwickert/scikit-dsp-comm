@@ -644,3 +644,8 @@ class TestSigsys(TestCase):
          1.16169513e-03,   4.34891180e-02,   4.08255952e-01,
          1.16839852e+00])
         npt.assert_almost_equal(yd, yd_check)
+
+    def test_upsample(self):
+        x = np.zeros(1)
+        y = ss.upsample(x, 3)
+        npt.assert_equal(y, np.zeros(3))

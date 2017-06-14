@@ -2656,25 +2656,3 @@ def to_wav(filename,rate,x):
     """
     x16 = np.int16(x*32767)
     wavfile.write(filename, rate, x16)
-
-if __name__ == '__main__':
-    
-    b = CIC(10,2)
-    print(b)
-     
-    
-    """
-    x = np.random.randn(10)
-    print(x)
-    
-    b = signal.remez(16,[0,.1,.2,.5], [1,0], [1,1], 1)
-    w,H = signal.freqz(b,[1],512)
-    plot(w,20*log10(abs(H)))
-    figure(figsize=(6,4))
-    #plot(arange(0,len(b)),b)
-    
-    y = signal.lfilter(b, [1], x,)
-    print(y)
-    
-    zplane([1,1,1,1,1],[1,-.8],1.25)
-    """

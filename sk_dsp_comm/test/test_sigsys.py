@@ -649,3 +649,8 @@ class TestSigsys(TestCase):
         x = np.zeros(1)
         y = ss.upsample(x, 3)
         npt.assert_equal(y, np.zeros(3))
+
+    def test_downsample(self):
+        x = np.zeros(3)
+        y = ss.downsample(x, 3)
+        npt.assert_equal(y, np.zeros(1))

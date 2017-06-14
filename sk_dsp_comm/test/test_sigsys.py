@@ -661,3 +661,10 @@ class TestSigsys(TestCase):
         y_check = np.array([ 0.,  0.,  0.,  0.,  0.,  1.,  2.,  3.,  4.,  5.,  6.,  5.,  4.,
         3.,  2.,  1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.])
         npt.assert_equal(y, y_check)
+
+    def test_biquad2(self):
+        b,a = ss.biquad2(np.pi / 4., 1, np.pi / 4., 0.95)
+        b_check = np.array([ 1.        , -1.41421356,  1.        ])
+        a_check = np.array([ 1.        , -1.34350288,  0.9025    ])
+        npt.assert_almost_equal(b, b_check)
+        npt.assert_almost_equal(a, a_check)

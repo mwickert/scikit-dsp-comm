@@ -635,3 +635,12 @@ class TestSigsys(TestCase):
          6.68168565e-01,   7.08757382e-01,   7.49579596e-01,
          7.89751182e-01,   8.29598667e-01,   8.69628354e-01])
         npt.assert_almost_equal(y, y_check)
+
+    def test_deci24(self):
+        x = ss.m_seq(3)
+        y = ss.interp24(x)
+        yd = ss.deci24(y)
+        yd_check = np.array([  3.33911797e-22,   3.71880014e-10,   4.33029514e-06,
+         1.16169513e-03,   4.34891180e-02,   4.08255952e-01,
+         1.16839852e+00])
+        npt.assert_almost_equal(yd, yd_check)

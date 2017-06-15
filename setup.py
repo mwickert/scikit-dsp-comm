@@ -12,7 +12,7 @@ def read(fname):
 
 
 setup(name='scikit-dsp-comm',
-      version='0.0.1',
+      version='0.0.2',
       description='DSP and Comm package.',
       long_description=read(fpath('README.md')),
       author=['Mark Wickert', 'Chiranth Siddappa'],

@@ -964,7 +964,7 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
     >>> plot(f, 10*log10(Sx))
     """
     Nx = len(x)
-    K = Nx/NS
+    K = int(Nx/NS)
     print('K = ', K)
     if NAVG > K:
         print('NAVG exceeds number of available subrecords')
@@ -2368,8 +2368,8 @@ def downsample(x,M,p=0):
     >>> y = downsample(x,3)
     >>> y = downsample(x,3,1)
     """
-    x = x[0:int(np.floor(len(x)/M))*M]
-    x = x.reshape((int(np.floor(len(x)/M)),M))
+    x = x[0:np.floor(len(x)/M)*M]
+    x = x.reshape((len(x)/M,M))
     y = x[:,p]
     return y
 

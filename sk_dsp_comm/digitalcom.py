@@ -140,8 +140,8 @@ def downsample(x,M,p=0):
     >>> y = downsample(x,3)
     >>> y = downsample(x,3,1)
     """
-    x = x[0:int(np.floor(len(x)/M))*M]
-    x = x.reshape((int(np.floor(len(x)/M)),M))
+    x = x[0:np.floor(len(x)/M)*M]
+    x = x.reshape((len(x)/M,M))
     y = x[:,p]
     return y
     
@@ -532,7 +532,7 @@ def QAM_SEP(tx_data,rx_data,mod_type,Ncorr = 1024,Ntransient = 0,SEP_disp=True):
 
 def GMSK_bb(N_bits, Ns, MSK = 0,BT = 0.35):
     """
-    MSK/GMSK COoplex Beband Modulation
+    MSK/GMSK Complex Baseband Modulation
     x,data = gmsk(N_bits, Ns, BT = 0.35, MSK = 0)
     
     N_bits = number of symbols processed
@@ -547,7 +547,7 @@ def GMSK_bb(N_bits, Ns, MSK = 0,BT = 0.35):
     # pulse length 2*M*Ns
     M = 4
     n = np.arange(-M*Ns,M*Ns+1)
-    p = np.exp(-2*np.pi**2*BT**2/np.log(2)*(n/Ns)**2);
+    p = np.exp(-2*np.pi**2*BT**2/np.log(2)*(n/float(Ns))**2);
     p = p/np.sum(p);
 
     # Gaussian pulse shape if MSK not zero

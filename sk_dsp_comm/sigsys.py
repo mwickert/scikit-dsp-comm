@@ -57,6 +57,7 @@ import matplotlib.pyplot as plt
 from scipy import signal
 from scipy.io import wavfile
 
+
 def CIC(M,K):
     """
     % b = CIC(M,K)
@@ -116,7 +117,9 @@ def ten_band_eq_filt(x,GdB,Q=3.5):
     """
     fs = 44100.0 # Hz
     NB = len(GdB)
-    Fc = 31.25*2**np.arange(10)
+    if not NB == 10:
+        raise ValueError("GdB length not equal to ten")
+    Fc = 31.25*2**np.arange(NB)
     B = np.zeros((NB,3))
     A = np.zeros((NB,3))
     
@@ -125,7 +128,7 @@ def ten_band_eq_filt(x,GdB,Q=3.5):
         [b,a] = peaking(GdB[k],Fc[k],Q)
         B[k,:] = b
         A[k,:] = a
-    #Pass signal x through the cascade of ten filters
+    # Pass signal x through the cascade of ten filters
     y = np.zeros(len(x))
     for k in range(NB):
         if k == 0:
@@ -133,6 +136,7 @@ def ten_band_eq_filt(x,GdB,Q=3.5):
         else:
             y = signal.lfilter(B[k,:],A[k,:],y)
     return y
+
 
 def ten_band_eq_resp(GdB,Q=3.5):
     """
@@ -154,8 +158,10 @@ def ten_band_eq_resp(GdB,Q=3.5):
     >>> ten_band_eq_resp([0,10.0,0,0,-1,0,5,0,-4,0])
     """
     fs = 44100.0 # Hz
-    Fc = 31.25*2**np.arange(10)
     NB = len(GdB)
+    if not NB == 10:
+        raise ValueError("GdB length not equal to ten")
+    Fc = 31.25*2**np.arange(NB)
     B = np.zeros((NB,3));
     A = np.zeros((NB,3));
     
@@ -185,6 +191,7 @@ def ten_band_eq_resp(GdB,Q=3.5):
     plt.xlabel('Equalizer Band Number')
     plt.ylabel('Gain Set (dB)')
     plt.grid()
+
 
 def peaking(GdB, fc, Q=3.5, fs=44100.):
     """
@@ -227,6 +234,7 @@ def peaking(GdB, fc, Q=3.5, fs=44100.):
     a = np.array([1, a1, a2])
     return b,a
 
+
 def ex6_2(n):
     """
     Generate a triangle pulse as described in Example 6-2
@@ -254,6 +262,7 @@ def ex6_2(n):
         if nn >= -2 and nn <= 5:
             x[k] = 8 - nn
     return x
+
 
 def position_CD(Ka,out_type = 'fb_exact'):
     """
@@ -299,9 +308,9 @@ def position_CD(Ka,out_type = 'fb_exact'):
         b = np.array([4000*Ka*rs])
         a = np.array([1, 1250+25, 25*1250, 4000*Ka*rs])
     else:
-        print('out_type must be: open_loop, fb_approx, or fc_exact')
-        return 1
+        raise ValueError('out_type must be: open_loop, fb_approx, or fc_exact')
     return b, a
+
 
 def cruise_control(wn,zeta,T,vcruise,vmax,tf_mode='H'):
     """
@@ -342,8 +351,8 @@ def cruise_control(wn,zeta,T,vcruise,vmax,tf_mode='H'):
     tau = T/2.*vmax/vcruise
     g = 9.8
     g *= 3*60**2/5280. # m/s to mph conversion
-    Kp = T/vmax*(2*zeta*wn-1/tau)
-    Ki = T/vmax*wn**2
+    Kp = T*(2*zeta*wn-1/tau)/vmax
+    Ki = T*wn**2./vmax
     K = Kp*vmax/T
     print('wn = ', np.sqrt(K/(Kp/Ki)))
     print('zeta = ', (K + 1/tau)/(2*wn))
@@ -358,9 +367,9 @@ def cruise_control(wn,zeta,T,vcruise,vmax,tf_mode='H'):
     elif tf_mode == 'HED':
         b = np.array([g, 0])
     else:
-        print('tf_mode must be: H, HE, HVU, or HED')
-        return 1
+        raise ValueError('tf_mode must be: H, HE, HVU, or HED')
     return b, a
+
 
 def splane(b,a,auto_scale=True,size=[-1,1,-1,1]):
     """
@@ -444,6 +453,7 @@ def splane(b,a,auto_scale=True,size=[-1,1,-1,1]):
     plt.axis(np.array(size))
     return M,N
 
+
 def OS_filter(x,h,N,mode=0):
     """
     Overlap and save transform domain FIR filtering.
@@ -470,7 +480,7 @@ def OS_filter(x,h,N,mode=0):
     Examples
     --------
     >>> n = arange(0,100)
-    >>> x cos(2*pi*0.05*n)
+    >>> x = cos(2*pi*0.05*n)
     >>> b = ones(10)
     >>> y = OS_filter(x,h,N)
     >>> # set mode = 1
@@ -502,6 +512,7 @@ def OS_filter(x,h,N,mode=0):
         return y[P-1:Nx], y_mat[:,P-1:Nx]
     else:
         return y[P-1:Nx]
+
 
 def OA_filter(x,h,N,mode=0):
     """
@@ -557,6 +568,7 @@ def OA_filter(x,h,N,mode=0):
         return y[0:Nx], y_mat[:,0:Nx]
     else:
         return y[0:Nx]
+
 
 def lp_samp(fb,fs,fmax,N,shape='tri',fsize=(6,4)):
     """
@@ -616,7 +628,8 @@ def lp_samp(fb,fs,fmax,N,shape='tri',fsize=(6,4)):
     plt.xlabel('Frequency in Hz')
     plt.axis([-fmax,fmax,0,1])
     plt.grid()
-    
+
+
 def lp_tri(f, fb):
     """
     Triangle spectral shape function used by lp_spec.
@@ -642,7 +655,8 @@ def lp_tri(f, fb):
     for k in range(len(f)):
         if abs(f[k]) <= fb:
             x[k] = 1 - abs(f[k])/float(fb)
-    return x    
+    return x
+
 
 def sinusoidAWGN(x,SNRdB):
     """
@@ -667,13 +681,14 @@ def sinusoidAWGN(x,SNRdB):
     >>> n = arange(0,10000)
     >>> x = cos(2*pi*0.04*n)
     >>> y = sinusoidAWGN(x,10.0)
-"""
+    """
     # Estimate signal power
     x_pwr = np.var(x)
 
     # Create noise vector
     noise = np.sqrt(x_pwr/10**(SNRdB/10.))*np.random.randn(len(x));
     return x + noise
+
 
 def simpleQuant(x,Btot,Xmax,Limit):
     """
@@ -759,6 +774,7 @@ def prin_alias(f_in,fs):
     return f_out
     """
 
+
 def cascade_filters(b1,a1,b2,a2):
     """
     Cascade two IIR digital filters into a single (b,a) coefficient set.
@@ -786,6 +802,7 @@ def cascade_filters(b1,a1,b2,a2):
     >>> b,a = cascade_filters(b1,a1,b2,a2)
     """
     return signal.convolve(b1,b2), signal.convolve(a1,a2)
+
 
 def soi_snoi_gen(s,SIR_dB,N,fi,fs = 8000):
     """
@@ -824,6 +841,7 @@ def soi_snoi_gen(s,SIR_dB,N,fi,fs = 8000):
     Psi = np.var(si)
     r = s + np.sqrt(Ps/Psi*10**(-SIR_dB/10))*si
     return r
+
 
 def lms_ic(r,M,mu,delta=1):
     """
@@ -888,6 +906,7 @@ def lms_ic(r,M,mu,delta=1):
     Ao = 20*np.log10(abs(Ao))
     return np.arange(0,N+1), r, r_hat, e, ao, F, Ao
 
+
 def fir_iir_notch(fi,fs,r=0.95):
     """
     Design a second-order FIR or IIR notch filter.
@@ -920,13 +939,14 @@ def fir_iir_notch(fi,fs,r=0.95):
     """
     w0 = 2*np.pi*fi/float(fs)
     if r >= 1:
-        print('Poles on or outside unit circle.')
-    if r == 0:
+        raise ValueError('Poles on or outside unit circle.')
+    elif r == 0:
         a = np.array([1.0])
     else:
         a = np.array([1, -2*r*np.cos(w0), r**2])
     b = np.array([1, -2*np.cos(w0), 1])
     return b, a
+
 
 def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
     """
@@ -1135,6 +1155,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
     else:
         print('Invalid mode type')
 
+
 def fs_coeff(xp,N,f0,one_side=True):
     """
     Numerically approximate the Fourier series coefficients given periodic x(t).
@@ -1169,8 +1190,7 @@ def fs_coeff(xp,N,f0,one_side=True):
     """
     Nint = len(xp)
     if Nint < 2*N+1:
-        print('Number of samples in xp insufficient for requested N.')
-        return 0,0
+        raise ValueError('Number of samples in xp insufficient for requested N.')
     Xp = fft.fft(xp,Nint)/float(Nint)
     # To interface with the line_spectra function use one_side mode
     if one_side:
@@ -1180,6 +1200,7 @@ def fs_coeff(xp,N,f0,one_side=True):
         Xk = np.hstack((Xp[-N:],Xp[0:N+1]))
         fk = f0*np.arange(-N,N+1)        
     return Xk, fk
+
 
 def fs_approx(Xk,fk,t):
     """
@@ -1215,7 +1236,8 @@ def fs_approx(Xk,fk,t):
         else:
             x_approx += 2*np.abs(Xkk)*np.cos(2*np.pi*fk[k]*t+np.angle(Xkk))
     return x_approx
-    
+
+
 def conv_sum(x1,nx1,x2,nx2,extent=('f','f')):
     """ 
     Discrete convolution of x1 and x2 with proper tracking of the output time axis.
@@ -1287,14 +1309,14 @@ def conv_sum(x1,nx1,x2,nx2,extent=('f','f')):
         nny = np.arange(max(n1+n4,n2+n3),n2+1+n4+1-1)
         ny = nny + max(nx1[0]+nx2[-1],nx1[-1]+nx2[0])
     else:
-        print('Invalid x1 x2 extents specified or valid extent not found!')
-        return 0,0
+        raise ValueError('Invalid x1 x2 extents specified or valid extent not found!')
     # Finally convolve the sequences
     y = signal.convolve(x1, x2)
     print('Output support: (%+d, %+d)' % (ny[0],ny[-1]))
     return y[nny], ny
 
-def conv_integral(x1,tx1,x2,tx2,extent = ('f','f')):
+
+def conv_integral(x1,tx1,x2,tx2,extent=('f','f')):
     """ 
     Continuous-time convolution of x1 and x2 with proper tracking of the output time axis.
 
@@ -1365,12 +1387,12 @@ def conv_integral(x1,tx1,x2,tx2,extent = ('f','f')):
         ny = np.arange(max(n1+n4,n2+n3),n2+1+n4+1-1)
         ty = ny*dt + max(tx1[0]+tx2[-1],tx1[-1]+tx2[0])
     else:
-        print('Invalid x1 x2 extents specified or valid extent not found!')
-        return 0,0
+        raise ValueError('Invalid x1 x2 extents specified or valid extent not found!')
     # Finally convolve the sampled sequences and scale by dt
     y = signal.convolve(x1, x2)*dt
     print('Output support: (%+2.2f, %+2.2f)' % (ty[0],ty[-1]))
     return y[ny], ty
+
 
 def delta_eps(t,eps):
     """
@@ -1396,6 +1418,7 @@ def delta_eps(t,eps):
         if abs(tt) <= eps/2.:
             d[k] = 1/float(eps)
     return d
+
 
 def step(t):
     """
@@ -1425,6 +1448,7 @@ def step(t):
         if tt >= 0:
             x[k] = 1.0
     return x
+
 
 def rect(t,tau):
     """
@@ -1459,6 +1483,7 @@ def rect(t,tau):
             x[k] = 1
     return x
 
+
 def tri(t,tau):
     """
     Approximation to the triangle pulse Lambda(t/tau).
@@ -1492,6 +1517,7 @@ def tri(t,tau):
             x[k] = 1 - np.abs(tk)/tau
     return x
 
+
 def dimpulse(n):
     """
     Discrete impulse function delta[n].
@@ -1518,6 +1544,7 @@ def dimpulse(n):
         if nn == 0:
             x[k] = 1.0
     return x
+
 
 def dstep(n):
     """
@@ -1546,6 +1573,7 @@ def dstep(n):
             x[k] = 1.0
     return x
 
+
 def drect(n,N):
     """
     Discrete rectangle function of duration N samples.
@@ -1571,10 +1599,10 @@ def drect(n,N):
     Examples
     --------
     >>> n = arange(-5,5)
-    >>> x = drect(n)
+    >>> x = drect(n, N=3)
     >>> stem(n,x)
     >>> # shift the delta left by 2
-    >>> x = drect(n+2)
+    >>> x = drect(n+2, N=3)
     >>> stem(n,x)
     """ 
     x = np.zeros(len(n))
@@ -1582,6 +1610,7 @@ def drect(n,N):
         if nn >= 0 and nn < N:
             x[k] = 1.0
     return x
+
 
 def rc_imp(Ns,alpha,M=6):
     """
@@ -1623,6 +1652,7 @@ def rc_imp(Ns,alpha,M=6):
         else:
             b[i] = np.sinc(n[i]/Ns)*np.cos(np.pi*a*n[i]/Ns)/(1 - 4*(a*n[i]/Ns)**2)
     return b
+
 
 def sqrt_rc_imp(Ns,alpha,M=6):
     """
@@ -1672,6 +1702,7 @@ def sqrt_rc_imp(Ns,alpha,M=6):
            b[i] = b[i]*(np.cos((1+a)*np.pi*n[i]/Ns) + np.sinc((1-a)*n[i]/Ns)*(1-a)*np.pi/(4.*a))
     return b
 
+
 def PN_gen(N_bits,m=5):
     """
     Maximal length sequence signal generator.
@@ -1707,6 +1738,7 @@ def PN_gen(N_bits,m=5):
     PN = np.resize(PN, (1,N_bits))
     return PN.flatten()
 
+
 def m_seq(m):
     """
     Generate an m-sequence ndarray using an all-ones initialization.
@@ -1729,12 +1761,6 @@ def m_seq(m):
     --------
     >>> c = m_seq(5)
     """
-    # Load shift register with all ones to start
-    sr = np.ones(m)
-    # M-squence length is:
-    Q = 2**m - 1
-    c = np.zeros(Q)
-
     if m == 2:
         taps = np.array([1, 1, 1])
     elif m == 3:
@@ -1760,7 +1786,12 @@ def m_seq(m):
     elif m == 16:
         taps = np.array([1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1])
     else:
-        print('Invalid length specified')
+        raise ValueError('Invalid length specified')
+    # Load shift register with all ones to start
+    sr = np.ones(m)
+    # M-squence length is:
+    Q = 2**m - 1
+    c = np.zeros(Q)
     for n in range(Q):
         tap_xor = 0
         c[n] = sr[-1]
@@ -1771,9 +1802,10 @@ def m_seq(m):
         sr[0] = tap_xor
     return c
 
+
 def BPSK_tx(N_bits,Ns,ach_fc=2.0,ach_lvl_dB=-100,pulse='rect',alpha = 0.25,M=6):
     """
-    Genrates biphase shift keyed (BPSK) transmitter with adjacent channel interference.
+    Generates biphase shift keyed (BPSK) transmitter with adjacent channel interference.
 
     Generates three BPSK signals with rectangular or square root raised cosine (SRC) 
     pulse shaping of duration N_bits and Ns samples per bit. The desired signal is
@@ -1802,8 +1834,11 @@ def BPSK_tx(N_bits,Ns,ach_fc=2.0,ach_lvl_dB=-100,pulse='rect',alpha = 0.25,M=6):
 
     Examples
     --------
-    >>> x,b,data0 = BPSK_tx(1000,10,'src')
+    >>> x,b,data0 = BPSK_tx(1000,10,pulse='src')
     """
+    pulse_types = ['rect', 'src']
+    if pulse not in pulse_types:
+        raise ValueError('Pulse shape must be \'rect\' or \'src\'''')
     x0,b,data0 = NRZ_bits(N_bits,Ns,pulse,alpha,M)
     x1p,b,data1p = NRZ_bits(N_bits,Ns,pulse,alpha,M)
     x1m,b,data1m = NRZ_bits(N_bits,Ns,pulse,alpha,M)
@@ -1812,8 +1847,7 @@ def BPSK_tx(N_bits,Ns,ach_fc=2.0,ach_lvl_dB=-100,pulse='rect',alpha = 0.25,M=6):
     x1m = x1m*np.exp(-1j*2*np.pi*ach_fc/float(Ns)*n)
     ach_lvl = 10**(ach_lvl_dB/20.)
     return x0 + ach_lvl*(x1p + x1m), b, data0
-     
-#def BPSK_rx(r,b,):
+
 
 def NRZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
     """
@@ -1858,9 +1892,10 @@ def NRZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
     elif pulse.lower() == 'src':
         b = sqrt_rc_imp(Ns,alpha,M)
     else:
-        print('pulse type must be rec, rc, or src')
+        raise ValueError('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     return x,b/float(Ns),data
+
 
 def NRZ_bits2(data,Ns,pulse='rect',alpha = 0.25,M=6):
     """
@@ -1889,7 +1924,7 @@ def NRZ_bits2(data,Ns,pulse='rect',alpha = 0.25,M=6):
 
     Examples
     --------
-    >>> x,b = NRZ_bits2([m_seq(5),10)
+    >>> x,b = NRZ_bits2(m_seq(5),10)
     >>> t = arange(len(x))
     >>> plot(t,x)
     """
@@ -1903,9 +1938,10 @@ def NRZ_bits2(data,Ns,pulse='rect',alpha = 0.25,M=6):
     elif pulse.lower() == 'src':
         b = sqrt_rc_imp(Ns,alpha,M)
     else:
-        print('pulse type must be rec, rc, or src')
+        raise ValueError('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     return x,b/float(Ns)
+
 
 def eye_plot(x,L,S=0):
     """
@@ -1946,6 +1982,7 @@ def eye_plot(x,L,S=0):
     plt.title('Eye Plot')
     return 0
 
+
 def scatter(x,Ns,start):
     """
     Sample a baseband digital communications waveform at the symbol spacing.
@@ -1964,7 +2001,7 @@ def scatter(x,Ns,start):
     Notes
     -----
     Normally the signal is complex, so the scatter plot contains 
-    clusters at point  in the complex plane. For a binary signal 
+    clusters at points in the complex plane. For a binary signal
     such as BPSK, the point centers are nominally +/-1 on the real
     axis. Start is used to eliminate transients from the FIR
     pulse shaping filters from appearing in the scatter plot.
@@ -1981,6 +2018,7 @@ def scatter(x,Ns,start):
     xI = np.real(x[start::Ns])
     xQ = np.imag(x[start::Ns])
     return xI, xQ
+
 
 def bit_errors(z,data,start,Ns):
     """
@@ -2025,6 +2063,7 @@ def bit_errors(z,data,start,Ns):
     Pe_hat = np.sum(data[0:len(z[start::Ns])]^np.int64((np.sign(np.real(z[start::Ns]))+1)/2))/float(len(z[start::Ns]))
     return Pe_hat
 
+
 def cpx_AWGN(x,EsN0,Ns):
     """
     Apply white Gaussian noise to a digital communications signal.
@@ -2056,6 +2095,7 @@ def cpx_AWGN(x,EsN0,Ns):
     """
     w = np.sqrt(Ns*np.var(x)*10**(-EsN0/10.)/2.)*(np.random.randn(len(x)) + 1j*np.random.randn(len(x)))                            
     return x+w       
+
 
 def my_psd(x,NFFT=2**10,Fs=1):
     """
@@ -2129,6 +2169,7 @@ def am_tx(m,a_mod,fc=75e3):
     x192 = (1 + a_mod*m24/m_max)*np.cos(2*np.pi*fc*t192) 
     return x192, t192, m24
 
+
 def am_rx(x192):
     """
     AM envelope detector receiver for the Chapter 17 Case Study
@@ -2173,7 +2214,8 @@ def am_rx(x192):
     m_rx192 = signal.lfilter(b192,a192,m_rx192)
     m_rx192 -= np.mean(m_rx192)
     return m_rx8,t8,m_rx192,x_edet192
-    
+
+
 def am_rx_BPF(N_order = 7, ripple_dB = 1, B = 10e3, fs = 192e3):
     """
     Bandpass filter design for the AM receiver Case Study of Chapter 17.
@@ -2229,7 +2271,7 @@ def env_det(x):
     >>> n = arange(0,100)
     >>> # 1 kHz message signal
     >>> m = cos(2*pi*1000/8000.*n)
-    >>> x192, t192 = am_tx(m,0.8,fc=75e3)
+    >>> x192, t192, m24 = am_tx(m,0.8,fc=75e3)
     >>> y = env_det(x192)
     """
     y = np.zeros(len(x))
@@ -2237,6 +2279,7 @@ def env_det(x):
         if xx >= 0:
             y[k] = xx
     return y 
+
 
 def interp24(x):
     """
@@ -2280,6 +2323,7 @@ def interp24(x):
     y3 = signal.lfilter(b4,a4,4*y3)
     return y3
 
+
 def deci24(x):
     """
     Decimate by L = 24 using Butterworth filters.
@@ -2322,6 +2366,7 @@ def deci24(x):
     y3 = downsample(y3,4)
     return y3
 
+
 def upsample(x,L):
     """
     Upsample by factor L
@@ -2345,6 +2390,7 @@ def upsample(x,L):
     y = np.hstack((x.reshape(N_input,1),np.zeros((N_input,L-1))))
     y = y.flatten()
     return y
+
 
 def downsample(x,M,p=0):
     """
@@ -2373,6 +2419,7 @@ def downsample(x,M,p=0):
     y = x[:,p]
     return y
 
+
 def unique_cpx_roots(rlist,tol = 0.001):
     """
     
@@ -2393,6 +2440,7 @@ def unique_cpx_roots(rlist,tol = 0.001):
         uniq = np.hstack((uniq,rlist[k]))
         mult = np.hstack((mult,[1]))
     return np.array(uniq), np.array(mult)
+
 
 def zplane(b,a,auto_scale=True,size=2,detect_mult=True,tol=0.001):
     """
@@ -2559,6 +2607,7 @@ def plot_na(x,y,mode='stem'):
     frame1.axes.get_yaxis().set_visible(False) 
     pylab.show()
 
+
 def from_wav(filename):
     """
     Read a wave file.
@@ -2581,6 +2630,7 @@ def from_wav(filename):
     """
     fs, x = wavfile.read(filename)
     return fs, x/32767.
+
 
 def to_wav(filename,rate,x):
     """
@@ -2606,25 +2656,3 @@ def to_wav(filename,rate,x):
     """
     x16 = np.int16(x*32767)
     wavfile.write(filename, rate, x16)
-
-if __name__ == '__main__':
-    
-    b = CIC(10,1)
-    print(b)
-     
-    
-    """
-    x = np.random.randn(10)
-    print(x)
-    
-    b = signal.remez(16,[0,.1,.2,.5], [1,0], [1,1], 1)
-    w,H = signal.freqz(b,[1],512)
-    plot(w,20*log10(abs(H)))
-    figure(figsize=(6,4))
-    #plot(arange(0,len(b)),b)
-    
-    y = signal.lfilter(b, [1], x,)
-    print(y)
-    
-    zplane([1,1,1,1,1],[1,-.8],1.25)
-    """

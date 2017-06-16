@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 import os
 import codecs
 
@@ -12,7 +12,7 @@ def read(fname):
 
 
 setup(name='scikit-dsp-comm',
-      version='0.0.1',
+      version='0.0.2',
       description='DSP and Comm package.',
       long_description=read(fpath('README.md')),
       author=['Mark Wickert', 'Chiranth Siddappa'],
@@ -25,5 +25,7 @@ setup(name='scikit-dsp-comm',
           'numpy',
           'matplotlib',
           'scipy'
-          ]
+          ],
+      test_suite='nose.collector',
+      tests_require=['nose','numpy']
      )

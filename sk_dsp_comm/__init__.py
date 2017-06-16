@@ -1,9 +1,9 @@
-import coeff2header
-import digitalcom
-import fec_conv
-import fir_design_helper
-import iir_design_helper
-import multirate_helper
-import optfir
-import sigsys
-import synchronization
+from . import coeff2header
+from . import digitalcom
+from . import fec_conv
+from . import fir_design_helper
+from . import iir_design_helper
+from . import multirate_helper
+from . import optfir
+from . import sigsys
+from . import synchronization

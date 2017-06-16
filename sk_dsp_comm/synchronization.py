@@ -42,7 +42,7 @@ Mark Wickert August 2014
 
 import numpy as np
 import scipy.signal as signal
-import digitalcom as dc
+from . import digitalcom as dc
 
 def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
     """
@@ -88,7 +88,7 @@ def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
     elif pulse.lower() == 'src':
         b = dc.sqrt_rc_imp(Ns,alpha,MM)
     else:
-        print 'pulse type must be rec, rc, or src'
+        print('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     if M == 4:
         x = x*np.exp(1j*np.pi/4); # For QPSK points in quadrants

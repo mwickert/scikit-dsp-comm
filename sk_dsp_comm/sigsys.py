@@ -984,7 +984,7 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
     >>> plot(f, 10*log10(Sx))
     """
     Nx = len(x)
-    K = Nx/NS
+    K = int(Nx/NS)
     print('K = ', K)
     if NAVG > K:
         print('NAVG exceeds number of available subrecords')

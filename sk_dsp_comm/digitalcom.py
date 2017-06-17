@@ -37,6 +37,9 @@ import matplotlib.pyplot as plt
 from scipy import signal
 from scipy.special import erfc
 from sys import exit
+from sigsys import upsample
+from sigsys import downsample
+
 
 def farrow_resample(x, fs_old, fs_new):
     """
@@ -94,57 +97,7 @@ def farrow_resample(x, fs_old, fs_new):
                 + v1[n_old+1])*mu + v0[n_old+1]
     return y
 
-def upsample(x,L):
-    """
-    Upsample by factor L
-    
-    Insert L - 1 zero samples in between each input sample.
-    
-    Parameters
-    ----------
-    x : ndarray of input signal values
-    L : upsample factor
-    
-    Returns
-    -------
-    y : ndarray of the output signal values
-    
-    Examples
-    --------
-    >>> y = upsample(x,3)
-    """
-    N_input = len(x)
-    y = np.hstack((x.reshape(N_input,1),np.zeros((N_input,L-1))))
-    y = y.flatten()
-    return y
-    
-def downsample(x,M,p=0):
-    """
-    Downsample by factor M
 
-    Keep every Mth sample of the input. The phase of the input samples
-    kept can be selected.
-
-    Parameters
-    ----------
-    x : ndarray of input signal values
-    M : upsample factor
-    p : phase of decimated value, 0 (default), 1, ..., M-1
-
-    Returns
-    -------
-    y : ndarray of the output signal values
-
-    Examples
-    --------
-    >>> y = downsample(x,3)
-    >>> y = downsample(x,3,1)
-    """
-    x = x[0:int(np.floor(len(x)/M))*M]
-    x = x.reshape((int(np.floor(len(x)/M)),M))
-    y = x[:,p]
-    return y
-    
 def eye_plot(x,L,S=0):
     """
     Eye pattern plot of a baseband digital communications waveform.

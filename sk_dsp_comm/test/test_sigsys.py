@@ -4,7 +4,7 @@ import numpy as np
 from numpy.random import randn
 from scipy import signal
 import numpy.testing as npt
-from sk_dsp_comm import sigsys as ss
+from .. import sigsys as ss
 
 
 class TestSigsys(TestCase):

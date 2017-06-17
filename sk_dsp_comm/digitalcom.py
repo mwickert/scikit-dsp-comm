@@ -37,8 +37,8 @@ import matplotlib.pyplot as plt
 from scipy import signal
 from scipy.special import erfc
 from sys import exit
-from sigsys import upsample
-from sigsys import downsample
+from .sigsys import upsample
+from .sigsys import downsample
 
 
 def farrow_resample(x, fs_old, fs_new):

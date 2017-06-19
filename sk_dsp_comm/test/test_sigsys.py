@@ -582,7 +582,7 @@ class TestSigsys(TestCase):
             self.assertEqual(x_check, True)
         npt.assert_equal(b, b_check)
 
-    def test_NRZ_bits_value_error(self):
+    def test_NRZ_bits2_value_error(self):
         with self.assertRaisesRegexp(ValueError, 'pulse type must be rec, rc, or src') as NRZ_err:
             x,b = ss.NRZ_bits2(ss.m_seq(5), 10, pulse='val')
 

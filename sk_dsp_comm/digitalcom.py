@@ -86,7 +86,6 @@ def farrow_resample(x, fs_old, fs_new):
     Ts_new = 1/float(fs_new)
     
     T_end = Ts_old*(len(x)-3)
-    t_old = np.arange(0,T_end+Ts_old,Ts_old)
     t_new = np.arange(0,T_end+Ts_old,Ts_new)
     if x.dtype == np.dtype('complex128') or x.dtype == np.dtype('complex64'):
         y = np.zeros(len(t_new)) + 1j*np.zeros(len(t_new))
@@ -95,10 +94,9 @@ def farrow_resample(x, fs_old, fs_new):
 
     for n in range(len(t_new)):
         n_old = np.floor(n*Ts_new/Ts_old)
-        mu = (n*Ts_new - n_old*Ts_old)/Ts_old;
-        #Combine outputs
-        #y(n) = ((v3(n_old+2)*mu + v2(n_old+2))*mu + v1(n_old+2))*mu + v0(n_old+2);
-        y[n] = ((v3[n_old+1]*mu + v2[n_old+1])*mu 
+        mu = (n*Ts_new - n_old*Ts_old)/Ts_old
+        # Combine outputs
+        y[n] = ((v3[n_old+1]*mu + v2[n_old+1])*mu
                 + v1[n_old+1])*mu + v0[n_old+1]
     return y
 

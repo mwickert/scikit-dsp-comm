@@ -39,6 +39,11 @@ from scipy.special import erfc
 from sys import exit
 from .sigsys import upsample
 from .sigsys import downsample
+from .sigsys import NRZ_bits
+from .sigsys import NRZ_bits2
+from .sigsys import PN_gen
+from .sigsys import m_seq
+from .sigsys import cpx_AWGN
 
 
 def farrow_resample(x, fs_old, fs_new):
@@ -72,10 +77,10 @@ def farrow_resample(x, fs_old, fs_new):
     
     #Cubic interpolator over 4 samples.
     #The base point receives a two sample delay.
-    v3 = signal.lfilter([1/6., -1/2., 1/2., -1/6.],1,x)
-    v2 = signal.lfilter([0, 1/2., -1, 1/2.],1,x)
-    v1 = signal.lfilter([-1/6., 1, -1/2., -1/3.],1,x)
-    v0 = signal.lfilter([0, 0, 1],1,x)
+    v3 = signal.lfilter([1/6., -1/2., 1/2., -1/6.],[1],x)
+    v2 = signal.lfilter([0, 1/2., -1, 1/2.],[1],x)
+    v1 = signal.lfilter([-1/6., 1, -1/2., -1/3.],[1],x)
+    v0 = signal.lfilter([0, 0, 1],[1],x)
     
     Ts_old = 1/float(fs_old)
     Ts_new = 1/float(fs_new)
@@ -88,7 +93,7 @@ def farrow_resample(x, fs_old, fs_new):
     else:
         y = np.zeros(len(t_new))
 
-    for n in xrange(len(t_new)):
+    for n in range(len(t_new)):
         n_old = np.floor(n*Ts_new/Ts_old)
         mu = (n*Ts_new - n_old*Ts_old)/Ts_old;
         #Combine outputs
@@ -137,6 +142,7 @@ def eye_plot(x,L,S=0):
     plt.title('Eye Plot')
     return 0
 
+
 def scatter(x,Ns,start):
     """
     Sample a baseband digital communications waveform at the symbol spacing.
@@ -173,6 +179,7 @@ def scatter(x,Ns,start):
     xQ = np.imag(x[start::Ns])
     return xI, xQ
 
+
 def strips(x,Nx,fig_size=(6,4)):
     """
     Plots the contents of real ndarray x as a vertical stacking of
@@ -198,6 +205,7 @@ def strips(x,Nx,fig_size=(6,4)):
     plt.ylabel('Strip Amplitude and Starting Index')
     return 0
 
+
 def bit_errors(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     """
     Count bit errors between a transmitted and received BPSK signal.
@@ -208,10 +216,10 @@ def bit_errors(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     Note: Ncorr needs to be even
     """
     
-    #Remove Ntransient symbols and level shift to {-1,+1}
+    # Remove Ntransient symbols and level shift to {-1,+1}
     tx_data = 2*tx_data[Ntransient:]-1
     rx_data = 2*rx_data[Ntransient:]-1
-    #Correlate the first Ncorr symbols at four possible phase rotations
+    # Correlate the first Ncorr symbols at four possible phase rotations
     R0 = np.fft.ifft(np.fft.fft(rx_data,Ncorr)*
                      np.conj(np.fft.fft(tx_data,Ncorr)))
     R1 = np.fft.ifft(np.fft.fft(-1*rx_data,Ncorr)*
@@ -225,16 +233,16 @@ def bit_errors(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     Rmax = np.max(R)
     kphase_max = np.where(R == Rmax)[0]
     kmax = kphase_max[0]
-    #Correlation lag value is zero at the center of the array
+    # Correlation lag value is zero at the center of the array
     if kmax == 0:
         lagmax = np.where(R0.real == Rmax)[0] - Ncorr/2
     elif kmax == 1:
         lagmax = np.where(R1.real == Rmax)[0] - Ncorr/2
     taumax = lagmax[0]
     print('kmax =  %d, taumax = %d' % (kmax, taumax))
-    #return R0,R1,R2,R3
-    #Count bit and symbol errors over the entire input ndarrays
-    #Begin by making tx and rx length equal and apply phase rotation to rx
+
+    # Count bit and symbol errors over the entire input ndarrays
+    # Begin by making tx and rx length equal and apply phase rotation to rx
     if taumax < 0:
         tx_data = tx_data[-taumax:]
         tx_data = tx_data[:min(len(tx_data),len(rx_data))]
@@ -243,46 +251,14 @@ def bit_errors(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
         rx_data = (-1)**kmax*rx_data[taumax:]
         rx_data = rx_data[:min(len(tx_data),len(rx_data))]
         tx_data = tx_data[:len(rx_data)]
-    #Convert to 0's and 1's
+    # Convert to 0's and 1's
     Bit_count = len(tx_data)
     tx_I = np.int16((tx_data.real + 1)/2)
     rx_I = np.int16((rx_data.real + 1)/2)
     Bit_errors = tx_I ^ rx_I
     return Bit_count,np.sum(Bit_errors)
 
-def cpx_AWGN(x,EsN0,Ns):
-    """
-    Apply white Gaussian noise to a digital communications signal.
 
-    This function represents a complex baseband white Gaussian noise
-    digital communications channel. The input signal array may be real
-    or complex.
-
-    Parameters
-    ----------
-    x : ndarray noise free complex baseband input signal.
-    EsNO : set the channel Es/N0 (Eb/N0 for binary) level in dB
-    Ns : number of samples per symbol (bit)
-
-    Returns
-    -------
-    y : ndarray x with additive noise added.
-
-    Notes
-    -----
-    Set the channel energy per symbol-to-noise power spectral 
-    density ratio (Es/N0) in dB.
-
-    Examples
-    --------
-    >>> x,b, data = NRZ_bits(1000,10)
-    >>> # set Eb/N0 = 10 dB
-    >>> y = cpx_AWGN(x,10,10)
-    """
-    w = np.sqrt(Ns*np.var(x)*10**(-EsN0/10.)/2.)
-    w *= (np.random.randn(len(x)) + 1j*np.random.randn(len(x)))                         
-    return x+w
-    
 def CIC(M,K):
     """
     b = CIC(M,K)
@@ -312,6 +288,7 @@ def CIC(M,K):
     
     # Make filter have unity gain at DC
     return b/np.sum(b)
+
 
 def QAM_bb(N_symb,Ns,mod_type='16qam',pulse='rect',alpha=0.35):
     """
@@ -366,8 +343,6 @@ def QAM_bb(N_symb,Ns,mod_type='16qam',pulse='rect',alpha=0.35):
     xQ = np.random.randint(0,M,N_symb)
     xQ = 2*xQ - (M-1)
     # Employ differential encoding to counter phase ambiquities
-    #y = mod(lfilter(1,[1 -1],yi),M);
-
     # Create a zero padded (interpolated by Ns) symbol sequence.
     # This prepares the symbol sequence for arbitrary pulse shaping.
     symbI = np.hstack((xI.reshape(N_symb,1),np.zeros((N_symb,Ns-1))))
@@ -378,9 +353,9 @@ def QAM_bb(N_symb,Ns,mod_type='16qam',pulse='rect',alpha=0.35):
     if M > 2:
         symb /= (M-1)
     
-    #The impulse train waveform contains one pulse per Ns (or Ts) samples
-    #imp_train = [ones(K,1) zeros(K,Ns-1)]';
-    #imp_train = reshape(imp_train,Ns*K,1);
+    # The impulse train waveform contains one pulse per Ns (or Ts) samples
+    # imp_train = [ones(K,1) zeros(K,Ns-1)]';
+    # imp_train = reshape(imp_train,Ns*K,1);
 
     # Filter the impulse train signal
     x = signal.lfilter(b,1,symb)
@@ -388,6 +363,7 @@ def QAM_bb(N_symb,Ns,mod_type='16qam',pulse='rect',alpha=0.35):
     # Scale shaping filter to have unity DC gain
     b = b/sum(b)
     return x, b, xI+1j*xQ
+
 
 def QAM_SEP(tx_data,rx_data,mod_type,Ncorr = 1024,Ntransient = 0,SEP_disp=True):
     """
@@ -483,6 +459,7 @@ def QAM_SEP(tx_data,rx_data,mod_type,Ncorr = 1024,Ntransient = 0,SEP_disp=True):
                % (len(errors), len(idx), len(idx)/float(len(errors))))
     return  len(errors), len(idx), len(idx)/float(len(errors))
 
+
 def GMSK_bb(N_bits, Ns, MSK = 0,BT = 0.35):
     """
     MSK/GMSK Complex Baseband Modulation
@@ -508,6 +485,7 @@ def GMSK_bb(N_bits, Ns, MSK = 0,BT = 0.35):
         x = signal.lfilter(p,1,x)
     y = np.exp(1j*np.pi/2*np.cumsum(x)/Ns)
     return y, data
+
 
 def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
     """
@@ -562,6 +540,7 @@ def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
         x = x*np.exp(1j*np.pi/4); # For QPSK points in quadrants
     return x,b/float(Ns),data
 
+
 def QPSK_rx(fc,N_symb,Rs,EsN0=100,fs=125,lfsr_len=10,phase=0,pulse='src'):
     """
     This function generates
@@ -579,6 +558,7 @@ def QPSK_rx(fc,N_symb,Rs,EsN0=100,fs=125,lfsr_len=10,phase=0,pulse='src'):
     xc = x*np.exp(1j*2*np.pi*fc/float(fs)*n) * np.exp(1j*phase)
     return xc, b, data
 
+
 def QPSK_tx(fc,N_symb,Rs,fs=125,lfsr_len=10,pulse='src'):
     """
 
@@ -591,6 +571,7 @@ def QPSK_tx(fc,N_symb,Rs,fs=125,lfsr_len=10,pulse='src'):
     n = np.arange(len(x))
     xc = x*np.exp(1j*2*np.pi*fc/float(fs)*n)
     return xc, b, data 
+
 
 def QPSK_bb(N_symb,Ns,lfsr_len=5,pulse='src',alpha=0.25,M=6):
     """
@@ -609,6 +590,7 @@ def QPSK_bb(N_symb,Ns,lfsr_len=5,pulse='src',alpha=0.25,M=6):
     #print('P_I: ',np.var(xI), 'P_Q: ',np.var(xQ))
     x = (xI + 1j*xQ)/np.sqrt(2.)
     return x, b, data
+
 
 def QPSK_BEP(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     """
@@ -656,9 +638,8 @@ def QPSK_BEP(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
         lagmax = np.where(R3.real == Rmax)[0] - Ncorr/2
     taumax = lagmax[0]
     print('kmax =  %d, taumax = %d' % (kmax, taumax))
-    #return R0,R1,R2,R3
-    #Count bit and symbol errors over the entire input ndarrays
-    #Begin by making tx and rx length equal and apply phase rotation to rx
+    # Count bit and symbol errors over the entire input ndarrays
+    # Begin by making tx and rx length equal and apply phase rotation to rx
     if taumax < 0:
         tx_data = tx_data[-taumax:]
         tx_data = tx_data[:min(len(tx_data),len(rx_data))]
@@ -679,6 +660,7 @@ def QPSK_BEP(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     S_errors = I_errors | Q_errors
     #return 0
     return S_count,np.sum(I_errors),np.sum(Q_errors),np.sum(S_errors)
+
 
 def BPSK_BEP(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     """
@@ -734,7 +716,8 @@ def BPSK_BEP(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     S_errors = I_errors
     #return tx_data, rx_data
     return S_count,np.sum(S_errors)
-        
+
+
 def BPSK_tx(N_bits,Ns,ach_fc=2.0,ach_lvl_dB=-100,pulse='rect',alpha = 0.25,M=6):
     """
     Generates biphase shift keyed (BPSK) transmitter with adjacent channel interference.
@@ -809,8 +792,8 @@ def rc_imp(Ns,alpha,M=6):
     """
     # Design the filter
     n = np.arange(-M*Ns,M*Ns+1)
-    b = np.zeros(len(n));
-    a = alpha;
+    b = np.zeros(len(n))
+    a = alpha
     Ns *= 1.0
     for i in range(len(n)):
         if (1 - 4*(a*n[i]/Ns)**2) == 0:
@@ -818,6 +801,7 @@ def rc_imp(Ns,alpha,M=6):
         else:
             b[i] = np.sinc(n[i]/Ns)*np.cos(np.pi*a*n[i]/Ns)/(1 - 4*(a*n[i]/Ns)**2)
     return b
+
 
 def sqrt_rc_imp(Ns,alpha,M=6):
     """
@@ -867,6 +851,7 @@ def sqrt_rc_imp(Ns,alpha,M=6):
            b[i] = b[i]*(np.cos((1+a)*np.pi*n[i]/Ns) + np.sinc((1-a)*n[i]/Ns)*(1-a)*np.pi/(4.*a))
     return b    
 
+
 def RZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
     """
     Generate return-to-zero (RZ) data bits with pulse shaping.
@@ -914,197 +899,7 @@ def RZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
     x = signal.lfilter(b,1,x)
     return x,b/float(Ns),data
 
-def NRZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
-    """
-    Generate non-return-to-zero (NRZ) data bits with pulse shaping.
 
-    A baseband digital data signal using +/-1 amplitude signal values
-    and including pulse shaping.
-
-    Parameters
-    ----------
-    N_bits : number of NRZ +/-1 data bits to produce
-    Ns : the number of samples per bit,
-    pulse_type : 'rect' , 'rc', 'src' (default 'rect')
-    alpha : excess bandwidth factor(default 0.25)
-    M : single sided pulse duration (default = 6) 
-
-    Returns
-    -------
-    x : ndarray of the NRZ signal values
-    b : ndarray of the pulse shape
-    data : ndarray of the underlying data bits
-
-    Notes
-    -----
-    Pulse shapes include 'rect' (rectangular), 'rc' (raised cosine), 
-    'src' (root raised cosine). The actual pulse length is 2*M+1 samples.
-    This function is used by BPSK_tx in the Case Study article.
-
-    Examples
-    --------
-    >>> x,b,data = NRZ_bits(100,10)
-    >>> t = arange(len(x))
-    >>> plot(t,x)
-    """
-    data = np.random.randint(0,2,N_bits) 
-    x = np.hstack((2*data.reshape(N_bits,1)-1,np.zeros((N_bits,Ns-1))))
-    x =x.flatten()
-    if pulse.lower() == 'rect':
-        b = np.ones(Ns)
-    elif pulse.lower() == 'rc':
-        b = rc_imp(Ns,alpha,M)
-    elif pulse.lower() == 'src':
-        b = sqrt_rc_imp(Ns,alpha,M)
-    else:
-        print('pulse type must be rec, rc, or src')
-    x = signal.lfilter(b,1,x)
-    return x,b/float(Ns),data
-
-def NRZ_bits2(data,Ns,pulse='rect',alpha = 0.25,M=6):
-    """
-    Generate non-return-to-zero (NRZ) data bits with pulse shaping with user data
-
-    A baseband digital data signal using +/-1 amplitude signal values
-    and including pulse shaping. The data sequence is user supplied.
-
-    Parameters
-    ----------
-    data : ndarray of the data bits as 0/1 values
-    Ns : the number of samples per bit,
-    pulse_type : 'rect' , 'rc', 'src' (default 'rect')
-    alpha : excess bandwidth factor(default 0.25)
-    M : single sided pulse duration (default = 6) 
-
-    Returns
-    -------
-    x : ndarray of the NRZ signal values
-    b : ndarray of the pulse shape
-
-    Notes
-    -----
-    Pulse shapes include 'rect' (rectangular), 'rc' (raised cosine), 
-    'src' (root raised cosine). The actual pulse length is 2*M+1 samples.
-
-    Examples
-    --------
-    >>> x,b = NRZ_bits2([m_seq(5),10)
-    >>> t = arange(len(x))
-    >>> plot(t,x)
-    """
-    N_bits = len(data)
-    x = np.hstack((2*data.reshape(N_bits,1)-1,np.zeros((N_bits,Ns-1))))
-    x = x.flatten()
-    if pulse.lower() == 'rect':
-        b = np.ones(Ns)
-    elif pulse.lower() == 'rc':
-        b = rc_imp(Ns,alpha,M)
-    elif pulse.lower() == 'src':
-        b = sqrt_rc_imp(Ns,alpha,M)
-    else:
-        print('pulse type must be rec, rc, or src')
-    x = signal.lfilter(b,1,x)
-    return x,b/float(Ns)
-    
-def PN_gen(N_bits,m=5):
-    """
-    Maximal length sequence signal generator.
-
-    Generates a sequence 0/1 bits of N_bit duration. The bits themselves
-    are obtained from an m-sequence of length m. Available m-sequence
-    (PN generators) include m = 2,3,...,12, & 16.
-            
-    Parameters
-    ----------
-    N_bits : the number of bits to generate
-    m : the number of shift registers. 2,3, .., 12, & 16
-
-    Returns
-    -------
-    PN : ndarray of the generator output over N_bits
-
-    Notes
-    -----
-    The sequence is periodic having period 2**m - 1 (2^m - 1).
-
-    Examples
-    --------
-    >>> # A 15 bit period signal nover 50 bits
-    >>> PN = PN_gen(50,4)
-    """
-    c = m_seq(m)
-    Q = len(c)
-    max_periods = int(np.ceil(N_bits/float(Q)))
-    PN = np.zeros(max_periods*Q)
-    for k in range(max_periods):
-        PN[k*Q:(k+1)*Q] = c
-    PN = np.resize(PN, (1,N_bits))
-    return PN.flatten()
-
-def m_seq(m):
-    """
-    Generate an m-sequence ndarray using an all-ones initialization.
-
-    Available m-sequence (PN generators) include m = 2,3,...,12, & 16.
-
-    Parameters
-    ----------
-    m : the number of shift registers. 2,3, .., 12, & 16
-
-    Returns
-    -------
-    c : ndarray of one period of the m-sequence
-
-    Notes
-    -----
-    The sequence period is 2**m - 1 (2^m - 1).    
-
-    Examples
-    --------
-    >>> c = m_seq(5)
-    """
-    # Load shift register with all ones to start
-    sr = np.ones(m)
-    # M-squence length is:
-    Q = 2**m - 1
-    c = np.zeros(Q)
-
-    if m == 2:
-        taps = np.array([1, 1, 1])
-    elif m == 3:
-        taps = np.array([1, 0, 1, 1])
-    elif m == 4:
-        taps = np.array([1, 0, 0, 1, 1])
-    elif m == 5:
-        taps = np.array([1, 0, 0, 1, 0, 1])
-    elif m == 6:
-        taps = np.array([1, 0, 0, 0, 0, 1, 1])
-    elif m == 7:
-        taps = np.array([1, 0, 0, 0, 1, 0, 0, 1])
-    elif m == 8:
-        taps = np.array([1, 0, 0, 0, 1, 1, 1, 0, 1])
-    elif m == 9:
-        taps = np.array([1, 0, 0, 0, 0, 1, 0, 0, 0, 1])
-    elif m == 10:
-        taps = np.array([1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1])
-    elif m == 11:
-        taps = np.array([1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1])
-    elif m == 12:
-        taps = np.array([1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1])
-    elif m == 16:
-        taps = np.array([1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1])
-    else:
-        print('Invalid length specified')
-    for n in range(Q):
-        tap_xor = 0
-        c[n] = sr[-1]
-        for k in range(1,m):
-            if taps[k] == 1:
-                tap_xor = np.bitwise_xor(tap_xor,np.bitwise_xor(int(sr[-1]),int(sr[m-1-k])))
-        sr[1:] = sr[:-1]
-        sr[0] = tap_xor
-    return c
-    
 def my_psd(x,NFFT=2**10,Fs=1):
     """
     A local version of NumPy's PSD function that returns the plot arrays.
@@ -1138,7 +933,8 @@ def my_psd(x,NFFT=2**10,Fs=1):
     """
     Px,f = pylab.mlab.psd(x,NFFT,Fs)
     return Px.flatten(), f
-    
+
+
 def time_delay(x,D,N=4):
     """
     A time varying time delay which takes advantage of the Farrow structure
@@ -1180,9 +976,9 @@ def time_delay(x,D,N=4):
         b[Nd + 3] = D_frac*(D_frac-1)*(D_frac-2)/6.
         # Do all of the filtering in one step for this special case
         # of a fixed delay.
-        y = signal.lfilter(b,1,x)
+        y = signal.lfilter(b,[1],x)
     else:
-        #Make sure D stays with in the tapped delay line bounds
+        # Make sure D stays with in the tapped delay line bounds
         if np.fix(np.min(D)) < 1:
             print('D has integer part less than one')
             exit(1)
@@ -1212,6 +1008,7 @@ def time_delay(x,D,N=4):
             y[k] = ((v3[0]*mu + v2[0])*mu + v1[0])*mu + v0[0]
     return y
 
+
 def xcorr(x1,x2,Nlags):
     """
     r12, k = xcorr(x1,x2,Nlags), r12 and k are ndarray's
@@ -1230,16 +1027,9 @@ def xcorr(x1,x2,Nlags):
     idx = mlab.find(abs(k) <= Nlags)
     return r12[idx], k[idx]
 
+
 def Q_fctn(x):
     """
     Gaussian Q-function
     """
     return 1./2*erfc(x/np.sqrt(2.))
-
-if __name__ == '__main__':
-    w = np.random.randn(100) + 1j*np.random.randn(100)
-    b = signal.firwin(20,2*.1)
-    wf = signal.lfilter(b,1,w)
-    
-    print(wf)
-    

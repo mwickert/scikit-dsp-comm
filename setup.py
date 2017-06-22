@@ -20,6 +20,7 @@ setup(name='scikit-dsp-comm',
       url='https://github.com/mwickert/scikit-dsp-comm',
       package_dir={'sk_dsp_comm': 'sk_dsp_comm'},
       packages=['sk_dsp_comm'],
+      package_data={'sk_dsp_comm': ['ca1thru37.txt']},
       license='BSD',
       install_requires=[
           'numpy',

@@ -33,16 +33,19 @@ import numpy as np
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 from matplotlib import pylab
+from numpy import int16, rint, loadtxt
+import os
 
-def FIR_header(fname_out,h):
+
+def FIR_header(fname_out, h):
     """
     Write FIR Filter Header Files 
     
     Mark Wickert February 2015
     """
     M = len(h)
-    N = 3 # Coefficients per line
-    f = open(fname_out,'wt')
+    N = 3  # Coefficients per line
+    f = open(fname_out, 'wt')
     f.write('//define a FIR coefficient Array\n\n')
     f.write('#include <stdint.h>\n\n')
     f.write('#ifndef M_FIR\n')
@@ -53,32 +56,32 @@ def FIR_header(fname_out,h):
     f.write('float32_t h_FIR[M_FIR] = {')
     kk = 0;
     for k in range(M):
-        #k_mod = k % M
-        if (kk < N-1) and (k < M-1):
+        # k_mod = k % M
+        if (kk < N - 1) and (k < M - 1):
             f.write('%15.12f,' % h[k])
             kk += 1
-        elif (kk == N-1) & (k < M-1):
+        elif (kk == N - 1) & (k < M - 1):
             f.write('%15.12f,\n' % h[k])
             if k < M:
                 f.write('                          ')
                 kk = 0
         else:
-            f.write('%15.12f' % h[k])    
+            f.write('%15.12f' % h[k])
     f.write('};\n')
     f.write('/************************************************************************/\n')
     f.close()
 
 
-def FIR_fix_header(fname_out,h):
+def FIR_fix_header(fname_out, h):
     """
     Write FIR Fixed-Point Filter Header Files 
     
     Mark Wickert February 2015
     """
     M = len(h)
-    hq = int16(rint(h*2**15))
-    N = 8 # Coefficients per line
-    f = open(fname_out,'wt')
+    hq = int16(rint(h * 2 ** 15))
+    N = 8  # Coefficients per line
+    f = open(fname_out, 'wt')
     f.write('//define a FIR coefficient Array\n\n')
     f.write('#include <stdint.h>\n\n')
     f.write('#ifndef M_FIR\n')
@@ -89,23 +92,23 @@ def FIR_fix_header(fname_out,h):
     f.write('int16_t h_FIR[M_FIR] = {')
     kk = 0;
     for k in range(M):
-        #k_mod = k % M
-        if (kk < N-1) and (k < M-1):
+        # k_mod = k % M
+        if (kk < N - 1) and (k < M - 1):
             f.write('%5d,' % hq[k])
             kk += 1
-        elif (kk == N-1) & (k < M-1):
+        elif (kk == N - 1) & (k < M - 1):
             f.write('%5d,\n' % hq[k])
             if k < M:
                 f.write('                        ')
                 kk = 0
         else:
-            f.write('%5d' % hq[k])    
+            f.write('%5d' % hq[k])
     f.write('};\n')
     f.write('/************************************************************************/\n')
     f.close()
 
 
-def IIR_sos_header(fname_out,SOS_mat):
+def IIR_sos_header(fname_out, SOS_mat):
     """
     Write IIR SOS Header Files
     File format is compatible with CMSIS-DSP IIR 
@@ -113,8 +116,8 @@ def IIR_sos_header(fname_out,SOS_mat):
     
     Mark Wickert March 2015-October 2016
     """
-    Ns,Mcol = SOS_mat.shape
-    f = open(fname_out,'wt')
+    Ns, Mcol = SOS_mat.shape
+    f = open(fname_out, 'wt')
     f.write('//define a IIR SOS CMSIS-DSP coefficient array\n\n')
     f.write('#include <stdint.h>\n\n')
     f.write('#ifndef STAGES\n')
@@ -122,18 +125,18 @@ def IIR_sos_header(fname_out,SOS_mat):
     f.write('#endif\n')
     f.write('/*********************************************************/\n');
     f.write('/*                     IIR SOS Filter Coefficients       */\n');
-    f.write('float32_t ba_coeff[%d] = { //b0,b1,b2,a1,a2,... by stage\n' % (5*Ns))
+    f.write('float32_t ba_coeff[%d] = { //b0,b1,b2,a1,a2,... by stage\n' % (5 * Ns))
     for k in range(Ns):
-        if (k < Ns-1):
+        if (k < Ns - 1):
             f.write('    %+-13e, %+-13e, %+-13e,\n' % \
-                    (SOS_mat[k,0],SOS_mat[k,1],SOS_mat[k,2]))
+                    (SOS_mat[k, 0], SOS_mat[k, 1], SOS_mat[k, 2]))
             f.write('    %+-13e, %+-13e,\n' % \
-                    (-SOS_mat[k,4],-SOS_mat[k,5]))
+                    (-SOS_mat[k, 4], -SOS_mat[k, 5]))
         else:
             f.write('    %+-13e, %+-13e, %+-13e,\n' % \
-                    (SOS_mat[k,0],SOS_mat[k,1],SOS_mat[k,2]))
+                    (SOS_mat[k, 0], SOS_mat[k, 1], SOS_mat[k, 2]))
             f.write('    %+-13e, %+-13e\n' % \
-                    (-SOS_mat[k,4],-SOS_mat[k,5]))
+                    (-SOS_mat[k, 4], -SOS_mat[k, 5]))
     # for k in range(Ns):
     #     if (k < Ns-1):
     #         f.write('    %15.12f, %15.12f, %15.12f,\n' % \
@@ -150,8 +153,7 @@ def IIR_sos_header(fname_out,SOS_mat):
     f.close()
 
 
-
-def freqz_resp_list(b,a=np.array([1]),mode = 'dB',fs=1.0,Npts = 1024,fsize=(6,4)):
+def freqz_resp_list(b, a=np.array([1]), mode='dB', fs=1.0, Npts=1024, fsize=(6, 4)):
     """
     A method for displaying digital filter frequency response magnitude,
     phase, and group delay. A plot is produced using matplotlib
@@ -176,21 +178,21 @@ def freqz_resp_list(b,a=np.array([1]),mode = 'dB',fs=1.0,Npts = 1024,fsize=(6,4)
     if type(b) == list:
         # We have a list of filters
         N_filt = len(b)
-    f = np.arange(0,Npts)/(2.0*Npts)
+    f = np.arange(0, Npts) / (2.0 * Npts)
     for n in range(N_filt):
-        w,H = signal.freqz(b[n],a[n],2*np.pi*f)
+        w, H = signal.freqz(b[n], a[n], 2 * np.pi * f)
         if n == 0:
             plt.figure(figsize=fsize)
         if mode.lower() == 'db':
-            plt.plot(f*fs,20*np.log10(np.abs(H)))
-            if n == N_filt-1:
+            plt.plot(f * fs, 20 * np.log10(np.abs(H)))
+            if n == N_filt - 1:
                 plt.xlabel('Frequency (Hz)')
                 plt.ylabel('Gain (dB)')
                 plt.title('Frequency Response - Magnitude')
 
         elif mode.lower() == 'phase':
-            plt.plot(f*fs,np.angle(H))
-            if n == N_filt-1:
+            plt.plot(f * fs, np.angle(H))
+            if n == N_filt - 1:
                 plt.xlabel('Frequency (Hz)')
                 plt.ylabel('Phase (rad)')
                 plt.title('Frequency Response - Phase')
@@ -210,23 +212,23 @@ def freqz_resp_list(b,a=np.array([1]),mode = 'dB',fs=1.0,Npts = 1024,fsize=(6,4)
             theta = np.unwrap(np.angle(H))
             # Since theta for an FIR filter is likely to have many pi phase
             # jumps too, we unwrap a second time 2*theta and divide by 2
-            theta2 = np.unwrap(2*theta)/2.
+            theta2 = np.unwrap(2 * theta) / 2.
             theta_dif = np.diff(theta2)
             f_diff = np.diff(f)
-            Tg = -np.diff(theta2)/np.diff(w)
+            Tg = -np.diff(theta2) / np.diff(w)
             # For gain almost zero set groupdelay = 0
-            idx = pylab.find(20*np.log10(H[:-1]) < -400)
+            idx = pylab.find(20 * np.log10(H[:-1]) < -400)
             Tg[idx] = np.zeros(len(idx))
             max_Tg = np.max(Tg)
-            #print(max_Tg)
+            # print(max_Tg)
             if mode.lower() == 'groupdelay_t':
                 max_Tg /= fs
-                plt.plot(f[:-1]*fs,Tg/fs)
-                plt.ylim([0,1.2*max_Tg])
+                plt.plot(f[:-1] * fs, Tg / fs)
+                plt.ylim([0, 1.2 * max_Tg])
             else:
-                plt.plot(f[:-1]*fs,Tg)
-                plt.ylim([0,1.2*max_Tg])
-            if n == N_filt-1:
+                plt.plot(f[:-1] * fs, Tg)
+                plt.ylim([0, 1.2 * max_Tg])
+            if n == N_filt - 1:
                 plt.xlabel('Frequency (Hz)')
                 if mode.lower() == 'groupdelay_t':
                     plt.ylabel('Group Delay (s)')
@@ -237,3 +239,46 @@ def freqz_resp_list(b,a=np.array([1]),mode = 'dB',fs=1.0,Npts = 1024,fsize=(6,4)
             s1 = 'Error, mode must be "dB", "phase, '
             s2 = '"groupdelay_s", or "groupdelay_t"'
             print(s1 + s2)
+
+
+def CA_code_header(fname_out, Nca):
+    """
+    Write 1023 bit CA (Gold) Code Header Files
+
+    Mark Wickert February 2015
+    """
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    ca = loadtxt(dir_path + '/ca1thru37.txt', dtype=int16, usecols=(Nca - 1,), unpack=True)
+
+    M = 1023  # code period
+    N = 23  # code bits per line
+    Sca = 'ca' + str(Nca)
+    f = open(fname_out, 'wt')
+    f.write('//define a CA code\n\n')
+    f.write('#include <stdint.h>\n\n')
+    f.write('#ifndef N_CA\n')
+    f.write('#define N_CA %d\n' % M)
+    f.write('#endif\n')
+    f.write('/*******************************************************************/\n');
+    f.write('/*                    1023 Bit CA Gold Code %2d                     */\n' \
+            % Nca);
+    f.write('int8_t ca%d[N_CA] = {' % Nca)
+    kk = 0;
+    for k in range(M):
+        # k_mod = k % M
+        if (kk < N - 1) and (k < M - 1):
+            f.write('%d,' % ca[k])
+            kk += 1
+        elif (kk == N - 1) & (k < M - 1):
+            f.write('%d,\n' % ca[k])
+            if k < M:
+                if Nca < 10:
+                    f.write('                    ')
+                else:
+                    f.write('                     ')
+                kk = 0
+        else:
+            f.write('%d' % ca[k])
+    f.write('};\n')
+    f.write('/*******************************************************************/\n')
+    f.close()

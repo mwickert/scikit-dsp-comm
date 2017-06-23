@@ -3,6 +3,7 @@ from unittest import TestCase
 from sk_dsp_comm import coeff2header as c2head
 import tempfile
 import os
+import numpy as np
 
 dir_path = os.path.dirname(os.path.realpath(__file__)) + '/'
 
@@ -20,6 +21,25 @@ class TestCoeff2header(TestCase):
                 os.unlink(file)
             except OSError:
                 print("File %s not found", file)
+
+    def test_fir_header(self):
+        """
+        Test FIR header.
+        :return:
+        """
+        f_header_check = open(dir_path + 'sig_mean_var.h', 'r')
+        f_header_check = f_header_check.readlines()
+        f1 = 1000
+        f2 = 400
+        fs = 48000
+        n = np.arange(0, 501)
+        x = 3 * np.cos(2 * np.pi * f1 / fs * n) + 2 * np.sin(2 * np.pi * f2 / fs * n)
+        test_fir = tempfile.NamedTemporaryFile()
+        self.tmpFiles.append(test_fir.name)
+        c2head.FIR_header(test_fir.name, x)
+        test_fir_lines = test_fir.readlines()
+        for line in range(0, len(f_header_check)):
+            self.assertEqual(f_header_check[line], test_fir_lines[line])
 
     def test_ca_1(self):
         """

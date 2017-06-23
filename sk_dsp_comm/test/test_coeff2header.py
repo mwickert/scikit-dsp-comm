@@ -16,9 +16,9 @@ class TestCoeff2header(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        for file in cls.tmpFiles:
+        for filename in cls.tmpFiles:
             try:
-                os.unlink(file)
+                os.unlink(filename)
             except OSError:
                 print("File %s not found", file)
 

@@ -20,7 +20,7 @@ class TestCoeff2header(TestCase):
             try:
                 os.unlink(filename)
             except OSError:
-                print("File %s not found", file)
+                print("File %s not found", filename)
 
     def test_fir_header(self):
         """

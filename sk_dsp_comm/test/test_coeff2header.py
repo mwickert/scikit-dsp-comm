@@ -39,7 +39,7 @@ class TestCoeff2header(TestCase):
         c2head.FIR_header(test_fir.name, x)
         test_fir_lines = test_fir.readlines()
         for line in range(0, len(f_header_check)):
-            self.assertEqual(f_header_check[line], test_fir_lines[line])
+            self.assertEqual(f_header_check[line], test_fir_lines[line].decode('UTF-8'))
 
     def test_ca_1(self):
         """
@@ -53,7 +53,7 @@ class TestCoeff2header(TestCase):
         c2head.CA_code_header(test_1.name, 1)
         test_1_lines = test_1.readlines()
         for line in range(0, len(ca_1)):
-            self.assertEqual(ca_1[line], test_1_lines[line])
+            self.assertEqual(ca_1[line], test_1_lines[line].decode('UTF-8'))
 
     def test_ca_12(self):
         """
@@ -67,4 +67,4 @@ class TestCoeff2header(TestCase):
         c2head.CA_code_header(test_12.name, 12)
         test_12_lines = test_12.readlines()
         for line in range(0, len(ca_1)):
-            self.assertEqual(ca_1[line], test_12_lines[line])
+            self.assertEqual(ca_1[line], test_12_lines[line].decode('UTF-8'))

@@ -36,9 +36,9 @@ from matplotlib import pylab
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.signal as signal
-import sigsys as ssd
-import fir_design_helper as fir_d
-import iir_design_helper as iir_d
+from . import sigsys as ssd
+from . import fir_design_helper as fir_d
+from . import iir_design_helper as iir_d
 
 
 class rate_change(object):

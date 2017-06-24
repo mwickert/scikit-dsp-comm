@@ -31,7 +31,7 @@ either expressed or implied, of the FreeBSD Project.
 
 import numpy as np
 import scipy.signal as signal
-import optfir
+from . import optfir
 import matplotlib.pyplot as plt
 from matplotlib import pylab
 

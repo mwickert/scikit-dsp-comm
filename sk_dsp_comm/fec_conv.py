@@ -329,7 +329,7 @@ class fec_conv(object):
         if 2*N_softwords != len(soft_bits):
             print('Number of soft bits must be even!')
             print('Truncating bits to be compatible.')
-            soft_bits = soft_bits[:2*N_codewords]
+            soft_bits = soft_bits[:2*N_softwords]
         # Extract the G1p and G2p encoded bits from the serial stream.
         # Assume the stream is of the form [G1p G2p G1p G2p ...   ],
         # which for QPSK may be of the form [Ip Qp Ip Qp Ip Qp ...    ]
@@ -444,7 +444,7 @@ def conv_Pb_bound(R,dfree,Ck,SNRdB,hard_soft,M=2):
                     Pb[n] = Q_fctn(np.sqrt(2.*SNRn))
                 else:
                     Pb[n] = 4./np.log2(M)*(1 - 1/np.sqrt(M))*\
-                            gaussQ(np.sqrt(3*np.log2(M)/(M-1)*SNRn));
+                            np.gaussQ(np.sqrt(3*np.log2(M)/(M-1)*SNRn));
     return Pb
 
 def hard_Pk(k,R,SNR,M=2):
@@ -460,7 +460,7 @@ def hard_Pk(k,R,SNR,M=2):
         p = Q_fctn(np.sqrt(2.*R*SNR))
     else:
         p = 4./np.log2(M)*(1 - 1./np.sqrt(M))*\
-            Q_fctn(np.sqrt(3*R*log2(M)/float(M-1)*SNR))
+            Q_fctn(np.sqrt(3*R*np.log2(M)/float(M-1)*SNR))
     Pk = 0
     if 2*k//2 == k:
         for e in range(k/2+1,k+1):

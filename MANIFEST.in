@@ -1,2 +1,3 @@
 include README.md
+include requirements.txt
 include sk_dsp_comm/ca1thru37.txt

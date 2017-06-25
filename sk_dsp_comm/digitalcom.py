@@ -246,7 +246,7 @@ def bit_errors(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
         tx_data = tx_data[:min(len(tx_data),len(rx_data))]
         rx_data = (-1)**kmax*rx_data[:len(tx_data)]
     else:
-        rx_data = (-1)**kmax*rx_data[taumax:]
+        rx_data = (-1)**kmax * rx_data[int(taumax):]
         rx_data = rx_data[:min(len(tx_data),len(rx_data))]
         tx_data = tx_data[:len(rx_data)]
     # Convert to 0's and 1's

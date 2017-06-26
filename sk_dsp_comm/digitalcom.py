@@ -242,7 +242,7 @@ def bit_errors(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     # Count bit and symbol errors over the entire input ndarrays
     # Begin by making tx and rx length equal and apply phase rotation to rx
     if taumax < 0:
-        tx_data = tx_data[-taumax:]
+        tx_data = tx_data[int(-taumax):]
         tx_data = tx_data[:min(len(tx_data),len(rx_data))]
         rx_data = (-1)**kmax*rx_data[:len(tx_data)]
     else:

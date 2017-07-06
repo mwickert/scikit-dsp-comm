@@ -1,3 +1,5 @@
 numpy
 matplotlib
 scipy
+pyaudio
+pyrtlsdr

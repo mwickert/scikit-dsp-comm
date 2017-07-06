@@ -1,1 +1,5 @@
+.DS_Store
+.idea/
 *.pyc
+scikit_dsp_comm.egg-info/
+sk_dsp_comm/__pycache__/

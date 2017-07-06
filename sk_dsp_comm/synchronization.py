@@ -136,7 +136,7 @@ def NDA_symb_sync(z,Ns,L,BnTs,zeta=0.707,I_ord=3):
     epsilon = 0
     mm = 1
     z = np.hstack(([0], z))
-    for nn in xrange(1,Ns*int(np.floor(len(z)/float(Ns)-(Ns-1)))):
+    for nn in range(1,Ns*int(np.floor(len(z)/float(Ns)-(Ns-1)))):
         # Define variables used in linear interpolator control
         CNT = CNT_next
         mu = mu_next
@@ -405,7 +405,7 @@ def PLL1(theta,fs,loop_type,Kv,fn,zeta,non_lin):
     phi = np.zeros_like(theta)
 
     # Begin the simulation loop
-    for k in  xrange(len(n)):
+    for k in  range(len(n)):
         phi[k] = theta[k] - vco_out
         if non_lin == 1:
             # sinusoidal phase detector
@@ -508,7 +508,7 @@ def PLL_cbb(x,fs,loop_type,Kv,fn,zeta):
     phi = np.zeros_like(x)
 
     # Begin the simulation loop
-    for k in  xrange(len(n)):
+    for k in  range(len(n)):
         #phi[k] = theta[k] - vco_out
         phi[k] = np.imag(x[k] * np.conj(vco_out_cbb))
         pd_out = phi[k]

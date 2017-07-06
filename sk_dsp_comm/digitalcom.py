@@ -1031,3 +1031,84 @@ def Q_fctn(x):
     Gaussian Q-function
     """
     return 1./2*erfc(x/np.sqrt(2.))
+
+
+def PCM_encode(x,N_bits):
+    """
+    x_bits = PCM_encode(x,N_bits)
+    /////////////////////////////////////////////////////////////
+         x = signal samples to be PCM encoded
+    N_bits = bit precision of PCM samples
+    x_bits = encoded serial bit stream of 0/1 values. MSB first.
+    /////////////////////////////////////////////////////////////
+    Mark Wickert, Mark 2015
+    """
+    xq = np.int16(np.rint(x*2**(N_bits-1)))
+    x_bits = np.zeros((N_bits,len(xq)))
+    for k, xk in enumerate(xq):
+        x_bits[:,k] = tobin(xk,N_bits)
+    # Reshape into a serial bit stream
+    x_bits = np.reshape(x_bits,(1,len(x)*N_bits),'F')
+    return np.int16(x_bits.flatten())
+
+
+# A helper function for PCM_encode
+def tobin(data, width):
+    """
+    
+    """
+    data_str = bin(data & (2**width-1))[2:].zfill(width)
+    return [int(x) for x in tuple(data_str)]
+
+
+def PCM_decode(x_bits,N_bits):
+    """
+    xhat = PCM_decode(x_bits,N_bits)
+    /////////////////////////////////////////////////////////////
+    x_bits = serial bit stream of 0/1 values. The length of 
+             x_bits must be a multiple of N_bits
+    N_bits = bit precision of PCM samples
+      xhat = decoded PCM signal samples
+    /////////////////////////////////////////////////////////////
+    Mark Wickert, March 2015
+    """
+    N_samples = len(x_bits)//N_bits
+    # Convert serial bit stream into parallel words with each 
+    # column holdingthe N_bits binary sample value
+    xrs_bits = x_bits.copy()
+    xrs_bits = np.reshape(xrs_bits,(N_bits,N_samples),'F')
+    # Convert N_bits binary words into signed integer values
+    xq = np.zeros(N_samples)
+    w = 2**np.arange(N_bits-1,-1,-1) # binary weights for bin 
+                                     # to dec conversion
+    for k in range(N_samples):
+       xq[k] = np.dot(xrs_bits[:,k],w) - xrs_bits[0,k]*2**N_bits
+    return xq/2**(N_bits-1)
+
+
+
+def AWGN_chan(x_bits,EBN0_dB):
+    """
+    ////////////////////////////////////////////////////////////////////////
+     x_bits = serial bit stream of 0/1 values.
+    EBNO_dB = energy per bit to noise power density ratio in dB of the
+              serial bit stream sent through the AWGN channel. Frequently
+              we equate EBN0 to SNR in link budget calculations
+     y_bits = received serial bit stream following hard decisions. This bit
+              will have bit errors. To check the estimated bit error
+              probability use digitalcom.BPSK_bep() or simply
+              >> Pe_est = sum(xor(x_bits,y_bits))/length(x_bits);  
+    ////////////////////////////////////////////////////////////////////////
+    
+    Mark Wickert, March 2015
+    """
+    x_bits = 2*x_bits - 1 # convert from 0/1 to -1/1 signal values
+    var_noise = 10**(-EBN0_dB/10)/2;
+    y_bits = x_bits + np.sqrt(var_noise)*np.random.randn(size(x_bits))
+
+    # Make hard decisions
+    y_bits = np.sign(y_bits) # -1/+1 signal values
+    y_bits = (y_bits+1)/2 # convert back to 0/1 binary values
+    return y_bits
+
+

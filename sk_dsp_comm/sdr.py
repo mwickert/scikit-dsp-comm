@@ -1,5 +1,5 @@
 """
-Support functions for the RTL-SDR using pyrtlsdr
+Support functions for working with RTL-SDR data captures
 
 Copyright (c) July 2017, Mark Wickert
 All rights reserved.
@@ -29,25 +29,11 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 """
 
-import rtlsdr
 import sk_dsp_comm.sigsys as ss
 import sk_dsp_comm.digitalcom as dc
 import numpy as np
 import scipy.signal as signal
 
-def capture(Tc,fo=88.7e6,fs=2.4e6,gain=40,device_index=0):
-    # Setup SDR
-    sdr = rtlsdr.RtlSdr(device_index) #create a RtlSdr object
-    #sdr.get_tuner_type()
-    sdr.sample_rate = fs
-    sdr.center_freq = fo
-    #sdr.gain = 'auto'
-    sdr.gain = gain
-    # Capture samples
-    Nc = np.ceil(Tc*fs)
-    x = sdr.read_samples(Nc)
-    sdr.close()
-    return x
 
 def discrim(x):
     """

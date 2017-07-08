@@ -25,5 +25,8 @@ setup(name='scikit-dsp-comm',
       license='BSD',
       install_requires=requirements.split(),
       test_suite='nose.collector',
-      tests_require=['nose','numpy', 'tox']
+      tests_require=['nose','numpy', 'tox'],
+      extras_require={
+            'helpers': ['pyaudio', 'pyrtlsdr']
+      }
      )

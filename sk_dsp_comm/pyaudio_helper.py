@@ -31,7 +31,11 @@ either expressed or implied, of the FreeBSD Project.
 
 import numpy as np
 import scipy.signal as signal
-import pyaudio
+import warnings
+try:
+    import pyaudio
+except ImportError:
+    warnings.warn("Please install the helpers extras for full functionality", ImportWarning)
 #import wave
 import time
 import sys

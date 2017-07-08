@@ -28,7 +28,11 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 """
-
+import warnings
+try:
+    import rtlsdr
+except ImportError:
+    warnings.warn("Please install the helpers extras for full functionality", ImportWarning)
 from . import sigsys as ss
 from . import digitalcom as dc
 import numpy as np
@@ -36,7 +40,6 @@ import scipy.signal as signal
 
 def capture(Tc,fo=88.7e6,fs=2.4e6,gain=40,device_index=0):
     # Setup SDR
-    import rtlsdr
     sdr = rtlsdr.RtlSdr(device_index) #create a RtlSdr object
     #sdr.get_tuner_type()
     sdr.sample_rate = fs

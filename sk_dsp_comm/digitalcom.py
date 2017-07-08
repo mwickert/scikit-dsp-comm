@@ -692,7 +692,7 @@ def BPSK_BEP(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
         lagmax = np.where(R0.real == Rmax)[0] - Ncorr/2
     elif kmax == 1:
         lagmax = np.where(R1.real == Rmax)[0] - Ncorr/2
-    taumax = lagmax[0]
+    taumax = int(lagmax[0])
     print('kmax =  %d, taumax = %d' % (kmax, taumax))
     #return R0,R1,R2,R3
     #Count bit and symbol errors over the entire input ndarrays

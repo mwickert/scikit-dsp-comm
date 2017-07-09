@@ -14,6 +14,12 @@ There are presently eight modules that make up scikit-dsp-comm:
 
 Presently the collection of modules contains about 125 functions and classes. The authors/maintainers are working to get more detailed documentation in place.
 
+### Extras
+
+This package contains the helper modules `rtlsdr_helper`, and `pyaudio_helper` which require the packages [pyrtlsdr](https://pypi.python.org/pypi/pyrtlsdr) and [PyAudio](https://pypi.python.org/pypi/PyAudio). To use the full functionality of these helpers, install this package with the extras as follows:
+
+`pip install scikit-dsp-comm[helpers]`
+
 ## Background
  The origin of this package comes from the writing the book Signals and Systems for Dummies, published by Wiley in 2013. The original module for this book is named `ssd.py`. In `scikit-dsp-comm` this module is renamed to `sigsys.py` to better reflect the fact that signal processing and communications theory is founded in signals and systems, a traditional subject in electrical engineering curricula.
  

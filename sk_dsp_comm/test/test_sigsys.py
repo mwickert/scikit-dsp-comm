@@ -565,6 +565,10 @@ class TestSigsys(TestCase):
             data_check = bit in data_vals
             self.assertEqual(data_check, True)
 
+    def test_NRZ_bits_3(self):
+        Tspan = 10  # Time span in seconds
+        PN, b, data = ss.NRZ_bits(1000 * Tspan, 8000 / 1000)
+
     def test_NRZ_bits_value_error(self):
         with self.assertRaisesRegexp(ValueError, 'pulse type must be rec, rc, or src') as NRZ_err:
             x,b,data = ss.NRZ_bits(100, 10, pulse='value')

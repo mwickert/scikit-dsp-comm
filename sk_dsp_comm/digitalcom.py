@@ -322,7 +322,7 @@ def QAM_bb(N_symb,Ns,mod_type='16qam',pulse='rect',alpha=0.35):
     elif pulse.lower() == 'rect':
         b = np.ones(int(Ns)) #alt. rect. pulse shape
     else:
-        print('pulse shape must be src, rc, or rect')
+        raise ValueError('pulse shape must be src, rc, or rect')
         
     if mod_type.lower() == 'qpsk':
         M = 2 # bits per symbol
@@ -333,7 +333,7 @@ def QAM_bb(N_symb,Ns,mod_type='16qam',pulse='rect',alpha=0.35):
     elif mod_type.lower() == '256qam':
         M = 16
     else:
-        print('Unknown mod_type')
+        raise ValueError('Unknown mod_type')
 
     # Create random symbols for the I & Q channels
     xI = np.random.randint(0,M,N_symb)

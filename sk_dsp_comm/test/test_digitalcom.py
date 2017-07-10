@@ -45,3 +45,19 @@ class TestDigitalcom(TestCase):
         0.02604167,  0.02083333,  0.0162037 ,  0.01215278,  0.00868056,
         0.00578704,  0.00347222,  0.00173611,  0.0005787 ])
         npt.assert_almost_equal(b_test, b)
+
+    def test_QAM_bb(self):
+        x_test, b_test, data_test = (np.array([ 1.00000000+1.j,  1.00000000+1.j,  1.00000000+1.j,  1.00000000+1.j,
+       -1.00000000+1.j, -1.00000000+1.j, -1.00000000+1.j, -1.00000000+1.j,
+       -1.00000000-1.j, -1.00000000-1.j, -1.00000000-1.j, -1.00000000-1.j,
+       -0.33333333-1.j, -0.33333333-1.j, -0.33333333-1.j, -0.33333333-1.j]), np.array([ 0.25,  0.25,  0.25,  0.25]), np.array([ 3.+3.j, -3.+3.j, -3.-3.j, -1.-3.j]))
+        x,b,data = dc.QAM_bb(4, 4)
+        npt.assert_almost_equal(b_test, b)
+
+    def test_QAM_bb_mod_error(self):
+        with self.assertRaisesRegexp(ValueError, 'Unknown mod_type') as QAM_err:
+            dc.QAM_bb(4, 4, mod_type='bpsk')
+
+    def test_QAM_bb_pulse_error(self):
+        with self.assertRaisesRegexp(ValueError, 'pulse shape must be src, rc, or rect') as QAM_err:
+            dc.QAM_bb(4, 4, pulse='sinc')

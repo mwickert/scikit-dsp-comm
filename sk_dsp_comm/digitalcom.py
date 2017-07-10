@@ -320,7 +320,7 @@ def QAM_bb(N_symb,Ns,mod_type='16qam',pulse='rect',alpha=0.35):
     elif pulse.lower() == 'rc':
         b = rc_imp(Ns,alpha,6)    
     elif pulse.lower() == 'rect':
-        b = np.ones(Ns) #alt. rect. pulse shape
+        b = np.ones(int(Ns)) #alt. rect. pulse shape
     else:
         print('pulse shape must be src, rc, or rect')
         
@@ -526,7 +526,7 @@ def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
     x = np.hstack((xs.reshape(N_symb,1),np.zeros((N_symb,int(Ns)-1))))
     x =x.flatten()
     if pulse.lower() == 'rect':
-        b = np.ones(Ns)
+        b = np.ones(int(Ns))
     elif pulse.lower() == 'rc':
         b = rc_imp(Ns,alpha,MM)
     elif pulse.lower() == 'src':
@@ -887,7 +887,7 @@ def RZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
     x = np.hstack((data.reshape(N_bits,1),np.zeros((N_bits,int(Ns)-1))))
     x =x.flatten()
     if pulse.lower() == 'rect':
-        b = np.ones(Ns)
+        b = np.ones(int(Ns))
     elif pulse.lower() == 'rc':
         b = rc_imp(Ns,alpha,M)
     elif pulse.lower() == 'src':

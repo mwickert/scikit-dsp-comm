@@ -2,6 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 from .. import digitalcom as dc
+import numpy.testing as npt
 
 
 class TestDigitalcom(TestCase):
@@ -33,3 +34,14 @@ class TestDigitalcom(TestCase):
         bit_count, bit_errors = dc.bit_errors(transmit, receive)
         self.assertEqual(bit_count, bits)
         self.assertEqual(bit_errors, len(rand_bits))
+
+    def test_CIC(self):
+        b = dc.CIC(12, 3)
+        b_test = np.array([ 0.0005787 ,  0.00173611,  0.00347222,  0.00578704,  0.00868056,
+        0.01215278,  0.0162037 ,  0.02083333,  0.02604167,  0.0318287 ,
+        0.03819444,  0.04513889,  0.05092593,  0.05555556,  0.05902778,
+        0.06134259,  0.0625    ,  0.0625    ,  0.06134259,  0.05902778,
+        0.05555556,  0.05092593,  0.04513889,  0.03819444,  0.0318287 ,
+        0.02604167,  0.02083333,  0.0162037 ,  0.01215278,  0.00868056,
+        0.00578704,  0.00347222,  0.00173611,  0.0005787 ])
+        npt.assert_almost_equal(b_test, b)

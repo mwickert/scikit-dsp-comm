@@ -495,9 +495,9 @@ def OS_filter(x,h,N,mode=0):
     Nframe = int(np.ceil(Nx/float(L)))
     # zero pad end of x to full number of frames needed
     x = np.hstack((x,np.zeros(Nframe*L-Nx)))
-    y = np.zeros(Nframe*N)
+    y = np.zeros(int(Nframe*N))
     # create an instrumentation matrix to observe the overlap and save behavior
-    y_mat = np.zeros((Nframe,Nframe*N))
+    y_mat = np.zeros((Nframe,int(Nframe*N)))
 
     H = fft.fft(h,N)
     # begin the filtering operation
@@ -547,7 +547,7 @@ def OA_filter(x,h,N,mode=0):
     >>> y, y_mat = OA_filter(x,h,N,1)
     """
     P = len(h)
-    L = N - P + 1 # need N >= L + P -1
+    L = int(N) - P + 1 # need N >= L + P -1
     Nx = len(x)
     Nframe = int(np.ceil(Nx/float(L)))
     # zero pad to full number of frames needed
@@ -1930,7 +1930,7 @@ def NRZ_bits2(data,Ns,pulse='rect',alpha = 0.25,M=6):
     >>> plot(t,x)
     """
     N_bits = len(data)
-    n_zeros = np.zeros((N_bits,Ns-1))
+    n_zeros = np.zeros((N_bits,int(Ns)-1))
     x = np.hstack((2*data.reshape(N_bits,1)-1,n_zeros))
     x = x.flatten()
     if pulse.lower() == 'rect':
@@ -2389,7 +2389,7 @@ def upsample(x,L):
     >>> y = upsample(x,3)
     """
     N_input = len(x)
-    y = np.hstack((x.reshape(N_input,1),np.zeros((N_input,L-1))))
+    y = np.hstack((x.reshape(N_input,1),np.zeros((N_input, int(L-1)))))
     y = y.flatten()
     return y
 

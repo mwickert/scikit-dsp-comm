@@ -1933,7 +1933,7 @@ def NRZ_bits2(data,Ns,pulse='rect',alpha = 0.25,M=6):
     x = np.hstack((2*data.reshape(N_bits,1)-1,np.zeros((N_bits,Ns-1))))
     x = x.flatten()
     if pulse.lower() == 'rect':
-        b = np.ones(Ns)
+        b = np.ones(int(Ns))
     elif pulse.lower() == 'rc':
         b = rc_imp(Ns,alpha,M)
     elif pulse.lower() == 'src':

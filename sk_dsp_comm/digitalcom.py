@@ -343,9 +343,9 @@ def QAM_bb(N_symb,Ns,mod_type='16qam',pulse='rect',alpha=0.35):
     # Employ differential encoding to counter phase ambiquities
     # Create a zero padded (interpolated by Ns) symbol sequence.
     # This prepares the symbol sequence for arbitrary pulse shaping.
-    symbI = np.hstack((xI.reshape(N_symb,1),np.zeros((N_symb,Ns-1))))
+    symbI = np.hstack((xI.reshape(N_symb,1),np.zeros((N_symb,int(Ns)-1))))
     symbI = symbI.flatten()
-    symbQ = np.hstack((xQ.reshape(N_symb,1),np.zeros((N_symb,Ns-1))))
+    symbQ = np.hstack((xQ.reshape(N_symb,1),np.zeros((N_symb,int(Ns)-1))))
     symbQ = symbQ.flatten()
     symb = symbI + 1j*symbQ
     if M > 2:
@@ -523,7 +523,7 @@ def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
     """
     data = np.random.randint(0,M,N_symb) 
     xs = np.exp(1j*2*np.pi/M*data)
-    x = np.hstack((xs.reshape(N_symb,1),np.zeros((N_symb,Ns-1))))
+    x = np.hstack((xs.reshape(N_symb,1),np.zeros((N_symb,int(Ns)-1))))
     x =x.flatten()
     if pulse.lower() == 'rect':
         b = np.ones(Ns)
@@ -884,7 +884,7 @@ def RZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
     >>> plot(t,x)
     """
     data = np.random.randint(0,2,N_bits) 
-    x = np.hstack((data.reshape(N_bits,1),np.zeros((N_bits,Ns-1))))
+    x = np.hstack((data.reshape(N_bits,1),np.zeros((N_bits,int(Ns)-1))))
     x =x.flatten()
     if pulse.lower() == 'rect':
         b = np.ones(Ns)

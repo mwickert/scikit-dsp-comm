@@ -10,7 +10,3 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-
-.. automodule:: sk_dsp_comm
-.. automodule:: sk_dsp_comm.sigsys
-		:members:

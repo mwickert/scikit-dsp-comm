@@ -1,4 +1,5 @@
 # scikit-dsp-comm
+[![Docs](https://readthedocs.org/projects/scikit-dsp-comm/badge/?version=latest)](http://scikit-dsp-comm.readthedocs.io/en/latest/?badge=latest)
 ## Package High Level Overview
 This package is a collection of functions and classes to support signal processing and communications theory teaching and research. The foundation for this package is `scipy.signal`. The code base currently runs under Python 2.7x. An immediate need is to update the code to run under Python 3.6.
 

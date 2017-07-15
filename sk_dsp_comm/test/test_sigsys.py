@@ -10,6 +10,9 @@ from .. import sigsys as ss
 class TestSigsys(TestCase):
     _multiprocess_can_split_ = True
 
+    def setUp(self):
+        np.random.seed(100)
+
     def test_cic_case_1(self):
         correct = np.ones(10) / 10
         b = ss.CIC(10, 1)
@@ -26,14 +29,15 @@ class TestSigsys(TestCase):
         self.assertEqual(diff, 0)
 
     def test_ten_band_equalizer(self):
-        w = randn(1000000)
+        w = randn(10)
         gdB = [x for x in range(1, 11)]
+        y_test = [-4.23769156, 0.097137, 4.18516645, -0.54460053, 2.2257584, 1.60147407, -0.76767407, -1.95402381,
+                  -1.0580526, 0.9111369]
         y = ss.ten_band_eq_filt(w, gdB)
-        yavg = np.average(y)
-        npt.assert_almost_equal(abs(yavg), 0.001, decimal=2)
+        npt.assert_almost_equal(y, y_test)
 
     def test_ten_band_equalizer_gdb_exception(self):
-        w = randn(1000000)
+        w = randn(10)
         gdB = [x for x in range(1, 9)]
         with self.assertRaisesRegexp(ValueError, "GdB length not equal to ten") as ten_err:
             ss.ten_band_eq_filt(w, gdB)

@@ -320,9 +320,9 @@ def QAM_bb(N_symb,Ns,mod_type='16qam',pulse='rect',alpha=0.35):
     elif pulse.lower() == 'rc':
         b = rc_imp(Ns,alpha,6)    
     elif pulse.lower() == 'rect':
-        b = np.ones(Ns) #alt. rect. pulse shape
+        b = np.ones(int(Ns)) #alt. rect. pulse shape
     else:
-        print('pulse shape must be src, rc, or rect')
+        raise ValueError('pulse shape must be src, rc, or rect')
         
     if mod_type.lower() == 'qpsk':
         M = 2 # bits per symbol
@@ -333,7 +333,7 @@ def QAM_bb(N_symb,Ns,mod_type='16qam',pulse='rect',alpha=0.35):
     elif mod_type.lower() == '256qam':
         M = 16
     else:
-        print('Unknown mod_type')
+        raise ValueError('Unknown mod_type')
 
     # Create random symbols for the I & Q channels
     xI = np.random.randint(0,M,N_symb)
@@ -343,9 +343,9 @@ def QAM_bb(N_symb,Ns,mod_type='16qam',pulse='rect',alpha=0.35):
     # Employ differential encoding to counter phase ambiquities
     # Create a zero padded (interpolated by Ns) symbol sequence.
     # This prepares the symbol sequence for arbitrary pulse shaping.
-    symbI = np.hstack((xI.reshape(N_symb,1),np.zeros((N_symb,Ns-1))))
+    symbI = np.hstack((xI.reshape(N_symb,1),np.zeros((N_symb,int(Ns)-1))))
     symbI = symbI.flatten()
-    symbQ = np.hstack((xQ.reshape(N_symb,1),np.zeros((N_symb,Ns-1))))
+    symbQ = np.hstack((xQ.reshape(N_symb,1),np.zeros((N_symb,int(Ns)-1))))
     symbQ = symbQ.flatten()
     symb = symbI + 1j*symbQ
     if M > 2:
@@ -523,10 +523,10 @@ def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
     """
     data = np.random.randint(0,M,N_symb) 
     xs = np.exp(1j*2*np.pi/M*data)
-    x = np.hstack((xs.reshape(N_symb,1),np.zeros((N_symb,Ns-1))))
+    x = np.hstack((xs.reshape(N_symb,1),np.zeros((N_symb,int(Ns)-1))))
     x =x.flatten()
     if pulse.lower() == 'rect':
-        b = np.ones(Ns)
+        b = np.ones(int(Ns))
     elif pulse.lower() == 'rc':
         b = rc_imp(Ns,alpha,MM)
     elif pulse.lower() == 'src':
@@ -884,10 +884,10 @@ def RZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
     >>> plot(t,x)
     """
     data = np.random.randint(0,2,N_bits) 
-    x = np.hstack((data.reshape(N_bits,1),np.zeros((N_bits,Ns-1))))
+    x = np.hstack((data.reshape(N_bits,1),np.zeros((N_bits,int(Ns)-1))))
     x =x.flatten()
     if pulse.lower() == 'rect':
-        b = np.ones(Ns)
+        b = np.ones(int(Ns))
     elif pulse.lower() == 'rc':
         b = rc_imp(Ns,alpha,M)
     elif pulse.lower() == 'src':

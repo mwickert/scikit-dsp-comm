@@ -122,7 +122,7 @@ class TestDigitalcom(TestCase):
         npt.assert_almost_equal(b, b_test)
         npt.assert_almost_equal(t, t_test)
 
-    def test_QAM_bb_rect(self):
+    def test_QAM_bb_qpsk_rect(self):
         np.random.seed(100)
         x_test, b_test, t_test = (np.array([-1.-1.j, -1.-1.j, -1.+1.j, -1.+1.j,  1.-1.j,  1.-1.j,  1.-1.j,
         1.-1.j,  1.-1.j,  1.-1.j,  1.-1.j,  1.-1.j, -1.+1.j, -1.+1.j,
@@ -133,3 +133,7 @@ class TestDigitalcom(TestCase):
         npt.assert_almost_equal(x, x_test)
         npt.assert_almost_equal(b, b_test)
         npt.assert_almost_equal(t, t_test)
+
+    def test_QAM_bb__pulse_error(self):
+        with self.assertRaisesRegexp(ValueError, 'pulse shape must be src, rc, or rect'):
+            dc.QAM_bb(10, 2, pulse='value')

@@ -123,7 +123,6 @@ class TestDigitalcom(TestCase):
         npt.assert_almost_equal(t, t_test)
 
     def test_QAM_bb_qpsk_rect(self):
-        np.random.seed(100)
         x_test, b_test, t_test = (np.array([-1.-1.j, -1.-1.j, -1.+1.j, -1.+1.j,  1.-1.j,  1.-1.j,  1.-1.j,
         1.-1.j,  1.-1.j,  1.-1.j,  1.-1.j,  1.-1.j, -1.+1.j, -1.+1.j,
        -1.-1.j, -1.-1.j, -1.-1.j, -1.-1.j, -1.+1.j, -1.+1.j]), np.array([ 0.5,  0.5]),
@@ -134,6 +133,64 @@ class TestDigitalcom(TestCase):
         npt.assert_almost_equal(b, b_test)
         npt.assert_almost_equal(t, t_test)
 
-    def test_QAM_bb__pulse_error(self):
+    def test_QAM_bb_pulse_error(self):
         with self.assertRaisesRegexp(ValueError, 'pulse shape must be src, rc, or rect'):
             dc.QAM_bb(10, 2, pulse='value')
+
+    def test_QAM_bb_16qam_rect(self):
+        x_test, b_test, t_test = (np.array([-1.00000000+0.33333333j, -1.00000000+0.33333333j,
+       -1.00000000-0.33333333j, -1.00000000-0.33333333j,
+        1.00000000+0.33333333j,  1.00000000+0.33333333j,
+        1.00000000+0.33333333j,  1.00000000+0.33333333j,
+        1.00000000+0.33333333j,  1.00000000+0.33333333j,
+        1.00000000+0.33333333j,  1.00000000+0.33333333j,
+       -1.00000000-0.33333333j, -1.00000000-0.33333333j,
+        0.33333333-1.j        ,  0.33333333-1.j        ,
+        0.33333333-1.j        ,  0.33333333-1.j        ,
+       -1.00000000+1.j        , -1.00000000+1.j        ]), np.array([ 0.5,  0.5]),
+                                  np.array([-3.+1.j, -3.-1.j,  3.+1.j,  3.+1.j,  3.+1.j,  3.+1.j, -3.-1.j,
+        1.-3.j,  1.-3.j, -3.+3.j]))
+        x, b, t = dc.QAM_bb(10, 2, mod_type='16qam', pulse='rect')
+        npt.assert_almost_equal(x, x_test)
+        npt.assert_almost_equal(b, b_test)
+        npt.assert_almost_equal(t, t_test)
+
+    def test_QAM_bb_64qam_rect(self):
+        x_test, b_test, t_test = (np.array([-1.00000000-0.42857143j, -1.00000000-0.42857143j,
+       -1.00000000+0.42857143j, -1.00000000+0.42857143j,
+       -0.14285714-0.42857143j, -0.14285714-0.42857143j,
+        1.00000000-0.42857143j,  1.00000000-0.42857143j,
+        1.00000000+0.71428571j,  1.00000000+0.71428571j,
+        1.00000000-0.42857143j,  1.00000000-0.42857143j,
+       -1.00000000-0.71428571j, -1.00000000-0.71428571j,
+       -0.42857143-1.j        , -0.42857143-1.j        ,
+        0.71428571-1.j        ,  0.71428571-1.j        ,
+        0.14285714+1.j        ,  0.14285714+1.j        ]), np.array([ 0.5,  0.5]),
+                                  np.array([-7.-3.j, -7.+3.j, -1.-3.j,  7.-3.j,  7.+5.j,  7.-3.j, -7.-5.j,
+       -3.-7.j,  5.-7.j,  1.+7.j]))
+        x, b, t = dc.QAM_bb(10, 2, mod_type='64qam', pulse='rect')
+        npt.assert_almost_equal(x, x_test)
+        npt.assert_almost_equal(b, b_test)
+        npt.assert_almost_equal(t, t_test)
+
+    def test_QAM_bb_256qam_rect(self):
+        x_test, b_test, t_test = (np.array([ 0.06666667-0.73333333j,  0.06666667-0.73333333j,
+        0.06666667-0.33333333j,  0.06666667-0.33333333j,
+       -0.60000000-0.73333333j, -0.60000000-0.73333333j,
+       -0.06666667-0.73333333j, -0.06666667-0.73333333j,
+       -0.06666667+0.86666667j, -0.06666667+0.86666667j,
+        1.00000000-0.73333333j,  1.00000000-0.73333333j,
+       -1.00000000-0.86666667j, -1.00000000-0.86666667j,
+        0.33333333-1.j        ,  0.33333333-1.j        ,
+        0.86666667+0.06666667j,  0.86666667+0.06666667j,
+       -0.46666667+1.j        , -0.46666667+1.j        ]), np.array([ 0.5,  0.5]),
+                                  np.array([  1.-11.j,   1. -5.j,  -9.-11.j,  -1.-11.j,  -1.+13.j,  15.-11.j,
+       -15.-13.j,   5.-15.j,  13. +1.j,  -7.+15.j]))
+        x, b, t = dc.QAM_bb(10, 2, mod_type='256qam', pulse='rect')
+        npt.assert_almost_equal(x, x_test)
+        npt.assert_almost_equal(b, b_test)
+        npt.assert_almost_equal(t, t_test)
+
+    def test_QAM_bb_mod_error(self):
+        with self.assertRaisesRegexp(ValueError, 'Unknown mod_type'):
+            x, b, t = dc.QAM_bb(10, 2, mod_type='unknown')

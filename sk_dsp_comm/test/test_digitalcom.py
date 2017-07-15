@@ -4,9 +4,12 @@ import numpy as np
 from .. import digitalcom as dc
 from numpy import testing as npt
 
+
 class TestDigitalcom(TestCase):
     _multiprocess_can_split_ = True
-    np.random.seed(100)
+
+    def setUp(self):
+        np.random.seed(100)
 
     def test_farrow_example(self):
         x = np.arange(0, 10)
@@ -61,6 +64,7 @@ class TestDigitalcom(TestCase):
         npt.assert_almost_equal(b_test, b)
 
     def test_QAM_bb_qpsk_src(self):
+        np.random.seed(100)
         x_test, b_test, t_test = (np.array([ 0.00585723+0.00585723j, -0.00275016-0.00275016j,
        -0.00164540-0.01335987j,  0.00887646+0.01437677j,
        -0.01540288+0.01131686j,  0.00480440-0.02394915j,
@@ -79,6 +83,53 @@ class TestDigitalcom(TestCase):
                                   np.array([-1.-1.j, -1.+1.j,  1.-1.j,  1.-1.j,  1.-1.j,  1.-1.j, -1.+1.j,
        -1.-1.j, -1.-1.j, -1.+1.j]))
         x, b, t = dc.QAM_bb(10, 2, mod_type='qpsk', pulse='src')
+        npt.assert_almost_equal(x, x_test)
+        npt.assert_almost_equal(b, b_test)
+        npt.assert_almost_equal(t, t_test)
+
+    def test_QAM_bb_qpsk_rc(self):
+        x_test, b_test, t_test = (np.array([ -2.22799382e-18 -2.22799382e-18j,
+        -4.07129297e-03 -4.07129297e-03j,
+         2.22160609e-19 +4.67814826e-18j,
+        -2.22059175e-03 +5.92199418e-03j,
+         6.43926133e-18 -2.91703518e-18j,
+         1.97462099e-02 +7.90222150e-03j,
+        -9.75189466e-18 -1.28297996e-17j,
+        -4.09888874e-02 -7.30785022e-02j,
+         1.05934616e-17 +3.71417032e-17j,
+         9.37971907e-02 +2.31071828e-01j,
+        -1.52549076e-18 -6.78758025e-17j,
+        -4.10719565e-01 -8.26448725e-01j,
+        -1.00000000e+00 -1.00000000e+00j,
+        -1.36231531e+00 +1.25147025e-01j,
+        -1.00000000e+00 +1.00000000e+00j,
+         4.09888874e-02 +2.75737546e-01j,
+         1.00000000e+00 -1.00000000e+00j,
+         1.24877191e+00 -1.36728049e+00j,
+         1.00000000e+00 -1.00000000e+00j,   8.23659721e-01 -7.64661456e-01j]),
+                                  np.array([  1.11223990e-18,   2.03243583e-03,  -1.22314501e-18,
+        -9.23891131e-04,  -8.79167710e-19,  -6.90120596e-03,
+         5.63651951e-18,   2.84718702e-02,  -1.19149691e-17,
+        -8.10891577e-02,   1.73229581e-17,   3.08804252e-01,
+         4.99211393e-01,   3.08804252e-01,   1.73229581e-17,
+        -8.10891577e-02,  -1.19149691e-17,   2.84718702e-02,
+         5.63651951e-18,  -6.90120596e-03,  -8.79167710e-19,
+        -9.23891131e-04,  -1.22314501e-18,   2.03243583e-03,
+         1.11223990e-18]), np.array([-1.-1.j, -1.+1.j,  1.-1.j,  1.-1.j,  1.-1.j,  1.-1.j, -1.+1.j,
+        -1.-1.j, -1.-1.j, -1.+1.j]))
+        x, b, t = dc.QAM_bb(10, 2, mod_type='qpsk', pulse='rc')
+        npt.assert_almost_equal(x, x_test)
+        npt.assert_almost_equal(b, b_test)
+        npt.assert_almost_equal(t, t_test)
+
+    def test_QAM_bb_rect(self):
+        np.random.seed(100)
+        x_test, b_test, t_test = (np.array([-1.-1.j, -1.-1.j, -1.+1.j, -1.+1.j,  1.-1.j,  1.-1.j,  1.-1.j,
+        1.-1.j,  1.-1.j,  1.-1.j,  1.-1.j,  1.-1.j, -1.+1.j, -1.+1.j,
+       -1.-1.j, -1.-1.j, -1.-1.j, -1.-1.j, -1.+1.j, -1.+1.j]), np.array([ 0.5,  0.5]),
+                                  np.array([-1.-1.j, -1.+1.j,  1.-1.j,  1.-1.j,  1.-1.j,  1.-1.j, -1.+1.j,
+       -1.-1.j, -1.-1.j, -1.+1.j]))
+        x, b, t = dc.QAM_bb(10, 2, mod_type='qpsk', pulse='rect')
         npt.assert_almost_equal(x, x_test)
         npt.assert_almost_equal(b, b_test)
         npt.assert_almost_equal(t, t_test)

@@ -10,6 +10,9 @@ from .. import sigsys as ss
 class TestSigsys(TestCase):
     _multiprocess_can_split_ = True
 
+    def setUp(self):
+        np.random.seed(100)
+
     def test_cic_case_1(self):
         correct = np.ones(10) / 10
         b = ss.CIC(10, 1)

@@ -1104,7 +1104,7 @@ def AWGN_chan(x_bits,EBN0_dB):
     """
     x_bits = 2*x_bits - 1 # convert from 0/1 to -1/1 signal values
     var_noise = 10**(-EBN0_dB/10)/2;
-    y_bits = x_bits + np.sqrt(var_noise)*np.random.randn(size(x_bits))
+    y_bits = x_bits + np.sqrt(var_noise)*np.random.randn(np.size(x_bits))
 
     # Make hard decisions
     y_bits = np.sign(y_bits) # -1/+1 signal values

@@ -6,11 +6,21 @@
 Welcome to scikit-dsp-comm's documentation!
 ===========================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
+   :caption: Modules
 
+   coeff2header
+   digitalcom
+   fec_conv
+   fir_design_helper
+   iir_design_helper
+   multirate_helper
+   optfir
+   pyaudio_helper
+   rtlsdr_helper
+   sigsys
+   synchronization
 
 Indices and tables
 ==================

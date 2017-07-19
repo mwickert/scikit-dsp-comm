@@ -6,11 +6,16 @@
 Welcome to scikit-dsp-comm's documentation!
 ===========================================
 
-`Examples <https://mwickert.github.io/scikit-dsp-comm/>`_
+Examples
+--------
 
+* `SciPy 2017 Tutorial <https://github.com/mwickert/SP-Comm-Tutorial-using-scikit-dsp-comm>`_
+* `Jupyter Notebook Examples <https://mwickert.github.io/scikit-dsp-comm/>`_
+
+Modules
+-------
 .. toctree::
    :maxdepth: 2
-   :caption: Modules
 
    coeff2header
    digitalcom
@@ -25,7 +30,7 @@ Welcome to scikit-dsp-comm's documentation!
    synchronization
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

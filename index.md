@@ -1,6 +1,6 @@
 ![Logo](images/logo.png)
 
-## Jupyter Notebook Example Pages
+# Jupyter Notebook Example Pages
 
 This site houses HTML exported Jupyter Notebook pages to provided detailed examples how to utilize the capability of `scikit-dsp-comm` to moidel and simulate  signal processing and communications. The headings below group the notebook examples by code module.
 

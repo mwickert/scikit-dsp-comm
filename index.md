@@ -2,7 +2,7 @@
 
 # Jupyter Notebook Example Pages
 
-This site houses HTML exported Jupyter Notebook pages to provided detailed examples how to utilize the capability of `scikit-dsp-comm` to moidel and simulate  signal processing and communications. The headings below group the notebook examples by code module.
+This site houses HTML exported Jupyter Notebook pages to provided detailed examples how to utilize the capability of `scikit-dsp-comm` to model and simulate  signal processing and communications systems. The headings below group the notebook examples by code module.
 
 ## Digital Communications
 

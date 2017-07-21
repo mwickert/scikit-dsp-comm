@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 import numpy as np
-from .. import digitalcom as dc
+from sk_dsp_comm import digitalcom as dc
 
 
 class TestDigitalcom(TestCase):

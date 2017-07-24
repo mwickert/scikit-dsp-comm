@@ -194,3 +194,9 @@ class TestDigitalcom(TestCase):
     def test_QAM_bb_mod_error(self):
         with self.assertRaisesRegexp(ValueError, 'Unknown mod_type'):
             x, b, t = dc.QAM_bb(10, 2, mod_type='unknown')
+
+    def test_QAM_SEP_mod_error(self):
+        tx = np.ones(10)
+        rx = np.ones(10)
+        with self.assertRaisesRegexp(ValueError, 'Unknown mod_type'):
+            dc.QAM_SEP(tx, rx, 'unknown')

@@ -392,7 +392,7 @@ def QAM_SEP(tx_data,rx_data,mod_type,Ncorr = 1024,Ntransient = 0,SEP_disp=True):
     elif mod_type.lower() == '256qam':
         M = 16
     else:
-        print('Unknown mod_type')
+        raise ValueError('Unknown mod_type')
     rx_data = np.rint((M-1)*(rx_data + (1+1j))/2.)
     # Fix-up edge points real part
     s1r = mlab.find(rx_data.real > M - 1)

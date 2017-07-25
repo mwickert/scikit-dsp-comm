@@ -404,12 +404,7 @@ def QAM_SEP(tx_data,rx_data,mod_type,Ncorr = 1024,Ntransient = 0,SEP_disp=True):
     s2i = mlab.find(rx_data.imag < 0)
     rx_data.imag[s1i] = (M - 1)*np.ones(len(s1i))
     rx_data.imag[s2i] = np.zeros(len(s2i))
-    #plot(rx_data.real,rx_data.imag,'.')
     rx_data = 2*rx_data - (M - 1)*(1 + 1j)
-    #plot(rx_data.real,rx_data.imag,'.')
-    #plot(tx_data.real,tx_data.imag,'.')
-    #axis('equal')
-    #grid();
     #Correlate the first Ncorr symbols at four possible phase rotations
     R0,lags = xcorr(rx_data,tx_data,Ncorr)
     R1,lags = xcorr(rx_data*(1j)**1,tx_data,Ncorr) 

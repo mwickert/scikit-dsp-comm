@@ -124,9 +124,12 @@ def eye_plot(x,L,S=0):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import digitalcom as dc
     >>> # 1000 bits at 10 samples per bit with 'rc' shaping
-    >>> x,b, data = NRZ_bits(1000,10,'rc')
-    >>> eye_plot(x,20,60)
+    >>> x,b, data = dc.NRZ_bits(1000,10,'rc')
+    >>> dc.eye_plot(x,20,60)
+    >>> plt.show()
     """
     plt.figure(figsize=(6,4))
     idx = np.arange(0,L+1)

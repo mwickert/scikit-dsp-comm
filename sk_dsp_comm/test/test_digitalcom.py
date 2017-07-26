@@ -3,7 +3,7 @@ from unittest import TestCase
 import numpy as np
 from sk_dsp_comm import digitalcom as dc
 from numpy import testing as npt
-
+from scipy import signal
 
 class TestDigitalcom(TestCase):
     _multiprocess_can_split_ = True
@@ -200,3 +200,23 @@ class TestDigitalcom(TestCase):
         rx = np.ones(10)
         with self.assertRaisesRegexp(ValueError, 'Unknown mod_type'):
             dc.QAM_SEP(tx, rx, 'unknown')
+
+    def test_QAM_SEP_16qam_no_error(self):
+        Nsymb_test, Nerr_test, SEP_test = (4986, 0, 0.0)
+        x, b, tx_data = dc.QAM_bb(5000, 10, '16qam', 'src')
+        x = dc.cpx_AWGN(x, 20, 10)
+        y = signal.lfilter(b, 1, x)
+        Nsymb, Nerr, SEP = dc.QAM_SEP(tx_data, y[10 + 10 * 12::10], '16qam', Ntransient=0)
+        self.assertEqual(Nsymb, Nsymb_test)
+        self.assertEqual(Nerr, Nerr_test)
+        self.assertEqual(SEP, SEP_test)
+
+    def test_QAM_SEP_16qam_error(self):
+        Nsymb_test, Nerr_test, SEP_test = (9976, 172, 0.017241379310344827)
+        x, b, tx_data = dc.QAM_bb(10000, 1, '16qam', 'rect')
+        x = dc.cpx_AWGN(x, 15, 1)
+        y = signal.lfilter(b, 1, x)
+        Nsymb, Nerr, SEP = dc.QAM_SEP(tx_data, y[1 * 12::1], '16qam', Ntransient=0)
+        self.assertEqual(Nsymb, Nsymb_test)
+        self.assertEqual(Nerr, Nerr_test)
+        self.assertEqual(SEP, SEP_test)

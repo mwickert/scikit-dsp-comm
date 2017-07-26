@@ -176,6 +176,9 @@ def scatter(x,Ns,start):
     >>> y = dc.cpx_AWGN(x,20,10)
     >>> yI,yQ = dc.scatter(y,10,60)
     >>> plt.plot(yI,yQ,'.')
+    >>> plt.grid()
+    >>> plt.xlabel('In-Phase')
+    >>> plt.ylabel('Quadrature')
     >>> plt.axis('equal')
     """
     xI = np.real(x[start::Ns])

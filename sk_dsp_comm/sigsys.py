@@ -155,7 +155,10 @@ def ten_band_eq_resp(GdB,Q=3.5):
     
     Examples
     --------
-    >>> ten_band_eq_resp([0,10.0,0,0,-1,0,5,0,-4,0])
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> ss.ten_band_eq_resp([0,10.0,0,0,-1,0,5,0,-4,0])
+    >>> plt.show()
     """
     fs = 44100.0 # Hz
     NB = len(GdB)
@@ -253,9 +256,12 @@ def ex6_2(n):
     
     Examples
     --------
-    >>> n = arange(-5,8)
-    >>> x = ex6_2(n)
-    >>> stem(n,x) # creates a stem plot of x vs n
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> n = np.arange(-5,8)
+    >>> x = ss.ex6_2(n)
+    >>> plt.stem(n,x) # creates a stem plot of x vs n
     """
     x = np.zeros(len(n))
     for k, nn in enumerate(n):

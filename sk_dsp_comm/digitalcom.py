@@ -124,9 +124,12 @@ def eye_plot(x,L,S=0):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import digitalcom as dc
     >>> # 1000 bits at 10 samples per bit with 'rc' shaping
-    >>> x,b, data = NRZ_bits(1000,10,'rc')
-    >>> eye_plot(x,20,60)
+    >>> x,b, data = dc.NRZ_bits(1000,10,'rc')
+    >>> dc.eye_plot(x,20,60)
+    >>> plt.show()
     """
     plt.figure(figsize=(6,4))
     idx = np.arange(0,L+1)
@@ -166,12 +169,14 @@ def scatter(x,Ns,start):
 
     Examples
     --------
-    >>> x,b, data = NRZ_bits(1000,10,'rc')
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import digitalcom as dc
+    >>> x,b, data = dc.NRZ_bits(1000,10,'rc')
     >>> # add some noise so points are now scattered about +/-1
-    >>>  y = cpx_AWGN(x,20,10)
-    >>>  yI,yQ = scatter(y,10,60)
-    >>> plot(yI,yQ,'.')
-    >>> axis('equal')
+    >>> y = dc.cpx_AWGN(x,20,10)
+    >>> yI,yQ = dc.scatter(y,10,60)
+    >>> plt.plot(yI,yQ,'.')
+    >>> plt.axis('equal')
     """
     xI = np.real(x[start::Ns])
     xQ = np.imag(x[start::Ns])
@@ -919,9 +924,12 @@ def my_psd(x,NFFT=2**10,Fs=1):
     
     Examples
     --------
-    >>> x,b, data = NRZ_bits(10000,10)
-    >>> Px,f = my_psd(x,2**10,10)
-    >>> plot(f, 10*log10(Px))
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import digitalcom as dc
+    >>> from numpy import log10
+    >>> x,b, data = dc.NRZ_bits(10000,10)
+    >>> Px,f = dc.my_psd(x,2**10,10)
+    >>> plt.plot(f, 10*log10(Px))
 
     """
     Px,f = pylab.mlab.psd(x,NFFT,Fs)

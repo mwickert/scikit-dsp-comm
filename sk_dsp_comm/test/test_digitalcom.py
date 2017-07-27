@@ -276,3 +276,15 @@ class TestDigitalcom(TestCase):
         y, data = dc.GMSK_bb(10, 2)
         npt.assert_almost_equal(y, y_test)
         npt.assert_equal(data, data_test)
+
+    def test_MPSK_bb(self):
+        x_test, b_test, data_test = (np.array([-0.00585723+0.j, -0.00619109+0.j, -0.00534820+0.j, -0.00337561+0.j,
+       -0.00053042+0.j,  0.00275016+0.j,  0.00591323+0.j,  0.00838014+0.j,
+        0.00964778+0.j,  0.00938446+0.j]), np.array([ -5.85723271e-04,  -6.19109164e-04,  -5.34820232e-04,
+        -3.37560604e-04,  -5.30419514e-05,   2.75015614e-04,
+         5.91323287e-04,   8.38013686e-04,   9.64778341e-04,
+         9.38445583e-04]), np.array([0, 0, 3, 7, 7, 7, 0, 2, 6, 4]))
+        x, b, data = dc.MPSK_bb(500, 10, 8, 'src', 0.35)
+        npt.assert_almost_equal(x[:10], x_test)
+        npt.assert_almost_equal(b[:10], b_test)
+        npt.assert_almost_equal(data[:10], data_test)

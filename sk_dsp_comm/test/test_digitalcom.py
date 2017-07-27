@@ -220,3 +220,33 @@ class TestDigitalcom(TestCase):
         self.assertEqual(Nsymb, Nsymb_test)
         self.assertEqual(Nerr, Nerr_test)
         self.assertEqual(SEP, SEP_test)
+
+    def test_QAM_SEP_qpsk(self):
+        Nsymb_test, Nerr_test, SEP_test = (4986, 0, 0.0)
+        x,b,tx_data = dc.QAM_bb(5000,10,'qpsk','src')
+        x = dc.cpx_AWGN(x,20,10)
+        y = signal.lfilter(b,1,x)
+        Nsymb,Nerr,SEP = dc.QAM_SEP(tx_data,y[10+10*12::10],'qpsk',Ntransient=0)
+        self.assertEqual(Nsymb, Nsymb_test)
+        self.assertEqual(Nerr, Nerr_test)
+        self.assertEqual(SEP, SEP_test)
+
+    def test_QAM_SEP_64qam(self):
+        Nsymb_test, Nerr_test, SEP_test = (4986, 245, 0.04913758523866827)
+        x, b, tx_data = dc.QAM_bb(5000, 10, '64qam', 'src')
+        x = dc.cpx_AWGN(x, 20, 10)
+        y = signal.lfilter(b, 1, x)
+        Nsymb, Nerr, SEP = dc.QAM_SEP(tx_data, y[10 + 10 * 12::10], '64qam', Ntransient=0)
+        self.assertEqual(Nsymb, Nsymb_test)
+        self.assertEqual(Nerr, Nerr_test)
+        self.assertEqual(SEP, SEP_test)
+
+    def test_QAM_SEP_256qam(self):
+        Nsymb_test, Nerr_test, SEP_test = (4986, 2190, 0.43922984356197353)
+        x, b, tx_data = dc.QAM_bb(5000, 10, '256qam', 'src')
+        x = dc.cpx_AWGN(x, 20, 10)
+        y = signal.lfilter(b, 1, x)
+        Nsymb, Nerr, SEP = dc.QAM_SEP(tx_data, y[10 + 10 * 12::10], '256qam', Ntransient=0)
+        self.assertEqual(Nsymb, Nsymb_test)
+        self.assertEqual(Nerr, Nerr_test)
+        self.assertEqual(SEP, SEP_test)

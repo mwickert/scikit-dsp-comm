@@ -532,7 +532,7 @@ def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
     elif pulse.lower() == 'src':
         b = sqrt_rc_imp(Ns,alpha,MM)
     else:
-        print('pulse type must be rec, rc, or src')
+        raise ValueError('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     if M == 4:
         x = x*np.exp(1j*np.pi/4); # For QPSK points in quadrants

@@ -277,7 +277,29 @@ class TestDigitalcom(TestCase):
         npt.assert_almost_equal(y, y_test)
         npt.assert_equal(data, data_test)
 
-    def test_MPSK_bb(self):
+    def test_MPSK_bb_rect(self):
+        x_test, b_test, data_test = (np.array([ 1.+0.j,  1.+0.j,  1.+0.j,  1.+0.j,  1.+0.j,  1.+0.j,  1.+0.j,
+        1.+0.j,  1.+0.j,  1.+0.j]), np.array([ 0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1]),
+                                    np.array([0, 0, 3, 7, 7, 7, 0, 2, 6, 4]))
+        x, b, data = dc.MPSK_bb(500, 10, 8, 'rect', 0.35)
+        npt.assert_equal(x[:10], x_test)
+        npt.assert_almost_equal(b[:10], b_test)
+        npt.assert_almost_equal(data[:10], data_test)
+
+    def test_MPSK_bb_rc(self):
+        x_test, b_test, data_test = (np.array([  2.22799382e-18+0.j,   1.01671750e-03+0.j,   2.07413572e-03+0.j,
+         3.02766347e-03+0.j,   3.73320945e-03+0.j,   4.07129297e-03+0.j,
+         3.96939751e-03+0.j,   3.41846688e-03+0.j,   2.48001733e-03+0.j,
+         1.28158429e-03+0.j]), np.array([  2.22799382e-19,   1.01671750e-04,   2.07413572e-04,
+         3.02766347e-04,   3.73320945e-04,   4.07129297e-04,
+         3.96939751e-04,   3.41846688e-04,   2.48001733e-04,
+         1.28158429e-04]), np.array([0, 0, 3, 7, 7, 7, 0, 2, 6, 4]))
+        x, b, data = dc.MPSK_bb(500, 10, 8, 'rc', 0.35)
+        npt.assert_almost_equal(x[:10], x_test)
+        npt.assert_almost_equal(b[:10], b_test)
+        npt.assert_almost_equal(data[:10], data_test)
+
+    def test_MPSK_bb_src(self):
         x_test, b_test, data_test = (np.array([-0.00585723+0.j, -0.00619109+0.j, -0.00534820+0.j, -0.00337561+0.j,
        -0.00053042+0.j,  0.00275016+0.j,  0.00591323+0.j,  0.00838014+0.j,
         0.00964778+0.j,  0.00938446+0.j]), np.array([ -5.85723271e-04,  -6.19109164e-04,  -5.34820232e-04,
@@ -288,3 +310,7 @@ class TestDigitalcom(TestCase):
         npt.assert_almost_equal(x[:10], x_test)
         npt.assert_almost_equal(b[:10], b_test)
         npt.assert_almost_equal(data[:10], data_test)
+
+    def test_MPSK_bb_value_error(self):
+        with self.assertRaisesRegexp(ValueError, "pulse type must be rec, rc, or src"):
+            x, b, data = dc.MPSK_bb(500, 10, 8, 'error')

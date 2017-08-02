@@ -1112,3 +1112,42 @@ def AWGN_chan(x_bits,EBN0_dB):
     return y_bits
 
 
+def OFDM_tx(N_symb, N):
+    """
+    Orthogonal frequency division multiplexing (OFDM) waveform transmitter model.
+    No interpolating.
+
+    Parameters
+    ----------
+    N_symb : Number of OFDM symbols to produce
+    N : Number of carriers, but only M < N carriers may be used
+
+    Returns
+    --------
+    x_out : ndarray of the OFDM signal
+
+    Examples
+    --------
+    >>>import matplotlib.pyplot as plt
+    >>>from sk_dsp_comm import digitalcom as dc
+    >>>x_out = dc.OFDM_tx(5000,32)
+    >>>plt.psd(x_out);
+    >>>plt.ylim([-50,-15])
+    >>>plt.show()
+    """
+    x_out = np.zeros(N_symb * N, dtype=np.complex128)
+    for k in range(N_symb):
+        buff = np.zeros(N, dtype=np.complex128)
+        # BPSK
+        buff[1] = 2 * np.random.randint(0, 2) - 1
+        # QPSK
+        buff[2] = (2 * np.random.randint(0, 2) - 1 + 1j * (2 * np.random.randint(0, 2) - 1)) / np.sqrt(2)
+        # 16-QAM
+        Mqam = 4  # sqrt(QAM level)
+        buff[32 - 3] = ((2 * np.random.randint(0, Mqam) - (Mqam - 1)) + \
+                        1j * (2 * np.random.randint(0, Mqam) - (Mqam - 1))) / (Mqam - 1)
+        Mqam = 8  # sqrt(QAM level)
+        buff[32 - 1] = ((2 * np.random.randint(0, Mqam) - (Mqam - 1)) + \
+                        1j * (2 * np.random.randint(0, Mqam) - (Mqam - 1))) / (Mqam - 1)
+        x_out[k * N:(k + 1) * N] = fft.ifft(buff)
+    return x_out

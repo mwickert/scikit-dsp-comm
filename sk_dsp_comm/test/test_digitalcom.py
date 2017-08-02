@@ -137,3 +137,23 @@ class TestDigitalcom(TestCase):
     def test_QAM_bb__pulse_error(self):
         with self.assertRaisesRegexp(ValueError, 'pulse shape must be src, rc, or rect'):
             dc.QAM_bb(10, 2, pulse='value')
+
+    def test_OFDM_tx_dB(self):
+        x_out = dc.OFDM_tx(10000, 32)
+        x_out_dB = 20*np.log10(np.max(np.abs(x_out))/np.mean(np.abs(x_out)))
+        x_out_test = 8.4901842681802684
+        npt.assert_almost_equal(x_out_dB, x_out_test, decimal=1)
+
+    def test_ODFM_tx(self):
+        x_out = dc.OFDM_tx(5000, 32)
+        x_out_test = [ 0.00915291 +2.20970869e-02j,  0.00837719 -2.22619723e-02j,
+                       -0.00237876 -6.97013280e-02j, -0.02167984 -1.09411535e-01j,
+                       -0.04419417 -1.32582521e-01j, -0.06249525 -1.34945769e-01j,
+                       -0.06970133 -1.17863706e-01j, -0.06203568 -8.76450324e-02j,
+                       -0.04040291 -5.33470869e-02j, -0.01040016 -2.38163696e-02j,
+                       0.01929114 -4.95352087e-03j,  0.03963392 +1.90654372e-03j,
+                       0.04419417 -1.04083409e-17j,  0.03134340 -4.42144624e-03j,
+                       0.00495352 -4.62657178e-03j, -0.02667729 +3.98263511e-03j,
+                       -0.05334709 +2.20970869e-02j, -0.06611966 +4.61796868e-02j,
+                       -0.06012124 +6.97013280e-02j, -0.03606263 +8.54938203e-02j]
+        npt.assert_almost_equal(x_out[:20], x_out_test)

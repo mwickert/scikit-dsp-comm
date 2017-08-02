@@ -1112,42 +1112,96 @@ def AWGN_chan(x_bits,EBN0_dB):
     return y_bits
 
 
-def OFDM_tx(N_symb, N):
+def mux_pilot_blocks(IQ_data, Np):
     """
-    Orthogonal frequency division multiplexing (OFDM) waveform transmitter model.
-    No interpolating.
-
     Parameters
     ----------
-    N_symb : Number of OFDM symbols to produce
-    N : Number of carriers, but only M < N carriers may be used
+    IQ_data : a 2D array of input QAM symbols with the columns
+               representing the NF carrier frequencies and each
+               row the QAM symbols used to form an OFDM symbol
+    Np : the period of the pilot blocks; e.g., a pilot block is
+               inserted every Np OFDM symbols (Np-1 OFDM data symbols
+               of width Nf are inserted in between the pilot blocks.
 
     Returns
-    --------
-    x_out : ndarray of the OFDM signal
+    -------
+    IQ_datap : IQ_data with pilot blocks inserted
+
+    Notes
+    -----
+    A helper function called by OFDM_tx that inserts pilot block for use
+    in channel estimation when a delay spread channel is present.
+
+    """
+    N_OFDM = IQ_data.shape[0]
+    Npb = N_OFDM // (Np - 1)
+    N_OFDM_rem = N_OFDM - Npb * (Np - 1)
+    Nf = IQ_data.shape[1]
+    IQ_datap = np.zeros((N_OFDM + Npb + 1, Nf), dtype=np.complex128)
+    pilots = np.ones(Nf)  # The pilot symbol is simply 1 + j0
+    for k in xrange(Npb):
+        IQ_datap[Np * k:Np * (k + 1), :] = np.vstack((pilots,
+                                                      IQ_data[(Np - 1) * k:(Np - 1) * (k + 1), :]))
+    IQ_datap[Np * Npb:Np * (Npb + N_OFDM_rem), :] = np.vstack((pilots,
+                                                               IQ_data[(Np - 1) * Npb:, :]))
+    return IQ_datap
+
+
+def OFDM_tx(IQ_data, Nf, N, Np=0, cp=False, Ncp=0):
+    """
+    Parameters
+    ----------
+    IQ_data : +/-1, +/-3, etc complex QAM symbol sample inputs
+         Nf : number of filled carriers, must be even and Nf < N
+          N : total number of carriers; generally a power 2, e.g., 64, 1024, etc
+         Np : Period of pilot code blocks; 0 <=> no pilots
+         cp : False/True <=> bypass cp insertion entirely if False
+        Ncp : the length of the cyclic prefix
+
+    Returns
+    -------
+     x_out = complex baseband OFDM waveform output after P/S and CP insertion
 
     Examples
     --------
     >>>import matplotlib.pyplot as plt
     >>>from sk_dsp_comm import digitalcom as dc
-    >>>x_out = dc.OFDM_tx(5000,32)
-    >>>plt.psd(x_out);
-    >>>plt.ylim([-50,-15])
+    >>>x1,b1,IQ_data1 = dc.QAM_bb(50000,1,'16qam')
+    >>>x_out = dc.OFDM_tx(IQ_data1,32,64)
+    >>>plt.psd(x_out,2**10,1);
+    >>>plt.xlabel(r'Normalized Frequency ($\omega/(2\pi)=f/f_s$)')
+    >>>plt.ylim([-40,0])
+    >>>plt.xlim([-.5,.5])
     >>>plt.show()
     """
-    x_out = np.zeros(N_symb * N, dtype=np.complex128)
-    for k in range(N_symb):
+    N_symb = len(IQ_data)
+    N_OFDM = N_symb // Nf
+    IQ_data = IQ_data[:N_OFDM * Nf]
+    IQ_s2p = np.reshape(IQ_data, (N_OFDM, Nf))  # carrier symbols by column
+    print(IQ_s2p.shape)
+    if Np > 0:
+        IQ_s2p = mux_pilot_blocks(IQ_s2p, Np)
+        N_OFDM = IQ_s2p.shape[0]
+        print(IQ_s2p.shape)
+    if cp:
+        x_out = np.zeros(N_OFDM * (N + Ncp), dtype=np.complex128)
+    else:
+        x_out = np.zeros(N_OFDM * N, dtype=np.complex128)
+    for k in xrange(N_OFDM):
         buff = np.zeros(N, dtype=np.complex128)
-        # BPSK
-        buff[1] = 2 * np.random.randint(0, 2) - 1
-        # QPSK
-        buff[2] = (2 * np.random.randint(0, 2) - 1 + 1j * (2 * np.random.randint(0, 2) - 1)) / np.sqrt(2)
-        # 16-QAM
-        Mqam = 4  # sqrt(QAM level)
-        buff[32 - 3] = ((2 * np.random.randint(0, Mqam) - (Mqam - 1)) + \
-                        1j * (2 * np.random.randint(0, Mqam) - (Mqam - 1))) / (Mqam - 1)
-        Mqam = 8  # sqrt(QAM level)
-        buff[32 - 1] = ((2 * np.random.randint(0, Mqam) - (Mqam - 1)) + \
-                        1j * (2 * np.random.randint(0, Mqam) - (Mqam - 1))) / (Mqam - 1)
-        x_out[k * N:(k + 1) * N] = fft.ifft(buff)
+        for n in range(-Nf // 2, Nf // 2 + 1):
+            if n == 0:  # Modulate carrier f = 0
+                buff[0] = 0  # This can be a pilot carrier
+            elif n > 0:  # Modulate carriers f = 1:Nf/2
+                buff[n] = IQ_s2p[k, n - 1]
+            else:  # Modulate carriers f = -Nf/2:-1
+                buff[N + n] = IQ_s2p[k, Nf + n]
+        if cp:
+            # With cyclic prefix
+            x_out_buff = fft.ifft(buff)
+            x_out[k * (N + Ncp):(k + 1) * (N + Ncp)] = np.concatenate((x_out_buff[N - Ncp:],
+                                                                       x_out_buff))
+        else:
+            # No cyclic prefix included
+            x_out[k * N:(k + 1) * N] = fft.ifft(buff)
     return x_out

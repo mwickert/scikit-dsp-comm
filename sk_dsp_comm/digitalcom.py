@@ -1163,27 +1163,27 @@ def OFDM_tx(IQ_data, Nf, N, Np=0, cp=False, Ncp=0):
     Parameters
     ----------
     IQ_data : +/-1, +/-3, etc complex QAM symbol sample inputs
-         Nf : number of filled carriers, must be even and Nf < N
-          N : total number of carriers; generally a power 2, e.g., 64, 1024, etc
-         Np : Period of pilot code blocks; 0 <=> no pilots
-         cp : False/True <=> bypass cp insertion entirely if False
-        Ncp : the length of the cyclic prefix
+    Nf : number of filled carriers, must be even and Nf < N
+    N : total number of carriers; generally a power 2, e.g., 64, 1024, etc
+    Np : Period of pilot code blocks; 0 <=> no pilots
+    cp : False/True <=> bypass cp insertion entirely if False
+    Ncp : the length of the cyclic prefix
 
     Returns
     -------
-     x_out = complex baseband OFDM waveform output after P/S and CP insertion
+    x_out : complex baseband OFDM waveform output after P/S and CP insertion
 
     Examples
     --------
-    >>>import matplotlib.pyplot as plt
-    >>>from sk_dsp_comm import digitalcom as dc
-    >>>x1,b1,IQ_data1 = dc.QAM_bb(50000,1,'16qam')
-    >>>x_out = dc.OFDM_tx(IQ_data1,32,64)
-    >>>plt.psd(x_out,2**10,1);
-    >>>plt.xlabel(r'Normalized Frequency ($\omega/(2\pi)=f/f_s$)')
-    >>>plt.ylim([-40,0])
-    >>>plt.xlim([-.5,.5])
-    >>>plt.show()
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import digitalcom as dc
+    >>> x1,b1,IQ_data1 = dc.QAM_bb(50000,1,'16qam')
+    >>> x_out = dc.OFDM_tx(IQ_data1,32,64)
+    >>> plt.psd(x_out,2**10,1);
+    >>> plt.xlabel(r'Normalized Frequency ($\omega/(2\pi)=f/f_s$)')
+    >>> plt.ylim([-40,0])
+    >>> plt.xlim([-.5,.5])
+    >>> plt.show()
     """
     N_symb = len(IQ_data)
     N_OFDM = N_symb // Nf

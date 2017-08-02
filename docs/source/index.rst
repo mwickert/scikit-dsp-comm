@@ -6,7 +6,31 @@
 Welcome to scikit-dsp-comm's documentation!
 ===========================================
 
-Contents:
+Examples
+--------
+
+* `SciPy 2017 Tutorial <https://github.com/mwickert/SP-Comm-Tutorial-using-scikit-dsp-comm>`_
+* `Jupyter Notebook Examples <https://mwickert.github.io/scikit-dsp-comm/>`_
 
 .. toctree::
    :maxdepth: 2
+   :caption: Modules
+
+   coeff2header
+   digitalcom
+   fec_conv
+   fir_design_helper
+   iir_design_helper
+   multirate_helper
+   optfir
+   pyaudio_helper
+   rtlsdr_helper
+   sigsys
+   synchronization
+
+Indices and tables
+------------------
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

@@ -1150,7 +1150,7 @@ def mux_pilot_blocks(IQ_data, Np):
     Nf = IQ_data.shape[1]
     IQ_datap = np.zeros((N_OFDM + Npb + 1, Nf), dtype=np.complex128)
     pilots = np.ones(Nf)  # The pilot symbol is simply 1 + j0
-    for k in xrange(Npb):
+    for k in range(Npb):
         IQ_datap[Np * k:Np * (k + 1), :] = np.vstack((pilots,
                                                       IQ_data[(Np - 1) * k:(Np - 1) * (k + 1), :]))
     IQ_datap[Np * Npb:Np * (Npb + N_OFDM_rem), :] = np.vstack((pilots,
@@ -1198,7 +1198,7 @@ def OFDM_tx(IQ_data, Nf, N, Np=0, cp=False, Ncp=0):
         x_out = np.zeros(N_OFDM * (N + Ncp), dtype=np.complex128)
     else:
         x_out = np.zeros(N_OFDM * N, dtype=np.complex128)
-    for k in xrange(N_OFDM):
+    for k in range(N_OFDM):
         buff = np.zeros(N, dtype=np.complex128)
         for n in range(-Nf // 2, Nf // 2 + 1):
             if n == 0:  # Modulate carrier f = 0
@@ -1216,3 +1216,128 @@ def OFDM_tx(IQ_data, Nf, N, Np=0, cp=False, Ncp=0):
             # No cyclic prefix included
             x_out[k * N:(k + 1) * N] = fft.ifft(buff)
     return x_out
+
+
+def chan_est_equalize(z, Np, alpha, Ht=None):
+    """
+    zz_out,H = chan_est_eq(z,Nf,Np,alpha,Ht=None)
+
+    This is a helper function for OFDM_rx to unpack pilot blocks from
+    from the entire set of received OFDM symbols (the Nf of N filled
+    carriers only); then estimate the channel array H recursively,
+    and finally apply H_hat to Y, i.e., X_hat = Y/H_hat
+    carrier-by-carrier. Note if Np = -1, then H_hat = H, the true
+    channel.
+    =================================================================
+        z = Input N_OFDM x Nf 2D array containing pilot blocks and
+            OFDM data symbols.
+       Np = the pilot block period; if -1 use the known channel
+            impuls response input to ht.
+    alpha = The forgetting factor used to recursively estimate H_hat
+       Ht = the theoretical channel frquency response to allow ideal
+            equalization provided Ncp is adequate.
+    =================================================================
+    zz_out= The input z with the pilot blocks removed and one-tap
+            equalization applied to each of the Nf carriers.
+        H = The channel estimate in the frequency domain; an array
+            of length Nf; will return Ht if provided as an input.
+    =================================================================
+
+    Mark Wickert December 2014, Updated December 2016
+    """
+    N_OFDM = z.shape[0]
+    Nf = z.shape[1]
+    Npb = N_OFDM // Np
+    N_part = N_OFDM - Npb * Np - 1
+    zz_out = np.zeros_like(z)
+    Hmatrix = np.zeros((N_OFDM, Nf), dtype=np.complex128)
+    k_fill = 0
+    k_pilot = 0
+    for k in range(N_OFDM):
+        if np.mod(k, Np) == 0:  # Process pilot blocks
+            if k == 0:
+                H = z[k, :]
+            else:
+                H = alpha * H + (1 - alpha) * z[k, :]
+            Hmatrix[k_pilot, :] = H
+            k_pilot += 1
+        else:  # process data blocks
+            if Ht == None:
+                zz_out[k_fill, :] = z[k, :] / H  # apply equalizer
+            else:
+                zz_out[k_fill, :] = z[k, :] / Ht  # apply ideal equalizer
+            k_fill += 1
+    zz_out = zz_out[:k_fill, :]  # Trim to # of OFDM data symbols
+    Hmatrix = Hmatrix[:k_pilot, :]  # Trim to # of OFDM pilot symbols
+    if k_pilot > 0:  # Plot a few magnitude and phase channel estimates
+        chan_idx = np.arange(0, Nf // 2, 4)
+        plt.subplot(211)
+        for i in chan_idx:
+            plt.plot(np.abs(Hmatrix[:, i]))
+        plt.title('Channel Estimates H[k] Over Selected Carrier Indices')
+        plt.xlabel('Channel Estimate Update Index')
+        plt.ylabel('|H[k]|')
+        plt.grid();
+        plt.subplot(212)
+        for i in chan_idx:
+            plt.plot(np.angle(Hmatrix[:, i]))
+        plt.xlabel('Channel Estimate Update Index')
+        plt.ylabel('angle[H[k] (rad)')
+        plt.grid();
+        plt.tight_layout()
+    return zz_out, H
+
+
+def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
+    """
+    z_out, H = OFDM_rx(x,Nf,N,Np=0,cp=False,Ncp=0,alpha = 0.95,ht=None)
+    ============================================================================
+          x = received complex baseband OFDM signal
+         Nf = number of filled carriers, must be even and Nf < N
+          N = total number of carriers; generally a power 2, e.g., 64, 1024, etc
+         Np = Period of pilot code blocks; 0 <=> no pilots; -1 <=> use the ht
+              impulse response input to equalize the OFDM symbols; note
+              equalization still requires Ncp > 0 to work on a delay spread
+              channel.
+         cp = False/True <=> if False assume no CP is present
+        Ncp = the length of the cyclic prefix
+      alpha = the filter forgetting factor in the channel estimator
+              Typically alpha is 0.9 to 0.99.
+         nt = input the known theoretical channel impulse response
+    ============================================================================
+     z_out = recovered complex baseband QAM symbols as a serial stream;
+             as appropriate channel estimation has been applied.
+         H = channel estimate (in the frequency domain at each subcarrier)
+    ============================================================================
+
+    Mark Wickert November 2014, Updated December 2016
+    """
+    N_symb = len(x) // (N + Ncp)
+    y_out = np.zeros(N_symb * N, dtype=np.complex128)
+    for k in range(N_symb):
+        if cp:
+            # Remove the cyclic prefix
+            buff = x[k * (N + Ncp) + Ncp:(k + 1) * (N + Ncp)]
+        else:
+            buff = x[k * N:(k + 1) * N]
+        y_out[k * N:(k + 1) * N] = fft.fft(buff)
+    # Demultiplex into Nf parallel streams from N total, including
+    # the pilot blocks which contain channel information
+    z_out = np.reshape(y_out, (N_symb, N))
+    z_out = np.hstack((z_out[:, 1:Nf // 2 + 1], z_out[:, N - Nf // 2:N]))
+    if Np > 0:
+        if ht == None:
+            z_out, H = chan_est_equalize(z_out, Np, alpha)
+        else:
+            Ht = fft.fft(ht, N)
+            Hht = np.hstack((Ht[1:Nf // 2 + 1], Ht[N - Nf // 2:]))
+            z_out, H = chan_est_equalize(z_out, Np, alpha, Hht)
+    elif Np == -1:  # Ideal equalization using hc
+        Ht = fft.fft(ht, N)
+        H = np.hstack((Ht[1:Nf // 2 + 1], Ht[N - Nf // 2:]))
+        for k in range(N_symb):
+            z_out[k, :] /= H
+    else:
+        H = np.ones(Nf)
+    # Multiplex into original serial symbol stream
+    return z_out.flatten(), H

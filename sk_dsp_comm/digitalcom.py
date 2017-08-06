@@ -1220,7 +1220,6 @@ def OFDM_tx(IQ_data, Nf, N, Np=0, cp=False, Ncp=0):
 
 def chan_est_equalize(z, Np, alpha, Ht=None):
     """
-    zz_out,H = chan_est_eq(z,Nf,Np,alpha,Ht=None)
 
     This is a helper function for OFDM_rx to unpack pilot blocks from
     from the entire set of received OFDM symbols (the Nf of N filled
@@ -1228,22 +1227,23 @@ def chan_est_equalize(z, Np, alpha, Ht=None):
     and finally apply H_hat to Y, i.e., X_hat = Y/H_hat
     carrier-by-carrier. Note if Np = -1, then H_hat = H, the true
     channel.
-    =================================================================
-        z = Input N_OFDM x Nf 2D array containing pilot blocks and
-            OFDM data symbols.
-       Np = the pilot block period; if -1 use the known channel
-            impuls response input to ht.
-    alpha = The forgetting factor used to recursively estimate H_hat
-       Ht = the theoretical channel frquency response to allow ideal
-            equalization provided Ncp is adequate.
-    =================================================================
-    zz_out= The input z with the pilot blocks removed and one-tap
-            equalization applied to each of the Nf carriers.
-        H = The channel estimate in the frequency domain; an array
-            of length Nf; will return Ht if provided as an input.
-    =================================================================
 
-    Mark Wickert December 2014, Updated December 2016
+    Parameters
+    ----------
+    z : Input N_OFDM x Nf 2D array containing pilot blocks and OFDM data symbols.
+    Np : The pilot block period; if -1 use the known channel impulse response input to ht.
+    alpha : The forgetting factor used to recursively estimate H_hat
+    Ht : The theoretical channel frquency response to allow ideal equalization provided Ncp is adequate.
+
+    Returns
+    -------
+    zz_out : The input z with the pilot blocks removed and one-tap equalization applied to each of the Nf carriers.
+    H : The channel estimate in the frequency domain; an array of length Nf; will return Ht if provided as an input.
+
+    Examples
+    --------
+    >>> from sk_dsp_comm.digitalcom import chan_est_equalize
+    >>> zz_out,H = chan_est_eq(z,Nf,Np,alpha,Ht=None)
     """
     N_OFDM = z.shape[0]
     Nf = z.shape[1]
@@ -1290,27 +1290,41 @@ def chan_est_equalize(z, Np, alpha, Ht=None):
 
 def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
     """
-    z_out, H = OFDM_rx(x,Nf,N,Np=0,cp=False,Ncp=0,alpha = 0.95,ht=None)
-    ============================================================================
-          x = received complex baseband OFDM signal
-         Nf = number of filled carriers, must be even and Nf < N
-          N = total number of carriers; generally a power 2, e.g., 64, 1024, etc
-         Np = Period of pilot code blocks; 0 <=> no pilots; -1 <=> use the ht
-              impulse response input to equalize the OFDM symbols; note
-              equalization still requires Ncp > 0 to work on a delay spread
-              channel.
-         cp = False/True <=> if False assume no CP is present
-        Ncp = the length of the cyclic prefix
-      alpha = the filter forgetting factor in the channel estimator
-              Typically alpha is 0.9 to 0.99.
-         nt = input the known theoretical channel impulse response
-    ============================================================================
-     z_out = recovered complex baseband QAM symbols as a serial stream;
-             as appropriate channel estimation has been applied.
-         H = channel estimate (in the frequency domain at each subcarrier)
-    ============================================================================
+    Parameters
+    ----------
+    x : Received complex baseband OFDM signal
+    Nf : Number of filled carriers, must be even and Nf < N
+    N : Total number of carriers; generally a power 2, e.g., 64, 1024, etc
+    Np : Period of pilot code blocks; 0 <=> no pilots; -1 <=> use the ht impulse response input to equalize the OFDM
+    symbols; note equalization still requires Ncp > 0 to work on a delay spread channel.
+    cp : False/True <=> if False assume no CP is present
+    Ncp : The length of the cyclic prefix
+    alpha : The filter forgetting factor in the channel estimator. Typically alpha is 0.9 to 0.99.
+    nt : Input the known theoretical channel impulse response
 
-    Mark Wickert November 2014, Updated December 2016
+    Returns
+    -------
+    z_out : Recovered complex baseband QAM symbols as a serial stream; as appropriate channel estimation has been applied.
+    H : channel estimate (in the frequency domain at each subcarrier)
+
+    Examples
+    --------
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import digitalcom as dc
+    >>> from scipy import signal
+    >>> from numpy import array
+    >>> hc = array([1.0, 0.1, -0.05, 0.15, 0.2, 0.05]) # impulse response spanning five symbols
+    >>> # Quick example using the above channel with no cyclic prefix
+    >>> x1,b1,IQ_data1 = dc.QAM_bb(50000,1,'16qam')
+    >>> x_out = dc.OFDM_tx(IQ_data1,32,64,0,True,0)
+    >>> c_out = signal.lfilter(hc,1,x_out) # Apply channel distortion
+    >>> r_out = dc.cpx_AWGN(c_out,100,64/32) # Es/N0 = 100 dB
+    >>> z_out,H = dc.OFDM_rx(r_out,32,64,-1,True,0,alpha=0.95,ht=hc)
+    >>> plt.plot(z_out[200:].real,z_out[200:].imag,'.')
+    >>> plt.xlabel('In-Phase')
+    >>> plt.ylabel('Quadrature')
+    >>> plt.axis('equal')
+    >>> plt.grid()
     """
     N_symb = len(x) // (N + Ncp)
     y_out = np.zeros(N_symb * N, dtype=np.complex128)

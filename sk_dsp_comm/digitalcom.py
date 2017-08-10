@@ -1262,7 +1262,7 @@ def chan_est_equalize(z, Np, alpha, Ht=None):
             Hmatrix[k_pilot, :] = H
             k_pilot += 1
         else:  # process data blocks
-            if Ht == None:
+            if isinstance(type(None), type(Ht)):
                 zz_out[k_fill, :] = z[k, :] / H  # apply equalizer
             else:
                 zz_out[k_fill, :] = z[k, :] / Ht  # apply ideal equalizer
@@ -1295,8 +1295,7 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
     x : Received complex baseband OFDM signal
     Nf : Number of filled carriers, must be even and Nf < N
     N : Total number of carriers; generally a power 2, e.g., 64, 1024, etc
-    Np : Period of pilot code blocks; 0 <=> no pilots; -1 <=> use the ht impulse response input to equalize the OFDM
-    symbols; note equalization still requires Ncp > 0 to work on a delay spread channel.
+    Np : Period of pilot code blocks; 0 <=> no pilots; -1 <=> use the ht impulse response input to equalize the OFDM symbols; note equalization still requires Ncp > 0 to work on a delay spread channel.
     cp : False/True <=> if False assume no CP is present
     Ncp : The length of the cyclic prefix
     alpha : The filter forgetting factor in the channel estimator. Typically alpha is 0.9 to 0.99.
@@ -1309,10 +1308,12 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
 
     Examples
     --------
+
     >>> import matplotlib.pyplot as plt
     >>> from sk_dsp_comm import digitalcom as dc
     >>> from scipy import signal
     >>> from numpy import array
+
     >>> hc = array([1.0, 0.1, -0.05, 0.15, 0.2, 0.05]) # impulse response spanning five symbols
     >>> # Quick example using the above channel with no cyclic prefix
     >>> x1,b1,IQ_data1 = dc.QAM_bb(50000,1,'16qam')
@@ -1325,6 +1326,21 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
     >>> plt.ylabel('Quadrature')
     >>> plt.axis('equal')
     >>> plt.grid()
+    >>> plt.show()
+
+    Another example with noise using a 10 symbol cyclic prefix and channel estimation:
+
+    >>> x_out = dc.OFDM_tx(IQ_data1,32,64,100,True,10)
+    >>> c_out = signal.lfilter(hc,1,x_out) # Apply channel distortion
+    >>> r_out = dc.cpx_AWGN(c_out,25,64/32) # Es/N0 = 25 dB
+    >>> z_out,H = dc.OFDM_rx(r_out,32,64,100,True,10,alpha=0.95,ht=hc);
+    >>> plt.figure() # if channel estimation is turned on need this
+    >>> plt.plot(z_out[-2000:].real,z_out[-2000:].imag,'.') # allow settling time
+    >>> plt.xlabel('In-Phase')
+    >>> plt.ylabel('Quadrature')
+    >>> plt.axis('equal')
+    >>> plt.grid()
+
     """
     N_symb = len(x) // (N + Ncp)
     y_out = np.zeros(N_symb * N, dtype=np.complex128)
@@ -1340,7 +1356,7 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
     z_out = np.reshape(y_out, (N_symb, N))
     z_out = np.hstack((z_out[:, 1:Nf // 2 + 1], z_out[:, N - Nf // 2:N]))
     if Np > 0:
-        if ht == None:
+        if isinstance(type(None), type(ht)):
             z_out, H = chan_est_equalize(z_out, Np, alpha)
         else:
             Ht = fft.fft(ht, N)

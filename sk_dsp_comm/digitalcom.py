@@ -499,7 +499,7 @@ def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
 
     Parameters
     ----------
-    N_bits : number of MPSK symbols to produce
+    N_symb : number of MPSK symbols to produce
     Ns : the number of samples per bit,
     M : MPSK modulation order, e.g., 4, 8, 16, ...
     pulse_type : 'rect' , 'rc', 'src' (default 'rect')

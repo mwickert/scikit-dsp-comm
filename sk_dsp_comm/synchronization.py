@@ -389,7 +389,7 @@ def PLL1(theta,fs,loop_type,Kv,fn,zeta,non_lin):
         K = Kv # Essentially the VCO gain sets the single-sided
                 # hold-in range in Hz, as it is assumed that Kp = 1
                 # and KLF = 1.
-        tau1 = K/((2*np.pi*fn)^2);
+        tau1 = K/((2*np.pi*fn)**2)
         tau2 = 2*zeta/(2*np.pi*fn)*(1 - 2*np.pi*fn/K*1/(2*zeta))
     else:
         print('Loop type must be 1, 2, or 3')

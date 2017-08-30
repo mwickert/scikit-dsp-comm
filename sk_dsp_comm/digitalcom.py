@@ -93,7 +93,7 @@ def farrow_resample(x, fs_old, fs_new):
         y = np.zeros(len(t_new))
 
     for n in range(len(t_new)):
-        n_old = np.floor(n*Ts_new/Ts_old)
+        n_old = int(np.floor(n*Ts_new/Ts_old))
         mu = (n*Ts_new - n_old*Ts_old)/Ts_old
         # Combine outputs
         y[n] = ((v3[n_old+1]*mu + v2[n_old+1])*mu

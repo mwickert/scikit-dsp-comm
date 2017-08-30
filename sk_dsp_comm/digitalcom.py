@@ -499,7 +499,7 @@ def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
 
     Parameters
     ----------
-    N_bits : number of MPSK symbols to produce
+    N_symb : number of MPSK symbols to produce
     Ns : the number of samples per bit,
     M : MPSK modulation order, e.g., 4, 8, 16, ...
     pulse_type : 'rect' , 'rc', 'src' (default 'rect')
@@ -520,14 +520,19 @@ def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
 
     Examples
     --------
+    >>> from sk_dsp_comm import digitalcom as dc
     >>> import scipy.signal as signal
-    >>> x,b,data = MPSK_bb(500,10,8,'src',0.35)
+    >>> import matplotlib.pyplot as plt
+    >>> x,b,data = dc.MPSK_bb(500,10,8,'src',0.35)
     >>> # Matched filter received signal x
     >>> y = signal.lfilter(b,1,x)
-    >>> plot(y.real[12*10:],y.imag[12*10:])
-    >>> axis('equal')
+    >>> plt.plot(y.real[12*10:],y.imag[12*10:])
+    >>> plt.xlabel('In-Phase')
+    >>> plt.ylabel('Quadrature')
+    >>> plt.axis('equal')
     >>> # Sample once per symbol
-    >>> plot(y.real[12*10::10],y.imag[12*10::10],'r.')
+    >>> plt.plot(y.real[12*10::10],y.imag[12*10::10],'r.')
+    >>> plt.show()
     """
     data = np.random.randint(0,M,N_symb) 
     xs = np.exp(1j*2*np.pi/M*data)

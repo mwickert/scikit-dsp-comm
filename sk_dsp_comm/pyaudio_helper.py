@@ -46,7 +46,7 @@ from threading import Thread
 #from __future__ import print_function
 try:
     from ipywidgets import interactive
-    from ipywidgets import ToggleButton
+    from ipywidgets import ToggleButtons
 except ImportError:
     warnings.warn("Please install ipywidgets for full functionality", ImportWarning)
     
@@ -78,6 +78,7 @@ class DSP_io_stream(object):
         self.right_in = np.zeros(frame_length)
         self.out = np.zeros(frame_length*2)
         self.interactiveFG = 0
+        self.print_when_done = 1
      
     def in_out_check(self):
         """
@@ -120,7 +121,8 @@ class DSP_io_stream(object):
         """
         self.Tsec = Tsec
         self.numChan = numChan
-        self.play = interactive(self.interaction,Stream = widgets.ToggleButtons(
+        self.interactiveFG = 1
+        self.play = interactive(self.interaction,Stream = ToggleButtons(
                                 options=['Start Streaming', 'Stop Streaming'],
                                 description = ' ',
                                 value = 'Stop Streaming') )
@@ -209,7 +211,8 @@ class DSP_io_stream(object):
             # Move radio button back to 'Stop Streaming'
             self.play.children[0].value = 'Stop Streaming'
         else:
-            print('Completed')
+            if(self.print_when_done == 1):
+                print('Completed')
         
     def stop(self):
         """
@@ -225,9 +228,10 @@ class DSP_io_stream(object):
         
         """
         self.capture_sample_count += len(new_data)
-        self.data_capture = np.hstack((self.data_capture,new_data))
-        if (self.Tcapture > 0) and (len(self.data_capture) > self.Ncapture):
-            self.data_capture = self.data_capture[-self.Ncapture:]
+        if (self.Tcapture > 0):
+            self.data_capture = np.hstack((self.data_capture,new_data))
+            if (self.Tcapture > 0) and (len(self.data_capture) > self.Ncapture):
+                self.data_capture = self.data_capture[-self.Ncapture:]
             
     def DSP_capture_add_samples_stereo(self,new_data_left,new_data_right):
         """
@@ -237,12 +241,13 @@ class DSP_io_stream(object):
         
         """
         self.capture_sample_count = self.capture_sample_count + len(new_data_left) + len(new_data_right)
-        self.data_capture_left = np.hstack((self.data_capture_left,new_data_left))
-        self.data_capture_right = np.hstack((self.data_capture_right,new_data_right))
-        if (self.Tcapture > 0) and (len(self.data_capture_left) > self.Ncapture):
-            self.data_capture_left = self.data_capture_left[-self.Ncapture:]
-        if (self.Tcapture > 0) and (len(self.data_capture_right) > self.Ncapture):
-            self.data_capture_right = self.data_capture_right[-self.Ncapture:]
+        if(self.Tcapture > 0):
+            self.data_capture_left = np.hstack((self.data_capture_left,new_data_left))
+            self.data_capture_right = np.hstack((self.data_capture_right,new_data_right))
+            if (len(self.data_capture_left) > self.Ncapture):
+                self.data_capture_left = self.data_capture_left[-self.Ncapture:]
+            if (len(self.data_capture_right) > self.Ncapture):
+                self.data_capture_right = self.data_capture_right[-self.Ncapture:]
     
 
     def DSP_callback_tic(self):
@@ -250,14 +255,16 @@ class DSP_io_stream(object):
         Add new tic time to the DSP_tic list
         
         """
-        self.DSP_tic.append(time.time()-self.start_time)
+        if(self.Tcapture > 0):
+            self.DSP_tic.append(time.time()-self.start_time)
 
 
     def DSP_callback_toc(self):
         """
         Add new toc time to the DSP_toc list
         """
-        self.DSP_toc.append(time.time()-self.start_time)
+        if(self.Tcapture > 0):
+            self.DSP_toc.append(time.time()-self.start_time)
 
 
     def stream_stats(self):

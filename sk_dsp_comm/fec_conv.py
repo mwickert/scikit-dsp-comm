@@ -93,6 +93,7 @@ class trellis_paths(object):
     depiction created by the method traceback_plot().
     Ns is the number of states = 2**(K-1) and D is the decision depth.
     As a rule, D should be about 5 times K.
+
     """
     def __init__(self,Ns,D):
         self.Ns = Ns
@@ -108,10 +109,33 @@ def binary(num, length=8):
         return format(num, '0{}b'.format(length))
 
 class fec_conv(object):
+    """
+    Class responsible for creating rate 1/2 convolutional code objects, and 
+    then encoding and decoding the user code set in polynomials of G. Key
+    methods provided include conv_encode(), viterbi_decoder(), punture(), 
+    depuncture(), trellis_plot(), and traceback_plot().
+
+    Parameters
+    ----------
+    G: A tuple of two binary strings corresponding to the encoder polynomials
+    Depth: The decision depth employed by the Viterbi decoder method
+
+    Returns
+    -------
+    
+
+    Examples
+    --------
+    Get from the ece5630 final project notebook.
+
+
+
+    
+    """
     def __init__(self,G = ('111','101'), Depth = 10):
         """
         cc1 = fec_conv(G = ('111','101'), Depth = 10)
-        Make Rate 1/2 convolutional coder/decoder object. 
+        Instantiate a Rate 1/2 convolutional coder/decoder object. 
         Polys G1 and G2 are entered as binary strings, e.g,
         G1 = '111' and G2 = '101' for K = 3 and
         G1 = '1011011' and G2 = '1111001' for K = 7.
@@ -174,10 +198,24 @@ class fec_conv(object):
 
     def viterbi_decoder(self,x,metric_type='three_bit'):
         """
-        y = viterbi_decoder(x,metric_type = 'three_bit')
-        
-        Viterbi decoder method
-        Mark Wickert February 2014
+        A method which performs Viterbi decoding of noisy bit stream,
+        taking as input soft bit values centered on +/-1 and returning 
+        hard decision 0/1 bits.
+
+        Parameters
+        ----------
+        x: Received noisy bit values centered on +/-1 at one sample per bit
+        matric_type: hard or soft decision decoding type. At present only 
+                     3-bit soft-decision is implemented.
+
+        Returns
+        -------
+        y: Decoded 0/1 bit stream
+
+        Examples
+        --------
+        Take from fall 2016 final project
+
         """
         # Initialize cummulative metrics array
         cm_present = np.zeros((self.Nstates,1))
@@ -423,6 +461,7 @@ class fec_conv(object):
 
 def conv_Pb_bound(R,dfree,Ck,SNRdB,hard_soft,M=2):
     """
+    Coded bit error probabilty
     Pb = conv_Pb_bound(R,dfree,Ck,SNR,hard_soft,M=2)
     
     Convolution coding bit error probability upper bound

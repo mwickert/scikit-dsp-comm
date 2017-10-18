@@ -1597,12 +1597,18 @@ def dstep(n):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import dstep
     >>> n = arange(-5,5)
     >>> x = dstep(n)
-    >>> stem(n,x)
-    >>> # shift the delta left by 2
+    >>> plt.stem(n,x)
+    >>> plt.show()
+
+    Shift the delta left by 2.
+
     >>> x = dstep(n+2)
-    >>> stem(n,x)
+    >>> plt.stem(n,x)
     """
     x = np.zeros(len(n))
     for k,nn in enumerate(n):
@@ -1635,12 +1641,18 @@ def drect(n,N):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import drect
     >>> n = arange(-5,5)
     >>> x = drect(n, N=3)
-    >>> stem(n,x)
-    >>> # shift the delta left by 2
+    >>> plt.stem(n,x)
+    >>> plt.show()
+
+    Shift the delta left by 2.
+
     >>> x = drect(n+2, N=3)
-    >>> stem(n,x)
+    >>> plt.stem(n,x)
     """ 
     x = np.zeros(len(n))
     for k,nn in enumerate(n):

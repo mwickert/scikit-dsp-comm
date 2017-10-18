@@ -2112,12 +2112,18 @@ def scatter(x,Ns,start):
 
     Examples
     --------
-    >>> x,b, data = NRZ_bits(1000,10,'rc')
-    >>> # add some noise so points are now scattered about +/-1
-    >>>  y = cpx_AWGN(x,20,10)
-    >>>  yI,yQ = scatter(y,10,60)
-    >>> plot(yI,yQ,'.')
-    >>> axis('equal')
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> x,b, data = ss.NRZ_bits(1000,10,'rc')
+    >>> # Add some noise so points are now scattered about +/-1
+    >>> y = ss.cpx_AWGN(x,20,10)
+    >>> yI,yQ = ss.scatter(y,10,60)
+    >>> plt.plot(yI,yQ,'.')
+    >>> plt.axis('equal')
+    >>> plt.ylabel("Quadrature")
+    >>> plt.xlabel("In-Phase")
+    >>> plt.grid()
+    >>> plt.show()
     """
     xI = np.real(x[start::Ns])
     xQ = np.imag(x[start::Ns])

@@ -2380,7 +2380,7 @@ def am_rx_BPF(N_order = 7, ripple_dB = 1, B = 10e3, fs = 192e3):
     >>> ss.zplane(b_bpf,a_bpf)
     >>> plt.show()
 
-    Plot the frequency response.
+    Plot of the frequency response.
 
     >>> f = np.arange(0,192/2.,.1)
     >>> w, Hbpf = signal.freqz(b_bpf,a_bpf,2*np.pi*f/192)

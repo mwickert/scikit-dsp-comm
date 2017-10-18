@@ -1884,9 +1884,14 @@ def NRZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
 
     Examples
     --------
-    >>> x,b,data = NRZ_bits(100,10)
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm.sigsys import NRZ_bits
+    >>> from numpy import arange
+    >>> x,b,data = NRZ_bits(100, 10)
     >>> t = arange(len(x))
-    >>> plot(t,x)
+    >>> plt.plot(t, x)
+    >>> plt.ylim([-1.01, 1.01])
+    >>> plt.show()
     """
     data = np.random.randint(0,2,N_bits)
     n_zeros = np.zeros((N_bits,int(Ns)-1))

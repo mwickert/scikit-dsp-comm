@@ -600,16 +600,23 @@ def lp_samp(fb,fs,fmax,N,shape='tri',fsize=(6,4)):
     
     Examples
     --------
-    >>> # No aliasing as 10 < 25/2
-    >>> lp_samp(10,25,50,10)
-    >>> # Aliasing as 15 > 25/2
-    >>> lp_samp(15,25,50,10)
-    """
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm.sigsys import lp_samp
 
+    No aliasing as 10 < 25/2.
+
+    >>> lp_samp(10,25,50,10)
+    >>> plt.show()
+
+    Now aliasing as 15 > 25/2.
+
+    >>> lp_samp(15,25,50,10)
+
+    """
     plt.figure(figsize=fsize)
     # define the plot interval
     f = np.arange(-fmax,fmax+fmax/200.,fmax/200.)
-    A = 1.0;
+    A = 1.0
     line_ampl = A/2.*np.array([0, 1])
     # plot the lowpass spectrum in black
     if shape.lower() == 'tri':

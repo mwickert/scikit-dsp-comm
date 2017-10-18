@@ -747,7 +747,7 @@ def simpleQuant(x,Btot,Xmax,Limit):
     elif Limit.lower() == 'none':
         xq = np.round(x*2**B)/2**B
     else:
-        print('limit must be the string over, sat, or none')
+        raise ValueError('limit must be the string over, sat, or none')
     return xq*Xmax
 
 

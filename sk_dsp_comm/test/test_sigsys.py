@@ -682,3 +682,7 @@ class TestSigsys(TestCase):
     def test_lp_samp_value_err(self):
         with self.assertRaisesRegexp(ValueError, 'shape must be tri or line')as lp_s_err:
             ss.lp_samp(10, 25, 50, 10, shape='square')
+
+    def test_simpleQuant_value_err(self):
+        with self.assertRaisesRegexp(ValueError, "limit must be the string over, sat, or none") as sQ_err:
+            ss.simpleQuant(np.ones(12), 12, 12, 'under')

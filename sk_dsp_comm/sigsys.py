@@ -740,12 +740,27 @@ def simpleQuant(x,Btot,Xmax,Limit):
     
     Examples
     --------
-    >>> n = arange(0,10000)
-    >>> x = cos(2*pi*0.211*n)
-    >>> y = sinusoidAWGN(x,90)
-    >>> yq = simpleQuant(y,12,1,sat)
-    >>> psd(y,2**10,Fs=1);
-    >>> psd(yq,2**10,Fs=1)
+    >>> import matplotlib.pyplot as plt
+    >>> from matplotlib.mlab import psd
+    >>> import numpy as np
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> n = np.arange(0,10000)
+    >>> x = np.cos(2*np.pi*0.211*n)
+    >>> y = ss.sinusoidAWGN(x,90)
+    >>> Px, f = psd(y,2**10,Fs=1)
+    >>> plt.plot(f, 10*np.log10(Px))
+    >>> plt.ylim([-80, 25])
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.xlabel(r'Normalized Frequency $\omega/2\pi$')
+    >>> plt.show()
+
+    >>> yq = ss.simpleQuant(y,12,1,'sat')
+    >>> Px, f = psd(yq,2**10,Fs=1)
+    >>> plt.plot(f, 10*np.log10(Px))
+    >>> plt.ylim([-80, 25])
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.xlabel(r'Normalized Frequency $\omega$/2\pi')
+    >>> plt.show()
     """
     B = Btot-1
     x = x/Xmax

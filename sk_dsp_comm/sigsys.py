@@ -2679,8 +2679,13 @@ def rect_conv(n,N_len):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import rect_conv
     >>> n = arange(-5,20)
     >>> y = rect_conv(n,6)
+    >>> plt.plot(n, y)
+    >>> plt.show()
     """
     y = np.zeros(len(n))
     for k in range(len(n)):

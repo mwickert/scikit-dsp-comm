@@ -2027,9 +2027,12 @@ def eye_plot(x,L,S=0):
     
     Examples
     --------
-    >>> # 1000 bits at 10 samples per bit with 'rc' shaping
-    >>> x,b, data = NRZ_bits(1000,10,'rc')
-    >>> eye_plot(x,20,60)
+    1000 bits at 10 samples per bit with 'rc' shaping.
+
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> x,b, data = ss.NRZ_bits(1000,10,'rc')
+    >>> ss.eye_plot(x,20,60)
     """
     plt.figure(figsize=(6,4))
     idx = np.arange(0,L+1)

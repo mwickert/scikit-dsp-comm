@@ -949,8 +949,15 @@ def fir_iir_notch(fi,fs,r=0.95):
 
     Examples
     --------
-    >>> b_FIR, a_FIR = fir_iir_notch(1000,8000,0)
-    >>> b_IIR, a_IIR = fir_iir_notch(1000,8000)
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import sigsys as ss
+
+    >>> b_FIR, a_FIR = ss.fir_iir_notch(1000,8000,0)
+    >>> ss.zplane(b_FIR, a_FIR)
+    >>> plt.show()
+
+    >>> b_IIR, a_IIR = ss.fir_iir_notch(1000,8000)
+    >>> ss.zplane(b_IIR, a_IIR)
     """
     w0 = 2*np.pi*fi/float(fs)
     if r >= 1:

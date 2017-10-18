@@ -20,3 +20,6 @@ doc/sphinx/
 
 # IPython Notebook Checkpoints
 .ipynb_checkpoints/
+
+# Backup files
+*~

@@ -4,7 +4,7 @@ import numpy as np
 from numpy.random import randn
 from scipy import signal
 import numpy.testing as npt
-from .. import sigsys as ss
+from sk_dsp_comm import sigsys as ss
 
 
 class TestSigsys(TestCase):
@@ -678,3 +678,7 @@ class TestSigsys(TestCase):
         a_check = np.array([ 1.        , -1.34350288,  0.9025    ])
         npt.assert_almost_equal(b, b_check)
         npt.assert_almost_equal(a, a_check)
+
+    def test_lp_samp_value_err(self):
+        with self.assertRaisesRegexp(ValueError, 'shape must be tri or line')as lp_s_err:
+            ss.lp_samp(10, 25, 50, 10, shape='square')

@@ -1203,12 +1203,16 @@ def fs_coeff(xp,N,f0,one_side=True):
 
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> import sk_dsp_comm.sigsys as ss
     >>> t = arange(0,1,1/1024.)
     >>> # a 20% duty cycle pulse starting at t = 0
-    >>> x_rect = rect(t-.1,0.2)
-    >>> Xk, fk = fs_coeff(x_rect,25,10)
+    >>> x_rect = ss.rect(t-.1,0.2)
+    >>> Xk, fk = ss.fs_coeff(x_rect,25,10)
     >>> # plot the spectral lines
-    >>> line_spectra(fk,Xk,'mag')
+    >>> ss.line_spectra(fk,Xk,'mag')
+    >>> plt.show()
     """
     Nint = len(xp)
     if Nint < 2*N+1:

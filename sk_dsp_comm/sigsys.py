@@ -647,10 +647,7 @@ def lp_samp(fb,fs,fmax,N,shape='tri',fsize=(6,4)):
 
 def lp_tri(f, fb):
     """
-    Triangle spectral shape function used by :func:`lp_spec`.
-    
-    This is a support function for the lowpass spectrum plotting function
-    :func:`lp_spec`.
+    Triangle spectral shape function used by :func:`lp_samp`.
 
     Parameters
     ----------
@@ -660,7 +657,12 @@ def lp_tri(f, fb):
     Returns
     -------
     x : ndarray of spectrum samples for a single triangle shape
-    
+
+    Notes
+    -----
+    This is a support function for the lowpass spectrum plotting function
+    :func:`lp_samp`.
+
     Examples
     --------
     >>> x = lp_tri(f, fb)

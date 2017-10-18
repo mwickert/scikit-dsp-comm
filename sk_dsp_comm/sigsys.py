@@ -1563,12 +1563,18 @@ def dimpulse(n):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import dimpulse
     >>> n = arange(-5,5)
     >>> x = dimpulse(n)
-    >>> stem(n,x)
-    >>> # shift the delta left by 2
+    >>> plt.stem(n,x)
+    >>> plt.show()
+
+    Shift the delta left by 2.
+
     >>> x = dimpulse(n+2)
-    >>> stem(n,x)
+    >>> plt.stem(n,x)
     """
     x = np.zeros(len(n))
     for k,nn in enumerate(n):

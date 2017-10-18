@@ -1363,14 +1363,20 @@ def conv_integral(x1,tx1,x2,tx2,extent=('f','f')):
 
     Examples
     --------
-    >>> tx = arange(-5,10,.01)
-    >>> x = rect(tx-2,4) # pulse starts at t = 0 
-    >>> y,ty = conv_integral(x,tx,x,tx)
-    >>> plot(ty,y) # expect a triangle on [0,8]
-    >>> # Consider a pulse convolved with an exponential ('r' type extent)
-    >>> h = 4*exp(-4*tx)*step(tx)
-    >>> y,ty = conv_integral(x,tx,h,tx,extent=('f','r')) # note extents set
-    >>> plot(ty,y) # expect a pulse charge and discharge waveform
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> import sk_dsp_comm.sigsys as ss
+    >>> tx = np.arange(-5,10,.01)
+    >>> x = ss.rect(tx-2,4) # pulse starts at t = 0
+    >>> y,ty = ss.conv_integral(x,tx,x,tx)
+    >>> plt.plot(ty,y) # expect a triangle on [0,8]
+    >>> plt.show()
+
+    Now, consider a pulse convolved with an exponential.
+
+    >>> h = 4*np.exp(-4*tx)*ss.step(tx)
+    >>> y,ty = ss.conv_integral(x,tx,h,tx,extent=('f','r')) # note extents set
+    >>> plt.plot(ty,y) # expect a pulse charge and discharge waveform
     """
     dt = tx1[1] - tx1[0]
     nx1 = np.arange(0,len(tx1))
@@ -2630,7 +2636,7 @@ def biquad2(w_num, r_num, w_den, r_den):
 
     Examples
     --------
-    b,a = biquad2(pi/4., 1, pi/4., 0.95)
+    >>> b,a = biquad2(pi/4., 1, pi/4., 0.95)
     """
     b = np.array([1, -2*r_num*np.cos(w_num), r_num**2])
     a = np.array([1, -2*r_den*np.cos(w_den), r_den**2])

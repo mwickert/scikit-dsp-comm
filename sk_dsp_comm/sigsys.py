@@ -1436,9 +1436,13 @@ def delta_eps(t,eps):
     
     Examples
     --------
-    >>> t = arange(-2,2,.001)
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import delta_eps
+    >>> t = np.arange(-2,2,.001)
     >>> d = delta_eps(t,.1)
-    >>> plot(t,d)
+    >>> plt.plot(t,d)
+    >>> plt.show()
     """
     d = np.zeros(len(t))
     for k,tt in enumerate(t):

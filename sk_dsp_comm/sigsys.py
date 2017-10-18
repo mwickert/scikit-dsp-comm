@@ -759,7 +759,7 @@ def simpleQuant(x,Btot,Xmax,Limit):
     >>> plt.plot(f, 10*np.log10(Px))
     >>> plt.ylim([-80, 25])
     >>> plt.ylabel("Power Spectral Density (dB)")
-    >>> plt.xlabel(r'Normalized Frequency $\omega$/2\pi')
+    >>> plt.xlabel(r'Normalized Frequency $\omega/2\pi$')
     >>> plt.show()
     """
     B = Btot-1

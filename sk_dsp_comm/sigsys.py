@@ -2204,10 +2204,15 @@ def my_psd(x,NFFT=2**10,Fs=1):
     
     Examples
     --------
-    >>> x,b, data = NRZ_bits(10000,10)
-    >>> Px,f = my_psd(x,2**10,10)
-    >>> plot(f, 10*log10(Px))
-
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import log10
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> x,b, data = ss.NRZ_bits(10000,10)
+    >>> Px,f = ss.my_psd(x,2**10,10)
+    >>> plt.plot(f, 10*log10(Px))
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.xlabel("Frequency (Hz)")
+    >>> plt.show()
     """
     Px,f = pylab.mlab.psd(x,NFFT,Fs)
     return Px.flatten(), f

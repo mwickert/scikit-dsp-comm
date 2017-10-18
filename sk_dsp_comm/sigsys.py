@@ -308,7 +308,7 @@ def position_CD(Ka,out_type = 'fb_exact'):
     other parameters are hard-coded from Case Study example.
 
     Examples
-    ------
+    --------
     >>> b,a = position_CD(Ka,'fb_approx')
     >>> b,a = position_CD(Ka,'fb_exact')
     """
@@ -1712,10 +1712,15 @@ def rc_imp(Ns,alpha,M=6):
 
     Examples
     --------
-    >>> # ten samples per symbol and alpha = 0.35
+    Ten samples per symbol and alpha = 0.35.
+
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import rc_imp
     >>> b = rc_imp(10,0.35)
     >>> n = arange(-10*6,10*6+1)
-    >>> stem(n,b)
+    >>> plt.stem(n,b)
+    >>> plt.show()
     """
     # Design the filter
     n = np.arange(-M*Ns,M*Ns+1)

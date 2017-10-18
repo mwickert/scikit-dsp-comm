@@ -1526,12 +1526,20 @@ def rect(t,tau):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import rect
     >>> t = arange(-1,5,.01)
     >>> x = rect(t,1.0)
-    >>> plot(t,x)
-    >>> # to turn on at t = 1 shift t
+    >>> plt.plot(t,x)
+    >>> plt.ylim([0, 1.01])
+    >>> plt.show()
+
+    To turn on the pulse at t = 1 shift t.
+
     >>> x = rect(t - 1.0,1.0)
-    >>> plot(t,x)
+    >>> plt.plot(t,x)
+    >>> plt.ylim([0, 1.01])
     """
     x = np.zeros(len(t))
     for k,tk in enumerate(t):

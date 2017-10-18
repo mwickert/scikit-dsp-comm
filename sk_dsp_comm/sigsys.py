@@ -647,10 +647,10 @@ def lp_samp(fb,fs,fmax,N,shape='tri',fsize=(6,4)):
 
 def lp_tri(f, fb):
     """
-    Triangle spectral shape function used by lp_spec.
+    Triangle spectral shape function used by :func:`lp_spec`.
     
     This is a support function for the lowpass spectrum plotting function
-    lp_spec().
+    :func:`lp_spec`.
     
     Parameters
     ----------

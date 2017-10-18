@@ -651,7 +651,7 @@ def lp_tri(f, fb):
     
     This is a support function for the lowpass spectrum plotting function
     :func:`lp_spec`.
-    
+
     Parameters
     ----------
     f : ndarray containing frequency samples
@@ -2217,13 +2217,14 @@ def am_rx(x192):
     Notes
     -----
     The bandpass filter needed at the receiver front-end can be designed
-    using b_bpf,a_bpf = am_rx_BPF().
+    using b_bpf,a_bpf = :func:`am_rx_BPF`.
     
     Examples
     --------
-    >>> n = arange(0,1000)
+    >>> import numpy as np
+    >>> n = np.arange(0,1000)
     >>> # 1 kHz message signal
-    >>> m = cos(2*pi*1000/8000.*n)
+    >>> m = np.cos(2*np.pi*1000/8000.*n)
     >>> m_rx8,t8,m_rx192,x_edet192 = am_rx(x192)
     """
     x_edet192 = env_det(x192)
@@ -2265,15 +2266,26 @@ def am_rx_BPF(N_order = 7, ripple_dB = 1, B = 10e3, fs = 192e3):
     Examples
     --------
     >>> from scipy import signal
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> import sk_dsp_comm.sigsys as ss
     >>> # Use the default values
-    >>> b_bpf,a_bpf = am_rx_BPF()
-    >>> # plot the filter pole-zero plot
-    >>> zplane(b_bpf,a_bpf)
-    >>> # plot the frequency response
-    >>> f = arange(0,192/2.,.1)
-    >>> w, Hbpf = signal.freqz(b_bpf,a_bpf,2*pi*f/192)
-    >>> plot(f,20*log10(abs(Hbpf)))
-    >>> axis([0,192/2.,-80,10])
+    >>> b_bpf,a_bpf = ss.am_rx_BPF()
+
+    Pole-zero plot of the filter.
+
+    >>> ss.zplane(b_bpf,a_bpf)
+    >>> plt.show()
+
+    Plot the frequency response.
+
+    >>> f = np.arange(0,192/2.,.1)
+    >>> w, Hbpf = signal.freqz(b_bpf,a_bpf,2*np.pi*f/192)
+    >>> plt.plot(f*10,20*np.log10(abs(Hbpf)))
+    >>> plt.axis([0,1920/2.,-80,10])
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.xlabel("Frequency (kHz)")
+    >>> plt.show()
     """
     b_bpf,a_bpf = signal.cheby1(N_order,ripple_dB,2*np.array([75e3-B/2.,75e3+B/2.])/fs,'bandpass')
     return b_bpf,a_bpf

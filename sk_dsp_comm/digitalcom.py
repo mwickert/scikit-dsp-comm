@@ -400,7 +400,7 @@ def QAM_SEP(tx_data,rx_data,mod_type,Ncorr = 1024,Ntransient = 0,SEP_disp=True):
     elif mod_type.lower() == '256qam':
         M = 16
     else:
-        print('Unknown mod_type')
+        raise ValueError('Unknown mod_type')
     rx_data = np.rint((M-1)*(rx_data + (1+1j))/2.)
     # Fix-up edge points real part
     s1r = mlab.find(rx_data.real > M - 1)
@@ -412,12 +412,7 @@ def QAM_SEP(tx_data,rx_data,mod_type,Ncorr = 1024,Ntransient = 0,SEP_disp=True):
     s2i = mlab.find(rx_data.imag < 0)
     rx_data.imag[s1i] = (M - 1)*np.ones(len(s1i))
     rx_data.imag[s2i] = np.zeros(len(s2i))
-    #plot(rx_data.real,rx_data.imag,'.')
     rx_data = 2*rx_data - (M - 1)*(1 + 1j)
-    #plot(rx_data.real,rx_data.imag,'.')
-    #plot(tx_data.real,tx_data.imag,'.')
-    #axis('equal')
-    #grid();
     #Correlate the first Ncorr symbols at four possible phase rotations
     R0,lags = xcorr(rx_data,tx_data,Ncorr)
     R1,lags = xcorr(rx_data*(1j)**1,tx_data,Ncorr) 
@@ -545,7 +540,7 @@ def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
     elif pulse.lower() == 'src':
         b = sqrt_rc_imp(Ns,alpha,MM)
     else:
-        print('pulse type must be rec, rc, or src')
+        raise ValueError('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     if M == 4:
         x = x*np.exp(1j*np.pi/4); # For QPSK points in quadrants

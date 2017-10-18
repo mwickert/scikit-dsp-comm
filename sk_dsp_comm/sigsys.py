@@ -1065,11 +1065,17 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
 
     Examples
     --------
-    >>> n = arange(0,25)
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> from sk_dsp_comm.sigsys import line_spectra
+    >>> n = np.arange(0,25)
     >>> # a pulse train with 10 Hz fundamental and 20% duty cycle
     >>> fk = n*10
-    >>> Xk = sinc(n*10*.02)*exp(-1j*2*pi*n*10*.01) # 1j = sqrt(-1)
+    >>> Xk = np.sinc(n*10*.02)*np.exp(-1j*2*np.pi*n*10*.01) # 1j = sqrt(-1)
+
     >>> line_spectra(fk,Xk,'mag')
+    >>> plt.show()
+
     >>> line_spectra(fk,Xk,'phase')
     """
 

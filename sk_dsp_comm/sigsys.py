@@ -1936,9 +1936,14 @@ def NRZ_bits2(data,Ns,pulse='rect',alpha = 0.25,M=6):
 
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm.sigsys import NRZ_bits2
+    >>> from sk_dsp_comm.sigsys import m_seq
+    >>> from numpy import arange
     >>> x,b = NRZ_bits2(m_seq(5),10)
     >>> t = arange(len(x))
-    >>> plot(t,x)
+    >>> plt.ylim([-1.01, 1.01])
+    >>> plt.plot(t,x)
     """
     N_bits = len(data)
     n_zeros = np.zeros((N_bits,int(Ns)-1))

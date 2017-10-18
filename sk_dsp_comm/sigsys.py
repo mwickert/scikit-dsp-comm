@@ -1257,7 +1257,7 @@ def conv_sum(x1,nx1,x2,nx2,extent=('f','f')):
     """ 
     Discrete convolution of x1 and x2 with proper tracking of the output time axis.
 
-    Convolve two discrete-time signals using the SciPy function signal.convolution.
+    Convolve two discrete-time signals using the SciPy function :func:`scipy.signal.convolution`.
     The time (sequence axis) are managed from input to output. y[n] = x1[n]*x2[n].
 
     Parameters
@@ -1284,14 +1284,20 @@ def conv_sum(x1,nx1,x2,nx2,extent=('f','f')):
 
     Examples
     --------
-    >>> nx = arange(-5,10)
-    >>> x = drect(nx,4) 
-    >>> y,ny = conv_sum(x,nx,x,nx)
-    >>> stem(ny,y)
-    >>> # Consider a pulse convolved with an exponential ('r' type extent)
-    >>> h = 0.5**nx*dstep(nx)
-    >>> y,ny = conv_sum(x,nx,h,nx,('f','r')) # note extents set
-    >>> stem(ny,y) # expect a pulse charge and discharge sequence
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> import sk_dsp_comm.sigsys as ss
+    >>> nx = np.arange(-5,10)
+    >>> x = ss.drect(nx,4)
+    >>> y,ny = ss.conv_sum(x,nx,x,nx)
+    >>> plt.stem(ny,y)
+    >>> plt.show()
+
+    Consider a pulse convolved with an exponential. ('r' type extent)
+
+    >>> h = 0.5**nx*ss.dstep(nx)
+    >>> y,ny = ss.conv_sum(x,nx,h,nx,('f','r')) # note extents set
+    >>> plt.stem(ny,y) # expect a pulse charge and discharge sequence
     """
     nnx1 = np.arange(0,len(nx1))
     nnx2 = np.arange(0,len(nx2))
@@ -1316,7 +1322,7 @@ def conv_sum(x1,nx1,x2,nx2,extent=('f','f')):
         ny = nny + nx1[-1]+nx2[0]
     elif extent[0] == 'l' and extent[1] == 'f':
         nny = np.arange(n1+n4,n2+1+n4+1-1)
-        ny = nny + tx1[0]+tx2[-1]
+        ny = nny + nx1[0]+nx2[-1]
     elif extent[0] == 'r' and extent[1] == 'r':
         nny = np.arange(n1+n3,min(n1+1+n4+1,n2+1+n3+1)-1)
         ny = nny + nx1[0]+nx2[0]

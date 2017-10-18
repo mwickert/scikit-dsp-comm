@@ -218,13 +218,23 @@ def peaking(GdB, fc, Q=3.5, fs=44100.):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> from sk_dsp_comm.sigsys import peaking
     >>> from scipy import signal
-    >>> b,a =  peaking(2.0,500)
-    >>> b,a =  peaking(-5.0,500,4)
-    >>> # Assuming pylab imported
-    >>> f = logspace(1,5,400)
-    >>> .w,H = signal.freqz(b,a,2*pi*f/44100)
-    >>> semilogx(f,20*log10(abs(H)))
+    >>> b,a = peaking(2.0,500)
+    >>> f = np.logspace(1,5,400)
+    >>> w,H = signal.freqz(b,a,2*np.pi*f/44100)
+    >>> plt.semilogx(f,20*np.log10(abs(H)))
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.xlabel("Frequency (Hz)")
+    >>> plt.show()
+
+    >>> b,a = peaking(-5.0,500,4)
+    >>> w,H = signal.freqz(b,a,2*np.pi*f/44100)
+    >>> plt.semilogx(f,20*np.log10(abs(H)))
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.xlabel("Frequency (Hz)")
     """
     mu = 10**(GdB/20.)
     kq = 4/(1 + mu)*np.tan(2*np.pi*fc/fs/(2*Q))

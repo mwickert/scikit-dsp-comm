@@ -545,9 +545,11 @@ def OA_filter(x,h,N,mode=0):
     
     Examples
     --------
-    >>> n = arange(0,100)
-    >>> x cos(2*pi*0.05*n)
-    >>> b = ones(10)
+    >>> import numpy as np
+    >>> from sk_dsp_comm.sigsys import OA_filter
+    >>> n = np.arange(0,100)
+    >>> x = np.cos(2*pi*0.05*n)
+    >>> b = np.ones(10)
     >>> y = OA_filter(x,h,N)
     >>> # set mode = 1
     >>> y, y_mat = OA_filter(x,h,N,1)

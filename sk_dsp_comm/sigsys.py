@@ -1605,12 +1605,18 @@ def tri(t,tau):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import tri
     >>> t = arange(-1,5,.01)
     >>> x = tri(t,1.0)
-    >>> plot(t,x)
-    >>> # to turn on at t = 1 shift t
+    >>> plt.plot(t,x)
+    >>> plt.show()
+
+    To turn on at t = 1, shift t.
+
     >>> x = tri(t - 1.0,1.0)
-    >>> plot(t,x)   
+    >>> plt.plot(t,x)
     """
     x = np.zeros(len(t))
     for k,tk in enumerate(t):

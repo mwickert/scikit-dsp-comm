@@ -1803,9 +1803,13 @@ def sqrt_rc_imp(Ns,alpha,M=6):
     Examples
     --------
     >>> # ten samples per symbol and alpha = 0.35
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import sqrt_rc_imp
     >>> b = sqrt_rc_imp(10,0.35)
     >>> n = arange(-10*6,10*6+1)
-    >>> stem(n,b)
+    >>> plt.stem(n,b)
+    >>> plt.show()
     """
     # Design the filter
     n = np.arange(-M*Ns,M*Ns+1)

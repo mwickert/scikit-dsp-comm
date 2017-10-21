@@ -887,9 +887,14 @@ def RZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
 
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.digitalcom import RZ_bits
     >>> x,b,data = RZ_bits(100,10)
     >>> t = arange(len(x))
-    >>> plot(t,x)
+    >>> plt.plot(t,x)
+    >>> plt.ylim([-0.01, 1.01])
+    >>> plt.show()
     """
     data = np.random.randint(0,2,N_bits) 
     x = np.hstack((data.reshape(N_bits,1),np.zeros((N_bits,int(Ns)-1))))

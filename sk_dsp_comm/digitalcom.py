@@ -219,7 +219,7 @@ def scatter(x,Ns,start):
     >>> x,b, data = dc.NRZ_bits(1000,10,'rc')
 
     Add some noise so points are now scattered about +/-1.
-    
+
     >>> y = dc.cpx_AWGN(x,20,10)
     >>> yI,yQ = dc.scatter(y,10,60)
     >>> plt.plot(yI,yQ,'.')
@@ -991,6 +991,7 @@ def my_psd(x,NFFT=2**10,Fs=1):
     >>> x,b, data = dc.NRZ_bits(10000,10)
     >>> Px,f = dc.my_psd(x,2**10,10)
     >>> plt.plot(f, 10*log10(Px))
+    >>> plt.show()
 
     """
     Px,f = pylab.mlab.psd(x,NFFT,Fs)

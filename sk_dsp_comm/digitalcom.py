@@ -109,6 +109,7 @@ def farrow_resample(x, fs_old, fs_new):
     >>> yI = dc.farrow_resample(xxI, fsin, fsout)
     >>> ty = arange(0, len(yI)) / fsout
     >>> plt.plot(tx - Tsin, xI)
+    >>> plt.show()
     >>> ts = 1
     >>> plt.plot(tx[ts::Ns] - Tsin, xI[ts::Ns], 'r.')
     >>> plt.plot(ty[ts::Ns] - Tsout, yI[ts::Ns], 'g.')
@@ -117,7 +118,6 @@ def farrow_resample(x, fs_old, fs_new):
     >>> plt.xlabel(r'Symbol Rate Normalized Time')
     >>> plt.xlim([0, 20])
     >>> plt.grid()
-    >>> plt.show()
     """
     
     #Cubic interpolator over 4 samples.
@@ -839,10 +839,16 @@ def rc_imp(Ns,alpha,M=6):
 
     Examples
     --------
-    >>> # ten samples per symbol and alpha = 0.35
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm.digitalcom import rc_imp
+    >>> from numpy import arange
+
+    Ten samples per symbol and alpha = 0.35
+
     >>> b = rc_imp(10,0.35)
     >>> n = arange(-10*6,10*6+1)
-    >>> stem(n,b)
+    >>> plt.stem(n,b)
+    >>> plt.show()
     """
     # Design the filter
     n = np.arange(-M*Ns,M*Ns+1)

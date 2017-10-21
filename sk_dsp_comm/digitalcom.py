@@ -217,7 +217,9 @@ def scatter(x,Ns,start):
     >>> import matplotlib.pyplot as plt
     >>> from sk_dsp_comm import digitalcom as dc
     >>> x,b, data = dc.NRZ_bits(1000,10,'rc')
-    >>> # add some noise so points are now scattered about +/-1
+
+    Add some noise so points are now scattered about +/-1.
+    
     >>> y = dc.cpx_AWGN(x,20,10)
     >>> yI,yQ = dc.scatter(y,10,60)
     >>> plt.plot(yI,yQ,'.')
@@ -225,6 +227,7 @@ def scatter(x,Ns,start):
     >>> plt.xlabel('In-Phase')
     >>> plt.ylabel('Quadrature')
     >>> plt.axis('equal')
+    >>> plt.show()
     """
     xI = np.real(x[start::Ns])
     xQ = np.imag(x[start::Ns])

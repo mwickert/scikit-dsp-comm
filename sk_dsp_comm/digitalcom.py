@@ -158,7 +158,7 @@ def eye_plot(x,L,S=0):
 
     Returns
     -------
-    Nothing : A plot window opens containing the eye plot
+    None : A plot window opens containing the eye plot
     
     Notes
     -----
@@ -313,20 +313,23 @@ def bit_errors(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
 
 def CIC(M,K):
     """
-    b = CIC(M,K)
-    A functional form implementation of a cascade of integrator comb (CIC) 
-    filters. Commonly used in multirate signal processing digital
-    down-converters and digital up-converters. A true CIC filter requires no
-    multiplies, only add and subtract operations. The functional form created
-    here is a simple FIR requiring real coefficient multiplies via filter()
-    ========================================================================
-      M = Effective number of taps per section (typically the decimation
-          factor).
-      K = The number of CIC sections cascaded (larger K gives the filter a
-          wider image rejection bandwidth.
-      b = FIR filter coefficients for a simple direct form implementation
-          using the filter() function.
-    ========================================================================
+    A functional form implementation of a cascade of integrator comb (CIC) filters.
+
+    Parameters
+    ----------
+    M : Effective number of taps per section (typically the decimation factor).
+    K : The number of CIC sections cascaded (larger K gives the filter a wider image rejection bandwidth.
+
+    Returns
+    -------
+    b : FIR filter coefficients for a simple direct form implementation using the filter() function.
+
+    Notes
+    -----
+    Commonly used in multirate signal processing digital down-converters and digital up-converters. A true CIC filter
+    requires no multiplies, only add and subtract operations. The functional form created here is a simple FIR requiring
+    real coefficient multiplies via filter().
+
     Mark Wickert July 2013
     """
     
@@ -511,13 +514,14 @@ def GMSK_bb(N_bits, Ns, MSK = 0,BT = 0.35):
     """
     MSK/GMSK Complex Baseband Modulation
     x,data = gmsk(N_bits, Ns, BT = 0.35, MSK = 0)
-    
-    N_bits = number of symbols processed
-       Ns  = the number of samples per bit
-       MSK = 0 for no shaping which is standard MSK,
-             MSK <> 0 --> GMSK is generated.
-       BT  = premodulation Bb*T product which sets
-             the bandwidth of the Gaussian lowpass filter   
+
+    Parameters
+    ----------
+    N_bits : number of symbols processed
+    Ns : the number of samples per bit
+    MSK : 0 for no shaping which is standard MSK, MSK <> 0 --> GMSK is generated.
+    BT : premodulation Bb*T product which sets the bandwidth of the Gaussian lowpass filter
+
     Mark Wickert Python version November 2014
     """
     x, b, data = NRZ_bits(N_bits,Ns)
@@ -1161,17 +1165,16 @@ def PCM_decode(x_bits,N_bits):
 
 def AWGN_chan(x_bits,EBN0_dB):
     """
-    ////////////////////////////////////////////////////////////////////////
-     x_bits = serial bit stream of 0/1 values.
-    EBNO_dB = energy per bit to noise power density ratio in dB of the
-              serial bit stream sent through the AWGN channel. Frequently
-              we equate EBN0 to SNR in link budget calculations
-     y_bits = received serial bit stream following hard decisions. This bit
-              will have bit errors. To check the estimated bit error
-              probability use digitalcom.BPSK_bep() or simply
-              >> Pe_est = sum(xor(x_bits,y_bits))/length(x_bits);  
-    ////////////////////////////////////////////////////////////////////////
-    
+    Parameters
+    ----------
+    x_bits : serial bit stream of 0/1 values.
+    EBNO_dB : Energy per bit to noise power density ratio in dB of the serial bit stream sent through the AWGN channel. Frequently we equate EBN0 to SNR in link budget calculations
+
+    Returns
+    -------
+    y_bits : Received serial bit stream following hard decisions. This bit will have bit errors. To check the estimated bit error probability use :func:`BPSK_BEP` or simply
+    >> Pe_est = sum(xor(x_bits,y_bits))/length(x_bits);
+
     Mark Wickert, March 2015
     """
     x_bits = 2*x_bits - 1 # convert from 0/1 to -1/1 signal values

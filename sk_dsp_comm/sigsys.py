@@ -1523,12 +1523,20 @@ def step(t):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import step
     >>> t = arange(-1,5,.01)
     >>> x = step(t)
-    >>> plot(t,x)
-    >>> # to turn on at t = 1 shift t
+    >>> plt.plot(t,x)
+    >>> plt.ylim([-0.01, 1.01])
+    >>> plt.show()
+
+    To turn on at t = 1, shift t.
+
     >>> x = step(t - 1.0)
-    >>> plot(t,x)
+    >>> plt.ylim([-0.01, 1.01])
+    >>> plt.plot(t,x)
     """
     x = np.zeros(len(t))
     for k,tt in enumerate(t):

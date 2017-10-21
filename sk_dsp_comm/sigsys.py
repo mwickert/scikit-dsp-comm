@@ -1024,11 +1024,25 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
 
     Examples
     --------
-    >>> n = arange(0,2048)
-    >>> x = cos(2*pi*1000/10000*n) + 0.01*cos(2*pi*3000/10000*n)
-    >>> f, Sx = simple_SA(x,128,512,10000)
-    >>> f, Sx = simple_SA(x,256,1024,10000,window='hanning')
-    >>> plot(f, 10*log10(Sx))
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> n = np.arange(0,2048)
+    >>> x = np.cos(2*np.pi*1000/10000*n) + 0.01*np.cos(2*np.pi*3000/10000*n)
+    >>> f, Sx = ss.simple_SA(x,128,512,10000)
+    >>> plt.plot(f, 10*np.log10(Sx))
+    >>> plt.ylim([-80, 0])
+    >>> plt.xlabel("Frequency (Hz)")
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.show()
+
+    With a hanning window.
+
+    >>> f, Sx = ss.simple_SA(x,256,1024,10000,window='hanning')
+    >>> plt.plot(f, 10*np.log10(Sx))
+    >>> plt.xlabel("Frequency (Hz)")
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.ylim([-80, 0])
     """
     Nx = len(x)
     K = int(Nx/NS)

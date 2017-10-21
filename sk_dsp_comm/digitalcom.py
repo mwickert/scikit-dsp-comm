@@ -96,6 +96,7 @@ def farrow_resample(x, fs_old, fs_new):
     >>> fsin = Ns*Rs
     >>> Tsin = 1 / fsin
     >>> N = 200
+    >>> ts = 1
     >>> x, b, data = dc.MPSK_bb(N+12, Ns, 4, 'rc')
     >>> x = x[12*Ns:]
     >>> xxI = x.real
@@ -109,8 +110,6 @@ def farrow_resample(x, fs_old, fs_new):
     >>> yI = dc.farrow_resample(xxI, fsin, fsout)
     >>> ty = arange(0, len(yI)) / fsout
     >>> plt.plot(tx - Tsin, xI)
-    >>> plt.show()
-    >>> ts = 1
     >>> plt.plot(tx[ts::Ns] - Tsin, xI[ts::Ns], 'r.')
     >>> plt.plot(ty[ts::Ns] - Tsout, yI[ts::Ns], 'g.')
     >>> plt.title(r'Impact of Asynchronous Sampling')
@@ -118,6 +117,7 @@ def farrow_resample(x, fs_old, fs_new):
     >>> plt.xlabel(r'Symbol Rate Normalized Time')
     >>> plt.xlim([0, 20])
     >>> plt.grid()
+    >>> plt.show()
     """
     
     #Cubic interpolator over 4 samples.
@@ -1400,7 +1400,7 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
     >>> plt.ylabel('Quadrature')
     >>> plt.axis('equal')
     >>> plt.grid()
-
+    >>> plt.show()
     """
     N_symb = len(x) // (N + Ncp)
     y_out = np.zeros(N_symb * N, dtype=np.complex128)

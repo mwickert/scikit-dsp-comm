@@ -90,7 +90,6 @@ def farrow_resample(x, fs_old, fs_new):
     >>> import matplotlib.pyplot as plt
     >>> from numpy import arange
     >>> from sk_dsp_comm import digitalcom as dc
-
     >>> Ns = 8
     >>> Rs = 1.
     >>> fsin = Ns*Rs
@@ -100,11 +99,9 @@ def farrow_resample(x, fs_old, fs_new):
     >>> x, b, data = dc.MPSK_bb(N+12, Ns, 4, 'rc')
     >>> x = x[12*Ns:]
     >>> xxI = x.real
-
     >>> M = 15
     >>> fsout = fsin * (M-1) / M
     >>> Tsout = 1. / fsout
-
     >>> xI = dc.farrow_resample(xxI, fsin, fsin)
     >>> tx = arange(0, len(xI)) / fsin
     >>> yI = dc.farrow_resample(xxI, fsin, fsout)
@@ -169,9 +166,10 @@ def eye_plot(x,L,S=0):
     
     Examples
     --------
+    1000 bits at 10 samples per bit with 'rc' shaping.
+
     >>> import matplotlib.pyplot as plt
     >>> from sk_dsp_comm import digitalcom as dc
-    >>> # 1000 bits at 10 samples per bit with 'rc' shaping
     >>> x,b, data = dc.NRZ_bits(1000,10,'rc')
     >>> dc.eye_plot(x,20,60)
     >>> plt.show()
@@ -839,12 +837,11 @@ def rc_imp(Ns,alpha,M=6):
 
     Examples
     --------
+    Ten samples per symbol and alpha = 0.35.
+
     >>> import matplotlib.pyplot as plt
     >>> from sk_dsp_comm.digitalcom import rc_imp
     >>> from numpy import arange
-
-    Ten samples per symbol and alpha = 0.35
-
     >>> b = rc_imp(10,0.35)
     >>> n = arange(-10*6,10*6+1)
     >>> plt.stem(n,b)
@@ -894,7 +891,7 @@ def sqrt_rc_imp(Ns,alpha,M=6):
     Examples
     --------
     Ten samples per symbol and alpha = 0.35.
-    
+
     >>> import matplotlib.pyplot as plt
     >>> from numpy import arange
     >>> from sk_dsp_comm.digitalcom import sqrt_rc_imp
@@ -1003,7 +1000,6 @@ def my_psd(x,NFFT=2**10,Fs=1):
     >>> Px,f = dc.my_psd(x,2**10,10)
     >>> plt.plot(f, 10*log10(Px))
     >>> plt.show()
-
     """
     Px,f = pylab.mlab.psd(x,NFFT,Fs)
     return Px.flatten(), f
@@ -1286,7 +1282,7 @@ def OFDM_tx(IQ_data, Nf, N, Np=0, cp=False, Ncp=0):
 def chan_est_equalize(z, Np, alpha, Ht=None):
     """
 
-    This is a helper function for OFDM_rx to unpack pilot blocks from
+    This is a helper function for :func:`OFDM_rx` to unpack pilot blocks from
     from the entire set of received OFDM symbols (the Nf of N filled
     carriers only); then estimate the channel array H recursively,
     and finally apply H_hat to Y, i.e., X_hat = Y/H_hat
@@ -1378,7 +1374,6 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
     >>> from sk_dsp_comm import digitalcom as dc
     >>> from scipy import signal
     >>> from numpy import array
-
     >>> hc = array([1.0, 0.1, -0.05, 0.15, 0.2, 0.05]) # impulse response spanning five symbols
     >>> # Quick example using the above channel with no cyclic prefix
     >>> x1,b1,IQ_data1 = dc.QAM_bb(50000,1,'16qam')

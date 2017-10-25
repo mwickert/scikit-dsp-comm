@@ -1008,14 +1008,15 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
         Sx += abs(X)**2
     Sx /= float(NAVG)
     Sx /= float(NFFT**2)
+    NFFTby2 = int(NFFT/2)
     if x.dtype != 'complex128':
-        n = np.arange(NFFT/2)
-        f = fs*n/float(NFFT)
-        Sx = Sx[0:NFFT/2]
+        n = np.arange(NFFTby2)
+        f = fs*n/float(NFFTby2)
+        Sx = Sx[0:NFFTby2]
     else:
-        n = np.arange(NFFT/2)
-        f = fs*np.hstack((np.arange(-NFFT/2,0),np.arange(NFFT/2)))/float(NFFT)
-        Sx = np.hstack((Sx[NFFT/2:],Sx[0:NFFT/2]))
+        n = np.arange(NFFTby2)
+        f = fs*np.hstack((np.arange(-NFFTby2,0),np.arange(NFFTby2)))/float(NFFT)
+        Sx = np.hstack((Sx[NFFTby2:],Sx[0:NFFTby2]))
     return f, Sx
 
 

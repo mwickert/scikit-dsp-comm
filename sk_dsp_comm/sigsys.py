@@ -1011,7 +1011,7 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
     NFFTby2 = int(NFFT/2)
     if x.dtype != 'complex128':
         n = np.arange(NFFTby2)
-        f = fs*n/float(NFFTby2)
+        f = fs*n/float(NFFT)
         Sx = Sx[0:NFFTby2]
     else:
         n = np.arange(NFFTby2)

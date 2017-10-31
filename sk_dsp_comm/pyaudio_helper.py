@@ -83,16 +83,17 @@ class DSP_io_stream(object):
     def in_out_check(self):
         """
         Checks the input and output to see if they are valid
+        
         """
         pA = pyaudio.PyAudio() 
         in_check = pA.get_device_info_by_index(self.in_idx)
         out_check = pA.get_device_info_by_index(self.out_idx)
         if((in_check['maxInputChannels'] == 0) and (out_check['maxOutputChannels']==0)):
-            warnings.warn('Invalid input and output devices');
+            warnings.warn('Invalid input and output devices')
         elif(in_check['maxInputChannels'] == 0):
-            warnings.warn('Invalid input device');
+            warnings.warn('Invalid input device')
         elif(out_check['maxOutputChannels'] == 0):
-            warnings.warn('Invalid output device');
+            warnings.warn('Invalid output device')
             
         
     def interaction(self,Stream):
@@ -111,11 +112,15 @@ class DSP_io_stream(object):
         a callback function. This stream is threaded, so it can be used with ipywidgets.
         Click on the "Start Streaming" button to start streaming and click on "Stop Streaming"
         button to stop streaming.
+
+        Parameters:
+        -----------
+
+        Tsec : stream time in seconds if Tsec > 0. If Tsec = 0, then stream goes to infinite 
+        mode. When in infinite mode, the "Stop Streaming" radio button or Tsec.stop() can be 
+        used to stop the stream.
         
-        Tsec = stream time in seconds if Tsec > 0. If Tsec = 0, then stream goes to infinite 
-        mode. When in infinite mode, Tsec.stop() can be used to stop the stream.
-        
-        numChan = number of channels. Use 1 for mono and 2 for stereo.
+        numChan : number of channels. Use 1 for mono and 2 for stereo.
         
         
         """
@@ -133,10 +138,13 @@ class DSP_io_stream(object):
         Stream audio in a thread using callback. The stream is threaded, so widgets can be
         used simultaneously during stream.
 
-        Tsec = stream time in seconds if Tsec > 0. If Tsec = 0, then stream goes to infinite 
+        Parameters:
+        -----------
+
+        Tsec : stream time in seconds if Tsec > 0. If Tsec = 0, then stream goes to infinite 
         mode. When in infinite mode, Tsec.stop() can be used to stop the stream.
         
-        numChan = number of channels. Use 1 for mono and 2 for stereo.
+        numChan : number of channels. Use 1 for mono and 2 for stereo.
 
         """
         def stream_thread(time,channel):
@@ -152,10 +160,13 @@ class DSP_io_stream(object):
         """
         Stream audio using callback
 
-        Tsec = stream time in seconds if Tsec > 0. If Tsec = 0, then stream goes to infinite 
+        Parameters:
+        -----------
+
+        Tsec : stream time in seconds if Tsec > 0. If Tsec = 0, then stream goes to infinite 
         mode. When in infinite mode, Tsec.stop() can be used to stop the stream.
         
-        numChan = number of channels. Use 1 for mono and 2 for stereo.
+        numChan : number of channels. Use 1 for mono and 2 for stereo.
 
         """
         self.Tsec = Tsec
@@ -224,11 +235,12 @@ class DSP_io_stream(object):
     def DSP_capture_add_samples(self,new_data):
         """
         Append new samples to the data_capture array and increment the sample counter
-        If length reaches Tcapture in counts keep newest samples
+        If length reaches Tcapture, then the newest samples will be kept. If Tcapture = 0 
+        then new values are not appended to the data_capture array.
         
         """
         self.capture_sample_count += len(new_data)
-        if (self.Tcapture > 0):
+        if self.Tcapture > 0:
             self.data_capture = np.hstack((self.data_capture,new_data))
             if (self.Tcapture > 0) and (len(self.data_capture) > self.Ncapture):
                 self.data_capture = self.data_capture[-self.Ncapture:]
@@ -236,12 +248,13 @@ class DSP_io_stream(object):
     def DSP_capture_add_samples_stereo(self,new_data_left,new_data_right):
         """
         Append new samples to the data_capture_left array and the data_capture_right
-        array and increment the sample counter. If length reaches Tcapture in counts 
-        keep newest samples.
+        array and increment the sample counter. If length reaches Tcapture, then the 
+        newest samples will be kept. If Tcapture = 0 then new values are not appended 
+        to the data_capture array.
         
         """
         self.capture_sample_count = self.capture_sample_count + len(new_data_left) + len(new_data_right)
-        if(self.Tcapture > 0):
+        if self.Tcapture > 0:
             self.data_capture_left = np.hstack((self.data_capture_left,new_data_left))
             self.data_capture_right = np.hstack((self.data_capture_right,new_data_right))
             if (len(self.data_capture_left) > self.Ncapture):
@@ -252,18 +265,21 @@ class DSP_io_stream(object):
 
     def DSP_callback_tic(self):
         """
-        Add new tic time to the DSP_tic list
+        Add new tic time to the DSP_tic list. Will not be called if
+        Tcapture = 0.
         
         """
-        if(self.Tcapture > 0):
+        if self.Tcapture > 0:
             self.DSP_tic.append(time.time()-self.start_time)
 
 
     def DSP_callback_toc(self):
         """
-        Add new toc time to the DSP_toc list
+        Add new toc time to the DSP_toc list. Will not be called if
+        Tcapture = 0.
+
         """
-        if(self.Tcapture > 0):
+        if self.Tcapture > 0:
             self.DSP_toc.append(time.time()-self.start_time)
 
 
@@ -322,11 +338,14 @@ class DSP_io_stream(object):
         Splits incoming packed stereo data into separate left and right channels
         and returns an array of left samples and an array of right samples
         
-        in_data = input data from the streaming object in the callback function. 
+        Parameters:
+        -----------
+        in_data : input data from the streaming object in the callback function. 
         
         Returns:
-        self.left_in = array of incoming left channel samples
-        self.right_in = array of incoming right channel samples
+        --------
+        left_in : array of incoming left channel samples
+        right_in : array of incoming right channel samples
         
         """
         for i in range(0,self.frame_length*2):
@@ -340,7 +359,15 @@ class DSP_io_stream(object):
         """
         Packs separate left and right channel data into one array to output
         and returns the output.
-        
+
+        Parameters:
+        -----------
+        left_out : left channel array of samples going to output
+        right_out : right channel array of samples going to output
+
+        Returns:
+        --------
+        out : packed left and right channel array of samples
         """
         for i in range(0,self.frame_length*2):
             if i % 2:
@@ -378,6 +405,11 @@ class loop_audio(object):
         
 
 def available_devices():
+    """
+    Display available input and output audio devices along with their
+    port indices.
+
+    """
     pA = pyaudio.PyAudio() 
     for k in range(pA.get_device_count()):
         dev = pA.get_device_info_by_index(k)

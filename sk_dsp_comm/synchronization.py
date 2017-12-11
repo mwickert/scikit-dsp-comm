@@ -274,10 +274,10 @@ def DD_carrier_sync(z,M,BnTs,zeta=0.707,type=0):
             a_hat[nn] = np.angle(z_prime[nn])/(2*np.pi/8.)
             # round to the nearest integer and fold to nonnegative
             # integers; detection into M-levels with thresholds at mid points.
-            a_hat[nn] = np.mod(round(a_hat[nn],8))
+            a_hat[nn] = np.mod(round(a_hat[nn]),8)
             a_hat[nn] = np.exp(1j*2*np.pi*a_hat[nn]/8)
         else:
-           print('M must be 2, 4, or 8');
+           raise ValueError('M must be 2, 4, or 8')
         if type == 0:
             # Maximum likelihood (ML)
             e_phi[nn] = z_prime[nn].imag * a_hat[nn].real - \
@@ -286,7 +286,7 @@ def DD_carrier_sync(z,M,BnTs,zeta=0.707,type=0):
             # Heuristic
             e_phi[nn] = np.angle(z_prime[nn]) - np.angle(a_hat[nn])
         else:
-            print('Type must be 0 or 1')
+            raise ValueError('Type must be 0 or 1')
         vp = K1*e_phi[nn]      # proportional component of loop filter
         vi = vi + K2*e_phi[nn] # integrator component of loop filter
         v = vp + vi        # loop filter output

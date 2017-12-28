@@ -46,7 +46,7 @@ pip install scikit-dsp-comm[helpers]
 
  The origin of this package comes from the writing the book Signals and Systems for Dummies, published by Wiley in 2013. The original module for this book is named `ssd.py`. In `scikit-dsp-comm` this module is renamed to `sigsys.py` to better reflect the fact that signal processing and communications theory is founded in signals and systems, a traditional subject in electrical engineering curricula.
 
- Until new documentation is ready to post, documentation from the original `ssd.py` module can be found at http://www.eas.uccs.edu/~mwickert/ssd/. Jupyter notebooks and PDF documents related to much of the remaining `scikit-dsp-comm` modules can be found under the various course home pages of http://www.eas.uccs.edu/~mwickert/. 
+Documentation is now housed on `readthedocs` which you can get to by click the docs badge near trhe top of this `README` 
 
 ## Getting Set-up on Your System
 
@@ -84,4 +84,4 @@ The advantage of the editable `pip` install is that it is very easy to keep `sci
 $ git pull origin master
 ```
 
-This will update you local install with not need to run `pip` again. **Note**: If you have any Python kernels running, such as a Jupyter Notebook, you will need to restart the kernel to insure any module changes get reloaded.  
+This will update you local repo and automatically update the Python install without the need to run `pip` again. **Note**: If you have any Python kernels running, such as a Jupyter Notebook, you will need to restart the kernel to insure any module changes get reloaded.  

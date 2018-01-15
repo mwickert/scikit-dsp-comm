@@ -790,7 +790,7 @@ def BPSK_tx(N_bits,Ns,ach_fc=2.0,ach_lvl_dB=-100,pulse='rect',alpha = 0.25,M=6):
     Ns : the number of samples per bit
     ach_fc : the frequency offset of the adjacent channel signals (default 2.0)
     ach_lvl_dB : the level of the adjacent channel signals in dB (default -100)
-    pulse :the pulse shape 'rect' or 'src'
+    pulse : the pulse shape 'rect' or 'src'
     alpha : square root raised cosine pulse shape factor (default = 0.25)
     M : square root raised cosine pulse truncation factor (default = 6)
 

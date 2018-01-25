@@ -1310,6 +1310,88 @@ def fs_approx(Xk,fk,t):
     return x_approx
 
 
+def FT_approx(x,t,Nfft):
+    '''
+    Approximate the Fourier transform of a finite duration signal using scipy.signal.freqz()
+    
+    Parameters
+    ----------
+    x : input signal array
+    t : time array used to create x(t)
+    Nfft : the number of frdquency domain points used to 
+           approximate X(f) on the interval [fs/2,fs/2], where
+           fs = 1/Dt. Dt being the time spacing in array t
+    
+    Returns
+    -------
+    f : frequency axis array in Hz
+    X : the Fourier transform approximation (complex)
+    
+    Notes
+    -----
+    The output time axis starts at the sum of the starting values in x1 and x2 
+    and ends at the sum of the two ending values in x1 and x2. The default 
+    extents of ('f','f') are used for signals that are active (have support) 
+    on or within n1 and n2 respectively. A right-sided signal such as 
+    a^n*u[n] is semi-infinite, so it has extent 'r' and the
+    convolution output will be truncated to display only the valid results.
+
+    Examples
+    --------
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> import sk_dsp_comm.sigsys as ss
+    >>> fs = 100 # sampling rate in Hz
+    >>> tau = 1
+    >>> t = arange(-5,5,1/fs)
+    >>> x0 = ss.rect(t-.5,tau)
+    >>> plt.figure(figsize=(6,5))
+    >>> plt.subplot(311)
+    >>> plt.plot(t,x0)
+    >>> plt.grid()
+    >>> plt.ylim([-0.1,1.1])
+    >>> plt.xlim([-2,2])
+    >>> plt.title(r'Exact Waveform')
+    >>> plt.xlabel(r'Time (s)')
+    >>> plt.ylabel(r'$x_0(t)$');
+
+    >>> # FT Exact Plot
+    >>> fe = arange(-10,10,.01)
+    >>> X0e = tau*sinc(fe*tau)
+    >>> plt.subplot(312)
+    >>> plt.plot(fe,abs(X0e))
+    >>> #plot(f,angle(X0))
+    >>> plt.grid()
+    >>> plt.xlim([-10,10])
+    >>> plt.title(r'Exact Spectrum Magnitude')
+    >>> plt.xlabel(r'Frequency (Hz)')
+    >>> plt.ylabel(r'$|X_0e(f)|$');
+
+    >>> # FT Approximation Plot
+    >>> f,X0 = FT_approx(x0,t,4096)
+    >>> plt.subplot(313)
+    >>> plt.plot(f,abs(X0))
+    >>> #plt.plot(f,angle(X0))
+    >>> plt.grid()
+    >>> plt.xlim([-10,10])
+    >>> plt.title(r'Approximation Spectrum Magnitude')
+    >>> plt.xlabel(r'Frequency (Hz)')
+    >>> plt.ylabel(r'$|X_0(f)|$');
+    >>> plt.tight_layout()
+    >>> plt.show()
+    '''
+    fs = 1/(t[1] - t[0])
+    t0 = (t[-1]+t[0])/2 # time delay at center
+    N0 = len(t)/2 # FFT center in samples
+    f = np.arange(-1/2,1/2,1/Nfft)
+    w, X = signal.freqz(x,1,2*np.pi*f)
+    X /= fs # account for dt = 1/fs in integral
+    X *= np.exp(-1j*2*np.pi*f*fs*t0)# time interval correction
+    X *= np.exp(1j*2*np.pi*f*N0)# FFT time interval is [0,Nfft-1]
+    F = f*fs
+    return F, X
+
+
 def conv_sum(x1,nx1,x2,nx2,extent=('f','f')):
     """ 
     Discrete convolution of x1 and x2 with proper tracking of the output time axis.

@@ -1310,7 +1310,7 @@ def fs_approx(Xk,fk,t):
     return x_approx
 
 
-def FT_approx(x,t,Nfft):
+def ft_approx(x,t,Nfft):
     '''
     Approximate the Fourier transform of a finite duration signal using scipy.signal.freqz()
     
@@ -1368,7 +1368,7 @@ def FT_approx(x,t,Nfft):
     >>> plt.ylabel(r'$|X_0e(f)|$');
 
     >>> # FT Approximation Plot
-    >>> f,X0 = FT_approx(x0,t,4096)
+    >>> f,X0 = ft_approx(x0,t,4096)
     >>> plt.subplot(313)
     >>> plt.plot(f,abs(X0))
     >>> #plt.plot(f,angle(X0))

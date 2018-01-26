@@ -56,7 +56,7 @@ The best way to use this package is to clone this repository and then install it
 git clone https://github.com/mwickert/scikit-dsp-comm.git
 ```
 
-There are package dependencies for some modules that you may want to avoid. Specifically these are whener hardware interfacing is involved. Specific hardware and software configuration details are discussed in [wiki pages](https://github.com/mwickert/SP-Comm-Tutorial-using-scikit-dsp-comm/wiki). For Windows users `pip` install takes care of almost everything.
+There are package dependencies for some modules that you may want to avoid. Specifically these are whenever hardware interfacing is involved. Specific hardware and software configuration details are discussed in [wiki pages](https://github.com/mwickert/SP-Comm-Tutorial-using-scikit-dsp-comm/wiki). For Windows users `pip` install takes care of almost everything.
 
 ### Editable Install with Dependencies
 

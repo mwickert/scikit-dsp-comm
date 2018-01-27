@@ -218,13 +218,23 @@ def peaking(GdB, fc, Q=3.5, fs=44100.):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> from sk_dsp_comm.sigsys import peaking
     >>> from scipy import signal
-    >>> b,a =  peaking(2.0,500)
-    >>> b,a =  peaking(-5.0,500,4)
-    >>> # Assuming pylab imported
-    >>> f = logspace(1,5,400)
-    >>> .w,H = signal.freqz(b,a,2*pi*f/44100)
-    >>> semilogx(f,20*log10(abs(H)))
+    >>> b,a = peaking(2.0,500)
+    >>> f = np.logspace(1,5,400)
+    >>> w,H = signal.freqz(b,a,2*np.pi*f/44100)
+    >>> plt.semilogx(f,20*np.log10(abs(H)))
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.xlabel("Frequency (Hz)")
+    >>> plt.show()
+
+    >>> b,a = peaking(-5.0,500,4)
+    >>> w,H = signal.freqz(b,a,2*np.pi*f/44100)
+    >>> plt.semilogx(f,20*np.log10(abs(H)))
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.xlabel("Frequency (Hz)")
     """
     mu = 10**(GdB/20.)
     kq = 4/(1 + mu)*np.tan(2*np.pi*fc/fs/(2*Q))
@@ -298,7 +308,7 @@ def position_CD(Ka,out_type = 'fb_exact'):
     other parameters are hard-coded from Case Study example.
 
     Examples
-    ------
+    --------
     >>> b,a = position_CD(Ka,'fb_approx')
     >>> b,a = position_CD(Ka,'fb_exact')
     """
@@ -545,9 +555,11 @@ def OA_filter(x,h,N,mode=0):
     
     Examples
     --------
-    >>> n = arange(0,100)
-    >>> x cos(2*pi*0.05*n)
-    >>> b = ones(10)
+    >>> import numpy as np
+    >>> from sk_dsp_comm.sigsys import OA_filter
+    >>> n = np.arange(0,100)
+    >>> x = np.cos(2*pi*0.05*n)
+    >>> b = np.ones(10)
     >>> y = OA_filter(x,h,N)
     >>> # set mode = 1
     >>> y, y_mat = OA_filter(x,h,N,1)
@@ -598,38 +610,43 @@ def lp_samp(fb,fs,fmax,N,shape='tri',fsize=(6,4)):
     
     Examples
     --------
-    >>> # No aliasing as 10 < 25/2
-    >>> lp_samp(10,25,50,10)
-    >>> # Aliasing as 15 > 25/2
-    >>> lp_samp(15,25,50,10)
-    """
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm.sigsys import lp_samp
 
+    No aliasing as bandwidth 10 Hz < 25/2; fs > fb.
+
+    >>> lp_samp(10,25,50,10)
+    >>> plt.show()
+
+    Now aliasing as bandwidth 15 Hz > 25/2; fs < fb.
+
+    >>> lp_samp(15,25,50,10)
+
+    """
     plt.figure(figsize=fsize)
     # define the plot interval
     f = np.arange(-fmax,fmax+fmax/200.,fmax/200.)
-    A = 1.0;
+    A = 1.0
     line_ampl = A/2.*np.array([0, 1])
     # plot the lowpass spectrum in black
+    shapes = ['tri', 'line']
+    if shape.lower() not in shapes:
+        raise ValueError('shape must be tri or line')
     if shape.lower() == 'tri':
         plt.plot(f,lp_tri(f,fb))
+        # overlay positive and negative frequency translates
+        for n in range(N):
+            plt.plot(f, lp_tri(f - (n + 1) * fs, fb), '--r')
+            plt.plot(f, lp_tri(f + (n + 1) * fs, fb), '--g')
     elif shape.lower() == 'line':
         plt.plot([fb, fb],line_ampl,'b', linewidth=2)
         plt.plot([-fb, -fb],line_ampl,'b', linewidth=2)
-    else:
-        print('shape must be tri or line')
-    # overlay positive and negative frequency translates
-    for n in range(N):
-        if shape.lower() == 'tri':
-            plt.plot(f,lp_tri(f-(n+1)*fs,fb),'--r')
-            plt.plot(f,lp_tri(f+(n+1)*fs,fb),'--g')
-        elif shape.lower() == 'line':
+        # overlay positive and negative frequency translates
+        for n in range(N):
             plt.plot([fb+(n+1)*fs, fb+(n+1)*fs],line_ampl,'--r', linewidth=2)
             plt.plot([-fb+(n+1)*fs, -fb+(n+1)*fs],line_ampl,'--r', linewidth=2)
             plt.plot([fb-(n+1)*fs, fb-(n+1)*fs],line_ampl,'--g', linewidth=2)
             plt.plot([-fb-(n+1)*fs, -fb-(n+1)*fs],line_ampl,'--g', linewidth=2)
-        else:
-            print('shape must be tri or line')
-    #plt.title('Lowpass Sampling Theorem for a Real Signal: Blk = orig, dotted = translates')
     plt.ylabel('Spectrum Magnitude')
     plt.xlabel('Frequency in Hz')
     plt.axis([-fmax,fmax,0,1])
@@ -638,11 +655,8 @@ def lp_samp(fb,fs,fmax,N,shape='tri',fsize=(6,4)):
 
 def lp_tri(f, fb):
     """
-    Triangle spectral shape function used by lp_spec.
-    
-    This is a support function for the lowpass spectrum plotting function
-    lp_spec().
-    
+    Triangle spectral shape function used by :func:`lp_samp`.
+
     Parameters
     ----------
     f : ndarray containing frequency samples
@@ -651,7 +665,12 @@ def lp_tri(f, fb):
     Returns
     -------
     x : ndarray of spectrum samples for a single triangle shape
-    
+
+    Notes
+    -----
+    This is a support function for the lowpass spectrum plotting function
+    :func:`lp_samp`.
+
     Examples
     --------
     >>> x = lp_tri(f, fb)
@@ -721,12 +740,27 @@ def simpleQuant(x,Btot,Xmax,Limit):
     
     Examples
     --------
-    >>> n = arange(0,10000)
-    >>> x = cos(2*pi*0.211*n)
-    >>> y = sinusoidAWGN(x,90)
-    >>> yq = simpleQuant(y,12,1,sat)
-    >>> psd(y,2**10,Fs=1);
-    >>> psd(yq,2**10,Fs=1)
+    >>> import matplotlib.pyplot as plt
+    >>> from matplotlib.mlab import psd
+    >>> import numpy as np
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> n = np.arange(0,10000)
+    >>> x = np.cos(2*np.pi*0.211*n)
+    >>> y = ss.sinusoidAWGN(x,90)
+    >>> Px, f = psd(y,2**10,Fs=1)
+    >>> plt.plot(f, 10*np.log10(Px))
+    >>> plt.ylim([-80, 25])
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.xlabel(r'Normalized Frequency $\omega/2\pi$')
+    >>> plt.show()
+
+    >>> yq = ss.simpleQuant(y,12,1,'sat')
+    >>> Px, f = psd(yq,2**10,Fs=1)
+    >>> plt.plot(f, 10*np.log10(Px))
+    >>> plt.ylim([-80, 25])
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.xlabel(r'Normalized Frequency $\omega/2\pi$')
+    >>> plt.show()
     """
     B = Btot-1
     x = x/Xmax
@@ -742,7 +776,7 @@ def simpleQuant(x,Btot,Xmax,Limit):
     elif Limit.lower() == 'none':
         xq = np.round(x*2**B)/2**B
     else:
-        print('limit must be the string over, sat, or none')
+        raise ValueError('limit must be the string over, sat, or none')
     return xq*Xmax
 
 
@@ -940,8 +974,15 @@ def fir_iir_notch(fi,fs,r=0.95):
 
     Examples
     --------
-    >>> b_FIR, a_FIR = fir_iir_notch(1000,8000,0)
-    >>> b_IIR, a_IIR = fir_iir_notch(1000,8000)
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import sigsys as ss
+
+    >>> b_FIR, a_FIR = ss.fir_iir_notch(1000,8000,0)
+    >>> ss.zplane(b_FIR, a_FIR)
+    >>> plt.show()
+
+    >>> b_IIR, a_IIR = ss.fir_iir_notch(1000,8000)
+    >>> ss.zplane(b_IIR, a_IIR)
     """
     w0 = 2*np.pi*fi/float(fs)
     if r >= 1:
@@ -983,11 +1024,25 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
 
     Examples
     --------
-    >>> n = arange(0,2048)
-    >>> x = cos(2*pi*1000/10000*n) + 0.01*cos(2*pi*3000/10000*n)
-    >>> f, Sx = simple_SA(x,128,512,10000)
-    >>> f, Sx = simple_SA(x,256,1024,10000,window='hanning')
-    >>> plot(f, 10*log10(Sx))
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> n = np.arange(0,2048)
+    >>> x = np.cos(2*np.pi*1000/10000*n) + 0.01*np.cos(2*np.pi*3000/10000*n)
+    >>> f, Sx = ss.simple_SA(x,128,512,10000)
+    >>> plt.plot(f, 10*np.log10(Sx))
+    >>> plt.ylim([-80, 0])
+    >>> plt.xlabel("Frequency (Hz)")
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.show()
+
+    With a hanning window.
+
+    >>> f, Sx = ss.simple_SA(x,256,1024,10000,window='hanning')
+    >>> plt.plot(f, 10*np.log10(Sx))
+    >>> plt.xlabel("Frequency (Hz)")
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.ylim([-80, 0])
     """
     Nx = len(x)
     K = int(Nx/NS)
@@ -1050,11 +1105,17 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
 
     Examples
     --------
-    >>> n = arange(0,25)
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> from sk_dsp_comm.sigsys import line_spectra
+    >>> n = np.arange(0,25)
     >>> # a pulse train with 10 Hz fundamental and 20% duty cycle
     >>> fk = n*10
-    >>> Xk = sinc(n*10*.02)*exp(-1j*2*pi*n*10*.01) # 1j = sqrt(-1)
+    >>> Xk = np.sinc(n*10*.02)*np.exp(-1j*2*np.pi*n*10*.01) # 1j = sqrt(-1)
+
     >>> line_spectra(fk,Xk,'mag')
+    >>> plt.show()
+
     >>> line_spectra(fk,Xk,'phase')
     """
 
@@ -1188,12 +1249,16 @@ def fs_coeff(xp,N,f0,one_side=True):
 
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> import sk_dsp_comm.sigsys as ss
     >>> t = arange(0,1,1/1024.)
     >>> # a 20% duty cycle pulse starting at t = 0
-    >>> x_rect = rect(t-.1,0.2)
-    >>> Xk, fk = fs_coeff(x_rect,25,10)
+    >>> x_rect = ss.rect(t-.1,0.2)
+    >>> Xk, fk = ss.fs_coeff(x_rect,25,10)
     >>> # plot the spectral lines
-    >>> line_spectra(fk,Xk,'mag')
+    >>> ss.line_spectra(fk,Xk,'mag')
+    >>> plt.show()
     """
     Nint = len(xp)
     if Nint < 2*N+1:
@@ -1249,7 +1314,7 @@ def conv_sum(x1,nx1,x2,nx2,extent=('f','f')):
     """ 
     Discrete convolution of x1 and x2 with proper tracking of the output time axis.
 
-    Convolve two discrete-time signals using the SciPy function signal.convolution.
+    Convolve two discrete-time signals using the SciPy function :func:`scipy.signal.convolution`.
     The time (sequence axis) are managed from input to output. y[n] = x1[n]*x2[n].
 
     Parameters
@@ -1276,14 +1341,20 @@ def conv_sum(x1,nx1,x2,nx2,extent=('f','f')):
 
     Examples
     --------
-    >>> nx = arange(-5,10)
-    >>> x = drect(nx,4) 
-    >>> y,ny = conv_sum(x,nx,x,nx)
-    >>> stem(ny,y)
-    >>> # Consider a pulse convolved with an exponential ('r' type extent)
-    >>> h = 0.5**nx*dstep(nx)
-    >>> y,ny = conv_sum(x,nx,h,nx,('f','r')) # note extents set
-    >>> stem(ny,y) # expect a pulse charge and discharge sequence
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> import sk_dsp_comm.sigsys as ss
+    >>> nx = np.arange(-5,10)
+    >>> x = ss.drect(nx,4)
+    >>> y,ny = ss.conv_sum(x,nx,x,nx)
+    >>> plt.stem(ny,y)
+    >>> plt.show()
+
+    Consider a pulse convolved with an exponential. ('r' type extent)
+
+    >>> h = 0.5**nx*ss.dstep(nx)
+    >>> y,ny = ss.conv_sum(x,nx,h,nx,('f','r')) # note extents set
+    >>> plt.stem(ny,y) # expect a pulse charge and discharge sequence
     """
     nnx1 = np.arange(0,len(nx1))
     nnx2 = np.arange(0,len(nx2))
@@ -1308,7 +1379,7 @@ def conv_sum(x1,nx1,x2,nx2,extent=('f','f')):
         ny = nny + nx1[-1]+nx2[0]
     elif extent[0] == 'l' and extent[1] == 'f':
         nny = np.arange(n1+n4,n2+1+n4+1-1)
-        ny = nny + tx1[0]+tx2[-1]
+        ny = nny + nx1[0]+nx2[-1]
     elif extent[0] == 'r' and extent[1] == 'r':
         nny = np.arange(n1+n3,min(n1+1+n4+1,n2+1+n3+1)-1)
         ny = nny + nx1[0]+nx2[0]
@@ -1353,14 +1424,20 @@ def conv_integral(x1,tx1,x2,tx2,extent=('f','f')):
 
     Examples
     --------
-    >>> tx = arange(-5,10,.01)
-    >>> x = rect(tx-2,4) # pulse starts at t = 0 
-    >>> y,ty = conv_integral(x,tx,x,tx)
-    >>> plot(ty,y) # expect a triangle on [0,8]
-    >>> # Consider a pulse convolved with an exponential ('r' type extent)
-    >>> h = 4*exp(-4*tx)*step(tx)
-    >>> y,ty = conv_integral(x,tx,h,tx,extent=('f','r')) # note extents set
-    >>> plot(ty,y) # expect a pulse charge and discharge waveform
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> import sk_dsp_comm.sigsys as ss
+    >>> tx = np.arange(-5,10,.01)
+    >>> x = ss.rect(tx-2,4) # pulse starts at t = 0
+    >>> y,ty = ss.conv_integral(x,tx,x,tx)
+    >>> plt.plot(ty,y) # expect a triangle on [0,8]
+    >>> plt.show()
+
+    Now, consider a pulse convolved with an exponential.
+
+    >>> h = 4*np.exp(-4*tx)*ss.step(tx)
+    >>> y,ty = ss.conv_integral(x,tx,h,tx,extent=('f','r')) # note extents set
+    >>> plt.plot(ty,y) # expect a pulse charge and discharge waveform
     """
     dt = tx1[1] - tx1[0]
     nx1 = np.arange(0,len(tx1))
@@ -1416,9 +1493,13 @@ def delta_eps(t,eps):
     
     Examples
     --------
-    >>> t = arange(-2,2,.001)
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import delta_eps
+    >>> t = np.arange(-2,2,.001)
     >>> d = delta_eps(t,.1)
-    >>> plot(t,d)
+    >>> plt.plot(t,d)
+    >>> plt.show()
     """
     d = np.zeros(len(t))
     for k,tt in enumerate(t):
@@ -1443,12 +1524,20 @@ def step(t):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import step
     >>> t = arange(-1,5,.01)
     >>> x = step(t)
-    >>> plot(t,x)
-    >>> # to turn on at t = 1 shift t
+    >>> plt.plot(t,x)
+    >>> plt.ylim([-0.01, 1.01])
+    >>> plt.show()
+
+    To turn on at t = 1, shift t.
+
     >>> x = step(t - 1.0)
-    >>> plot(t,x)
+    >>> plt.ylim([-0.01, 1.01])
+    >>> plt.plot(t,x)
     """
     x = np.zeros(len(t))
     for k,tt in enumerate(t):
@@ -1475,12 +1564,20 @@ def rect(t,tau):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import rect
     >>> t = arange(-1,5,.01)
     >>> x = rect(t,1.0)
-    >>> plot(t,x)
-    >>> # to turn on at t = 1 shift t
+    >>> plt.plot(t,x)
+    >>> plt.ylim([0, 1.01])
+    >>> plt.show()
+
+    To turn on the pulse at t = 1 shift t.
+
     >>> x = rect(t - 1.0,1.0)
-    >>> plot(t,x)
+    >>> plt.plot(t,x)
+    >>> plt.ylim([0, 1.01])
     """
     x = np.zeros(len(t))
     for k,tk in enumerate(t):
@@ -1509,12 +1606,18 @@ def tri(t,tau):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import tri
     >>> t = arange(-1,5,.01)
     >>> x = tri(t,1.0)
-    >>> plot(t,x)
-    >>> # to turn on at t = 1 shift t
+    >>> plt.plot(t,x)
+    >>> plt.show()
+
+    To turn on at t = 1, shift t.
+
     >>> x = tri(t - 1.0,1.0)
-    >>> plot(t,x)   
+    >>> plt.plot(t,x)
     """
     x = np.zeros(len(t))
     for k,tk in enumerate(t):
@@ -1539,12 +1642,18 @@ def dimpulse(n):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import dimpulse
     >>> n = arange(-5,5)
     >>> x = dimpulse(n)
-    >>> stem(n,x)
-    >>> # shift the delta left by 2
+    >>> plt.stem(n,x)
+    >>> plt.show()
+
+    Shift the delta left by 2.
+
     >>> x = dimpulse(n+2)
-    >>> stem(n,x)
+    >>> plt.stem(n,x)
     """
     x = np.zeros(len(n))
     for k,nn in enumerate(n):
@@ -1567,12 +1676,18 @@ def dstep(n):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import dstep
     >>> n = arange(-5,5)
     >>> x = dstep(n)
-    >>> stem(n,x)
-    >>> # shift the delta left by 2
+    >>> plt.stem(n,x)
+    >>> plt.show()
+
+    Shift the delta left by 2.
+
     >>> x = dstep(n+2)
-    >>> stem(n,x)
+    >>> plt.stem(n,x)
     """
     x = np.zeros(len(n))
     for k,nn in enumerate(n):
@@ -1605,12 +1720,18 @@ def drect(n,N):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import drect
     >>> n = arange(-5,5)
     >>> x = drect(n, N=3)
-    >>> stem(n,x)
-    >>> # shift the delta left by 2
+    >>> plt.stem(n,x)
+    >>> plt.show()
+
+    Shift the delta left by 2.
+
     >>> x = drect(n+2, N=3)
-    >>> stem(n,x)
+    >>> plt.stem(n,x)
     """ 
     x = np.zeros(len(n))
     for k,nn in enumerate(n):
@@ -1643,10 +1764,15 @@ def rc_imp(Ns,alpha,M=6):
 
     Examples
     --------
-    >>> # ten samples per symbol and alpha = 0.35
+    Ten samples per symbol and alpha = 0.35.
+
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import rc_imp
     >>> b = rc_imp(10,0.35)
     >>> n = arange(-10*6,10*6+1)
-    >>> stem(n,b)
+    >>> plt.stem(n,b)
+    >>> plt.show()
     """
     # Design the filter
     n = np.arange(-M*Ns,M*Ns+1)
@@ -1692,9 +1818,13 @@ def sqrt_rc_imp(Ns,alpha,M=6):
     Examples
     --------
     >>> # ten samples per symbol and alpha = 0.35
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import sqrt_rc_imp
     >>> b = sqrt_rc_imp(10,0.35)
     >>> n = arange(-10*6,10*6+1)
-    >>> stem(n,b)
+    >>> plt.stem(n,b)
+    >>> plt.show()
     """
     # Design the filter
     n = np.arange(-M*Ns,M*Ns+1)
@@ -1885,9 +2015,14 @@ def NRZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
 
     Examples
     --------
-    >>> x,b,data = NRZ_bits(100,10)
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm.sigsys import NRZ_bits
+    >>> from numpy import arange
+    >>> x,b,data = NRZ_bits(100, 10)
     >>> t = arange(len(x))
-    >>> plot(t,x)
+    >>> plt.plot(t, x)
+    >>> plt.ylim([-1.01, 1.01])
+    >>> plt.show()
     """
     data = np.random.randint(0,2,N_bits)
     n_zeros = np.zeros((N_bits,int(Ns)-1))
@@ -1932,9 +2067,14 @@ def NRZ_bits2(data,Ns,pulse='rect',alpha = 0.25,M=6):
 
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm.sigsys import NRZ_bits2
+    >>> from sk_dsp_comm.sigsys import m_seq
+    >>> from numpy import arange
     >>> x,b = NRZ_bits2(m_seq(5),10)
     >>> t = arange(len(x))
-    >>> plot(t,x)
+    >>> plt.ylim([-1.01, 1.01])
+    >>> plt.plot(t,x)
     """
     N_bits = len(data)
     n_zeros = np.zeros((N_bits,int(Ns)-1))
@@ -1975,9 +2115,12 @@ def eye_plot(x,L,S=0):
     
     Examples
     --------
-    >>> # 1000 bits at 10 samples per bit with 'rc' shaping
-    >>> x,b, data = NRZ_bits(1000,10,'rc')
-    >>> eye_plot(x,20,60)
+    1000 bits at 10 samples per bit with 'rc' shaping.
+
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> x,b, data = ss.NRZ_bits(1000,10,'rc')
+    >>> ss.eye_plot(x,20,60)
     """
     plt.figure(figsize=(6,4))
     idx = np.arange(0,L+1)
@@ -2017,12 +2160,18 @@ def scatter(x,Ns,start):
 
     Examples
     --------
-    >>> x,b, data = NRZ_bits(1000,10,'rc')
-    >>> # add some noise so points are now scattered about +/-1
-    >>>  y = cpx_AWGN(x,20,10)
-    >>>  yI,yQ = scatter(y,10,60)
-    >>> plot(yI,yQ,'.')
-    >>> axis('equal')
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> x,b, data = ss.NRZ_bits(1000,10,'rc')
+    >>> # Add some noise so points are now scattered about +/-1
+    >>> y = ss.cpx_AWGN(x,20,10)
+    >>> yI,yQ = ss.scatter(y,10,60)
+    >>> plt.plot(yI,yQ,'.')
+    >>> plt.axis('equal')
+    >>> plt.ylabel("Quadrature")
+    >>> plt.xlabel("In-Phase")
+    >>> plt.grid()
+    >>> plt.show()
     """
     xI = np.real(x[start::Ns])
     xQ = np.imag(x[start::Ns])
@@ -2132,10 +2281,15 @@ def my_psd(x,NFFT=2**10,Fs=1):
     
     Examples
     --------
-    >>> x,b, data = NRZ_bits(10000,10)
-    >>> Px,f = my_psd(x,2**10,10)
-    >>> plot(f, 10*log10(Px))
-
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import log10
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> x,b, data = ss.NRZ_bits(10000,10)
+    >>> Px,f = ss.my_psd(x,2**10,10)
+    >>> plt.plot(f, 10*log10(Px))
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.xlabel("Frequency (Hz)")
+    >>> plt.show()
     """
     Px,f = pylab.mlab.psd(x,NFFT,Fs)
     return Px.flatten(), f
@@ -2199,13 +2353,14 @@ def am_rx(x192):
     Notes
     -----
     The bandpass filter needed at the receiver front-end can be designed
-    using b_bpf,a_bpf = am_rx_BPF().
+    using b_bpf,a_bpf = :func:`am_rx_BPF`.
     
     Examples
     --------
-    >>> n = arange(0,1000)
+    >>> import numpy as np
+    >>> n = np.arange(0,1000)
     >>> # 1 kHz message signal
-    >>> m = cos(2*pi*1000/8000.*n)
+    >>> m = np.cos(2*np.pi*1000/8000.*n)
     >>> m_rx8,t8,m_rx192,x_edet192 = am_rx(x192)
     """
     x_edet192 = env_det(x192)
@@ -2247,15 +2402,26 @@ def am_rx_BPF(N_order = 7, ripple_dB = 1, B = 10e3, fs = 192e3):
     Examples
     --------
     >>> from scipy import signal
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> import sk_dsp_comm.sigsys as ss
     >>> # Use the default values
-    >>> b_bpf,a_bpf = am_rx_BPF()
-    >>> # plot the filter pole-zero plot
-    >>> zplane(b_bpf,a_bpf)
-    >>> # plot the frequency response
-    >>> f = arange(0,192/2.,.1)
-    >>> w, Hbpf = signal.freqz(b_bpf,a_bpf,2*pi*f/192)
-    >>> plot(f,20*log10(abs(Hbpf)))
-    >>> axis([0,192/2.,-80,10])
+    >>> b_bpf,a_bpf = ss.am_rx_BPF()
+
+    Pole-zero plot of the filter.
+
+    >>> ss.zplane(b_bpf,a_bpf)
+    >>> plt.show()
+
+    Plot of the frequency response.
+
+    >>> f = np.arange(0,192/2.,.1)
+    >>> w, Hbpf = signal.freqz(b_bpf,a_bpf,2*np.pi*f/192)
+    >>> plt.plot(f*10,20*np.log10(abs(Hbpf)))
+    >>> plt.axis([0,1920/2.,-80,10])
+    >>> plt.ylabel("Power Spectral Density (dB)")
+    >>> plt.xlabel("Frequency (kHz)")
+    >>> plt.show()
     """
     b_bpf,a_bpf = signal.cheby1(N_order,ripple_dB,2*np.array([75e3-B/2.,75e3+B/2.])/fs,'bandpass')
     return b_bpf,a_bpf
@@ -2567,8 +2733,13 @@ def rect_conv(n,N_len):
     
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.sigsys import rect_conv
     >>> n = arange(-5,20)
     >>> y = rect_conv(n,6)
+    >>> plt.plot(n, y)
+    >>> plt.show()
     """
     y = np.zeros(len(n))
     for k in range(len(n)):
@@ -2598,7 +2769,7 @@ def biquad2(w_num, r_num, w_den, r_den):
 
     Examples
     --------
-    b,a = biquad2(pi/4., 1, pi/4., 0.95)
+    >>> b,a = biquad2(pi/4., 1, pi/4., 0.95)
     """
     b = np.array([1, -2*r_num*np.cos(w_num), r_num**2])
     a = np.array([1, -2*r_den*np.cos(w_den), r_den**2])

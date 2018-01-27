@@ -48,19 +48,27 @@ from .sigsys import cpx_AWGN
 
 def farrow_resample(x, fs_old, fs_new):
     """
-    ==========================================================================
-     farrow_resample
-    ==========================================================================
-    y = farrow_resample(x,fs_old, fs_new)
-    
-    An cubic interpolator using a Farrow structure is used resample the
+    Parameters
+    ----------
+    x : Input list representing a signal vector needing resampling.
+    fs_old : Starting/old sampling frequency.
+    fs_new : New sampling frequency.
+
+    Returns
+    -------
+    y : List representing the signal vector resampled at the new frequency.
+
+    Notes
+    -----
+
+    A cubic interpolator using a Farrow structure is used resample the
     input data at a new sampling rate that may be an irrational multiple of
     the input sampling rate.
+
+    Time alignment can be found for a integer value M, found with the following:
+    :math:`f_{s,out} = f_{s,in} (M - 1) / M`.
     
-     x = Input signal vector needing resampling
-     y = Output signal vector
-    
-    The filter coefficients used here and a more comprehensive listing can be 
+    The filter coefficients used here and a more comprehensive listing can be
     found in H. Meyr, M. Moeneclaey, & S. Fechtel, "Digital Communication 
     Receivers," Wiley, 1998, Chapter 9, pp. 521-523.
     
@@ -73,6 +81,40 @@ def farrow_resample(x, fs_old, fs_new):
     Intern. Symp. on Circuits Syst., pp. 2641-2645, June 1988.
     
     Mark Wickert April 2003, recoded to Python November 2013
+
+    Examples
+    --------
+
+    The following example uses a QPSK signal with rc pulse shaping, and time alignment at M = 15.
+
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm import digitalcom as dc
+    >>> Ns = 8
+    >>> Rs = 1.
+    >>> fsin = Ns*Rs
+    >>> Tsin = 1 / fsin
+    >>> N = 200
+    >>> ts = 1
+    >>> x, b, data = dc.MPSK_bb(N+12, Ns, 4, 'rc')
+    >>> x = x[12*Ns:]
+    >>> xxI = x.real
+    >>> M = 15
+    >>> fsout = fsin * (M-1) / M
+    >>> Tsout = 1. / fsout
+    >>> xI = dc.farrow_resample(xxI, fsin, fsin)
+    >>> tx = arange(0, len(xI)) / fsin
+    >>> yI = dc.farrow_resample(xxI, fsin, fsout)
+    >>> ty = arange(0, len(yI)) / fsout
+    >>> plt.plot(tx - Tsin, xI)
+    >>> plt.plot(tx[ts::Ns] - Tsin, xI[ts::Ns], 'r.')
+    >>> plt.plot(ty[ts::Ns] - Tsout, yI[ts::Ns], 'g.')
+    >>> plt.title(r'Impact of Asynchronous Sampling')
+    >>> plt.ylabel(r'Real Signal Amplitude')
+    >>> plt.xlabel(r'Symbol Rate Normalized Time')
+    >>> plt.xlim([0, 20])
+    >>> plt.grid()
+    >>> plt.show()
     """
     
     #Cubic interpolator over 4 samples.
@@ -116,7 +158,7 @@ def eye_plot(x,L,S=0):
 
     Returns
     -------
-    Nothing : A plot window opens containing the eye plot
+    None : A plot window opens containing the eye plot
     
     Notes
     -----
@@ -124,9 +166,10 @@ def eye_plot(x,L,S=0):
     
     Examples
     --------
+    1000 bits at 10 samples per bit with 'rc' shaping.
+
     >>> import matplotlib.pyplot as plt
     >>> from sk_dsp_comm import digitalcom as dc
-    >>> # 1000 bits at 10 samples per bit with 'rc' shaping
     >>> x,b, data = dc.NRZ_bits(1000,10,'rc')
     >>> dc.eye_plot(x,20,60)
     >>> plt.show()
@@ -172,7 +215,9 @@ def scatter(x,Ns,start):
     >>> import matplotlib.pyplot as plt
     >>> from sk_dsp_comm import digitalcom as dc
     >>> x,b, data = dc.NRZ_bits(1000,10,'rc')
-    >>> # add some noise so points are now scattered about +/-1
+
+    Add some noise so points are now scattered about +/-1.
+
     >>> y = dc.cpx_AWGN(x,20,10)
     >>> yI,yQ = dc.scatter(y,10,60)
     >>> plt.plot(yI,yQ,'.')
@@ -180,6 +225,7 @@ def scatter(x,Ns,start):
     >>> plt.xlabel('In-Phase')
     >>> plt.ylabel('Quadrature')
     >>> plt.axis('equal')
+    >>> plt.show()
     """
     xI = np.real(x[start::Ns])
     xQ = np.imag(x[start::Ns])
@@ -267,20 +313,23 @@ def bit_errors(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
 
 def CIC(M,K):
     """
-    b = CIC(M,K)
-    A functional form implementation of a cascade of integrator comb (CIC) 
-    filters. Commonly used in multirate signal processing digital
-    down-converters and digital up-converters. A true CIC filter requires no
-    multiplies, only add and subtract operations. The functional form created
-    here is a simple FIR requiring real coefficient multiplies via filter()
-    ========================================================================
-      M = Effective number of taps per section (typically the decimation
-          factor).
-      K = The number of CIC sections cascaded (larger K gives the filter a
-          wider image rejection bandwidth.
-      b = FIR filter coefficients for a simple direct form implementation
-          using the filter() function.
-    ========================================================================
+    A functional form implementation of a cascade of integrator comb (CIC) filters.
+
+    Parameters
+    ----------
+    M : Effective number of taps per section (typically the decimation factor).
+    K : The number of CIC sections cascaded (larger K gives the filter a wider image rejection bandwidth.
+
+    Returns
+    -------
+    b : FIR filter coefficients for a simple direct form implementation using the filter() function.
+
+    Notes
+    -----
+    Commonly used in multirate signal processing digital down-converters and digital up-converters. A true CIC filter
+    requires no multiplies, only add and subtract operations. The functional form created here is a simple FIR requiring
+    real coefficient multiplies via filter().
+
     Mark Wickert July 2013
     """
     
@@ -400,7 +449,7 @@ def QAM_SEP(tx_data,rx_data,mod_type,Ncorr = 1024,Ntransient = 0,SEP_disp=True):
     elif mod_type.lower() == '256qam':
         M = 16
     else:
-        print('Unknown mod_type')
+        raise ValueError('Unknown mod_type')
     rx_data = np.rint((M-1)*(rx_data + (1+1j))/2.)
     # Fix-up edge points real part
     s1r = mlab.find(rx_data.real > M - 1)
@@ -412,12 +461,7 @@ def QAM_SEP(tx_data,rx_data,mod_type,Ncorr = 1024,Ntransient = 0,SEP_disp=True):
     s2i = mlab.find(rx_data.imag < 0)
     rx_data.imag[s1i] = (M - 1)*np.ones(len(s1i))
     rx_data.imag[s2i] = np.zeros(len(s2i))
-    #plot(rx_data.real,rx_data.imag,'.')
     rx_data = 2*rx_data - (M - 1)*(1 + 1j)
-    #plot(rx_data.real,rx_data.imag,'.')
-    #plot(tx_data.real,tx_data.imag,'.')
-    #axis('equal')
-    #grid();
     #Correlate the first Ncorr symbols at four possible phase rotations
     R0,lags = xcorr(rx_data,tx_data,Ncorr)
     R1,lags = xcorr(rx_data*(1j)**1,tx_data,Ncorr) 
@@ -470,13 +514,14 @@ def GMSK_bb(N_bits, Ns, MSK = 0,BT = 0.35):
     """
     MSK/GMSK Complex Baseband Modulation
     x,data = gmsk(N_bits, Ns, BT = 0.35, MSK = 0)
-    
-    N_bits = number of symbols processed
-       Ns  = the number of samples per bit
-       MSK = 0 for no shaping which is standard MSK,
-             MSK <> 0 --> GMSK is generated.
-       BT  = premodulation Bb*T product which sets
-             the bandwidth of the Gaussian lowpass filter   
+
+    Parameters
+    ----------
+    N_bits : number of symbols processed
+    Ns : the number of samples per bit
+    MSK : 0 for no shaping which is standard MSK, MSK <> 0 --> GMSK is generated.
+    BT : premodulation Bb*T product which sets the bandwidth of the Gaussian lowpass filter
+
     Mark Wickert Python version November 2014
     """
     x, b, data = NRZ_bits(N_bits,Ns)
@@ -545,7 +590,7 @@ def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
     elif pulse.lower() == 'src':
         b = sqrt_rc_imp(Ns,alpha,MM)
     else:
-        print('pulse type must be rec, rc, or src')
+        raise ValueError('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     if M == 4:
         x = x*np.exp(1j*np.pi/4); # For QPSK points in quadrants
@@ -796,10 +841,15 @@ def rc_imp(Ns,alpha,M=6):
 
     Examples
     --------
-    >>> # ten samples per symbol and alpha = 0.35
+    Ten samples per symbol and alpha = 0.35.
+
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm.digitalcom import rc_imp
+    >>> from numpy import arange
     >>> b = rc_imp(10,0.35)
     >>> n = arange(-10*6,10*6+1)
-    >>> stem(n,b)
+    >>> plt.stem(n,b)
+    >>> plt.show()
     """
     # Design the filter
     n = np.arange(-M*Ns,M*Ns+1)
@@ -844,10 +894,15 @@ def sqrt_rc_imp(Ns,alpha,M=6):
 
     Examples
     --------
-    >>> # ten samples per symbol and alpha = 0.35
+    Ten samples per symbol and alpha = 0.35.
+
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.digitalcom import sqrt_rc_imp
     >>> b = sqrt_rc_imp(10,0.35)
     >>> n = arange(-10*6,10*6+1)
-    >>> stem(n,b)
+    >>> plt.stem(n,b)
+    >>> plt.show()
     """
     # Design the filter
     n = np.arange(-M*Ns,M*Ns+1)
@@ -892,9 +947,14 @@ def RZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
 
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import arange
+    >>> from sk_dsp_comm.digitalcom import RZ_bits
     >>> x,b,data = RZ_bits(100,10)
     >>> t = arange(len(x))
-    >>> plot(t,x)
+    >>> plt.plot(t,x)
+    >>> plt.ylim([-0.01, 1.01])
+    >>> plt.show()
     """
     data = np.random.randint(0,2,N_bits) 
     x = np.hstack((data.reshape(N_bits,1),np.zeros((N_bits,int(Ns)-1))))
@@ -943,7 +1003,7 @@ def my_psd(x,NFFT=2**10,Fs=1):
     >>> x,b, data = dc.NRZ_bits(10000,10)
     >>> Px,f = dc.my_psd(x,2**10,10)
     >>> plt.plot(f, 10*log10(Px))
-
+    >>> plt.show()
     """
     Px,f = pylab.mlab.psd(x,NFFT,Fs)
     return Px.flatten(), f
@@ -1105,17 +1165,16 @@ def PCM_decode(x_bits,N_bits):
 
 def AWGN_chan(x_bits,EBN0_dB):
     """
-    ////////////////////////////////////////////////////////////////////////
-     x_bits = serial bit stream of 0/1 values.
-    EBNO_dB = energy per bit to noise power density ratio in dB of the
-              serial bit stream sent through the AWGN channel. Frequently
-              we equate EBN0 to SNR in link budget calculations
-     y_bits = received serial bit stream following hard decisions. This bit
-              will have bit errors. To check the estimated bit error
-              probability use digitalcom.BPSK_bep() or simply
-              >> Pe_est = sum(xor(x_bits,y_bits))/length(x_bits);  
-    ////////////////////////////////////////////////////////////////////////
-    
+    Parameters
+    ----------
+    x_bits : serial bit stream of 0/1 values.
+    EBNO_dB : Energy per bit to noise power density ratio in dB of the serial bit stream sent through the AWGN channel. Frequently we equate EBN0 to SNR in link budget calculations
+
+    Returns
+    -------
+    y_bits : Received serial bit stream following hard decisions. This bit will have bit errors. To check the estimated bit error probability use :func:`BPSK_BEP` or simply
+    >> Pe_est = sum(xor(x_bits,y_bits))/length(x_bits);
+
     Mark Wickert, March 2015
     """
     x_bits = 2*x_bits - 1 # convert from 0/1 to -1/1 signal values
@@ -1226,7 +1285,7 @@ def OFDM_tx(IQ_data, Nf, N, Np=0, cp=False, Ncp=0):
 def chan_est_equalize(z, Np, alpha, Ht=None):
     """
 
-    This is a helper function for OFDM_rx to unpack pilot blocks from
+    This is a helper function for :func:`OFDM_rx` to unpack pilot blocks from
     from the entire set of received OFDM symbols (the Nf of N filled
     carriers only); then estimate the channel array H recursively,
     and finally apply H_hat to Y, i.e., X_hat = Y/H_hat
@@ -1318,7 +1377,6 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
     >>> from sk_dsp_comm import digitalcom as dc
     >>> from scipy import signal
     >>> from numpy import array
-
     >>> hc = array([1.0, 0.1, -0.05, 0.15, 0.2, 0.05]) # impulse response spanning five symbols
     >>> # Quick example using the above channel with no cyclic prefix
     >>> x1,b1,IQ_data1 = dc.QAM_bb(50000,1,'16qam')
@@ -1345,7 +1403,7 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
     >>> plt.ylabel('Quadrature')
     >>> plt.axis('equal')
     >>> plt.grid()
-
+    >>> plt.show()
     """
     N_symb = len(x) // (N + Ncp)
     y_out = np.zeros(N_symb * N, dtype=np.complex128)

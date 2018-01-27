@@ -1383,7 +1383,7 @@ def ft_approx(x,t,Nfft):
     fs = 1/(t[1] - t[0])
     t0 = (t[-1]+t[0])/2 # time delay at center
     N0 = len(t)/2 # FFT center in samples
-    f = np.arange(-1/2,1/2,1/Nfft)
+    f = np.arange(-1./2,1./2,1./Nfft)
     w, X = signal.freqz(x,1,2*np.pi*f)
     X /= fs # account for dt = 1/fs in integral
     X *= np.exp(-1j*2*np.pi*f*fs*t0)# time interval correction

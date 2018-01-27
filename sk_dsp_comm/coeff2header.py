@@ -165,13 +165,15 @@ def freqz_resp_list(b, a=np.array([1]), mode='dB', fs=1.0, Npts=1024, fsize=(6, 
 
     freqz_resp(b,a=[1],mode = 'dB',Npts = 1024,fsize=(6,4))
 
-        b = ndarray of numerator coefficients
-        a = ndarray of denominator coefficents
-     mode = display mode: 'dB' magnitude, 'phase' in radians, or 
+    Parameters
+    ----------
+    b : ndarray of numerator coefficients
+    a : ndarray of denominator coefficents
+    mode : display mode: 'dB' magnitude, 'phase' in radians, or
             'groupdelay_s' in samples and 'groupdelay_t' in sec, 
             all versus frequency in Hz
-     Npts = number of points to plot; default is 1024
-    fsize = figure size; defult is (6,4) inches
+    Npts : number of points to plot; default is 1024
+    fsize : figure size; defult is (6,4) inches
 
     Mark Wickert, January 2015
     """

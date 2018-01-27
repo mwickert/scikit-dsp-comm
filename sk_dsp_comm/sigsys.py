@@ -1333,7 +1333,7 @@ def ft_approx(x,t,Nfft):
     and ends at the sum of the two ending values in x1 and x2. The default 
     extents of ('f','f') are used for signals that are active (have support) 
     on or within n1 and n2 respectively. A right-sided signal such as 
-    a^n*u[n] is semi-infinite, so it has extent 'r' and the
+    :math:`a^n*u[n]` is semi-infinite, so it has extent 'r' and the
     convolution output will be truncated to display only the valid results.
 
     Examples

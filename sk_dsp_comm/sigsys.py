@@ -1343,7 +1343,7 @@ def ft_approx(x,t,Nfft):
     >>> import sk_dsp_comm.sigsys as ss
     >>> fs = 100 # sampling rate in Hz
     >>> tau = 1
-    >>> t = arange(-5,5,1/fs)
+    >>> t = np.arange(-5,5,1/fs)
     >>> x0 = ss.rect(t-.5,tau)
     >>> plt.figure(figsize=(6,5))
     >>> plt.subplot(311)
@@ -1356,8 +1356,8 @@ def ft_approx(x,t,Nfft):
     >>> plt.ylabel(r'$x_0(t)$');
 
     >>> # FT Exact Plot
-    >>> fe = arange(-10,10,.01)
-    >>> X0e = tau*sinc(fe*tau)
+    >>> fe = np.arange(-10,10,.01)
+    >>> X0e = tau*np.sinc(fe*tau)
     >>> plt.subplot(312)
     >>> plt.plot(fe,abs(X0e))
     >>> #plot(f,angle(X0))
@@ -1368,7 +1368,7 @@ def ft_approx(x,t,Nfft):
     >>> plt.ylabel(r'$|X_0e(f)|$');
 
     >>> # FT Approximation Plot
-    >>> f,X0 = ft_approx(x0,t,4096)
+    >>> f,X0 = ss.ft_approx(x0,t,4096)
     >>> plt.subplot(313)
     >>> plt.plot(f,abs(X0))
     >>> #plt.plot(f,angle(X0))

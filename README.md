@@ -100,7 +100,7 @@ This will update you local repo and automatically update the Python install with
 ------
 
 ## Feature: Real-Time DSP with `pyaudio_helper`
-A real-time DSP experience is possible right in the Jupyter notebook. Fall 1017 updates to `pyaudio_helper` make it possible to do two channel audio (stereo) and include interactivity using the `ipywidgets`. The `callback` function for a simple *loop-through* is given below. Note: Not all of the code is shown here, but is available [here]()
+A real-time DSP experience is possible right in the Jupyter notebook. Fall 1017 updates to `pyaudio_helper` make it possible to do two channel audio (stereo) and include interactivity using the `ipywidgets`. The `callback` function for a simple *loop-through* is given below. Note: Not all of the code is shown here, but is available [here](https://mwickert.github.io/scikit-dsp-comm/)
 
 #### Finding the Indices of the Available Audio Devices
 ```python

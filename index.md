@@ -10,4 +10,4 @@ This site houses HTML exported Jupyter Notebook pages to provided detailed examp
 
 ## PyAudio Helper
 
-* [Stereo Loop Through with Jupyter Notebook Gain Controls](example_notebooks/py_audio_helper/Stereo_Processing.html)
+* [Stereo Loop Through with Jupyter Notebook Gain Controls](example_notebooks/pyaudio_helper/Stereo_Processing.html)

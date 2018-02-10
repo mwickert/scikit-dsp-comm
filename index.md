@@ -7,3 +7,7 @@ This site houses HTML exported Jupyter Notebook pages to provided detailed examp
 ## Digital Communications
 
 * [PCM encode and decode with baseband binary phase-shift keying](example_notebooks/digitalcom/Comm_Systems.html)
+
+## PyAudio Helper
+
+* [Stereo Loop Through with Jupyter Notebook Gain Controls](example_notebooks/py_audio_helper/Stereo_Processing.html)

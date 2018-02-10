@@ -1,0 +1,8 @@
+numpy
+matplotlib
+scipy
+
+[helpers]
+pyaudio
+pyrtlsdr
+ipywidgets

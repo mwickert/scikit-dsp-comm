@@ -164,9 +164,9 @@ DSP_IO.interactive_stream(Tsec = 20, numChan = 2) # 20 Second stereo stream
 # display volume control widgets
 widgets.HBox([volume_dB_left,volume_dB_right])
 ```
-![Juypter notebook cell output](two_channel_stream.png){:height="50%" width="50%"}
+![Juypter notebook cell output](two_channel_stream.png)
 
 #### A Portion of the Capture Buffer from MacBook Mic Input
-![Mic input captured with speakers down to avoid feedback](Capture_Buffer.png){:height="50%" width="50%"}
+![Mic input captured with speakers down to avoid feedback](Capture_Buffer.png)
 
 ------

@@ -11,3 +11,7 @@ This site houses HTML exported Jupyter Notebook pages to provided detailed examp
 ## PyAudio Helper
 
 * [Stereo Loop Through with Jupyter Notebook Gain Controls](example_notebooks/pyaudio_helper/Stereo_Processing.html)
+
+## GPS Extended Kalman Filter (EKF) Simulator
+
+*  [Kalman GPS practice](example_notebooks/gps_Kalman_filter_simulator/Kalman_GPS_practice.html)

@@ -57,7 +57,7 @@ Installation is described in greater detail below.
 
 
 ## Documentation
-Documentation is now housed on `readthedocs` which you can get to by clicking the docs badge near the top of this `README` 
+Documentation is now housed on `readthedocs` which you can get to by clicking the docs badge near the top of this `README`. Example notebooks can be viewed on [GitHub pages](https://mwickert.github.io/scikit-dsp-comm/). In time more notebook postings will be extracted from [Dr. Wickert's Info Center](http://www.eas.uccs.edu/~mwickert/).
 
 ## Getting Set-up on Your System
 

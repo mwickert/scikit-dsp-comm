@@ -38846,12 +38846,12 @@ width=80%
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The filter functions return the design in two formats:</p>
+<p>The filter functions return the filter coefficients in two formats:</p>
 <ol>
-<li>Traditional transfer function form as numerator coefficients <code>b</code> and denominator 'a' coefficients arrays, and</li>
+<li>Traditional transfer function form as numerator coefficients <code>b</code> and denominator <code>a</code> coefficients arrays, and</li>
 <li>Cascade of biquadratic sections form using the previously introduced sos 2D array or matrix.</li>
 </ol>
-<p>Both are provided to allow further analysis with either a direct form topology or the sos form. The underlying <code>signal.iirdesign()</code> function also provides a third option: a list of poles and zeros. The <code>sos</code> form desireable for high precision filters, as it is more robust to coefficient quatization, in spite using doubl precisioin coefficients in the <code>b</code> and <code>a</code> arrays.</p>
+<p>Both are provided to allow further analysis with either a direct form topology or the sos form. The underlying <code>signal.iirdesign()</code> function also provides a third option: a list of poles and zeros. The <code>sos</code> form desireable for high precision filters, as it is more robust to coefficient quantization, in spite using double precision coefficients in the <code>b</code> and <code>a</code> arrays.</p>
 <p>Of the remaining support functions four are also described in Table 2, above. The most significant functions are <code>freqz_resp_cas_list</code>, available for graphically comparing the frequency response over several designs, and <code>sos_zplane</code> a function for plotting the pole-zero pattern. Both operate using the <code>sos</code> matrix. A transfer function form (<code>b/a</code>) for frequency response plotting, <code>freqz_resp_list</code>, is also present in the module. This function was first introduced in the FIR design section. The frequency response function plotting offers modes for gain in dB, phase in radians, group delay in samples, and group delay in seconds, all for a given sampling rate in Hz. The pole-zero plotting function locates pole and zeros more accurately than <code>sk_dsp_commsigsys.zplane</code>, as the numpy function <code>roots()</code> is only solving quadratic polynomials. Also, repeated roots can be displayed as theoretically expected, and also so noted in the graphical display by superscripts next to the pole and zero markers.</p>
 
 </div>

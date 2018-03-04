@@ -26,4 +26,4 @@ This site houses HTML exported Jupyter Notebook pages to provided detailed examp
 
 ## GPS Extended Kalman Filter (EKF) Simulator
 
-*  [Kalman GPS practice](example_notebooks/gps_Kalman_filter_simulator/Kalman_GPS_practice.html)
+*  [Kalman GPS Using Satellite TLEs and User Trajectory](example_notebooks/gps_Kalman_filter_simulator/Kalman_GPS_practice.html)

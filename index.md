@@ -6,7 +6,7 @@ This site houses HTML exported Jupyter Notebook pages to provided detailed examp
 
 ## Signals and Systems
 
-* [Continuous-Time Signals and Systems using `sigsys`](example_notebooks\sigsys\Signals_and_Systems_using_sigsys.html)
+* [Continuous-Time Signals and Systems using `sigsys`](example_notebooks/sigsys/Signals_and_Systems_using_sigsys.html)
 
 ## FIR and IIR Filter Design Helpers
 

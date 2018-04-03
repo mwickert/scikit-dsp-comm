@@ -503,9 +503,9 @@ def PLL_cbb(x,fs,loop_type,Kv,fn,zeta):
 
     # Initialize working and final output vectors
     n = np.arange(len(x))
-    theta_hat = np.zeros_like(x)
-    ev = np.zeros_like(x)
-    phi = np.zeros_like(x)
+    theta_hat = np.zeros(len(x))
+    ev = np.zeros(len(x))
+    phi = np.zeros(len(x))
 
     # Begin the simulation loop
     for k in  range(len(n)):

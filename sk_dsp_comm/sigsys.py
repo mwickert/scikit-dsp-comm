@@ -1304,7 +1304,7 @@ def fs_approx(Xk,fk,t):
     x_approx = np.zeros(len(t))
     for k,Xkk in enumerate(Xk):
         if fk[k] == 0:
-            x_approx += Xkk*np.ones(len(t))
+            x_approx += Xkk.real*np.ones(len(t))
         else:
             x_approx += 2*np.abs(Xkk)*np.cos(2*np.pi*fk[k]*t+np.angle(Xkk))
     return x_approx
@@ -1346,30 +1346,43 @@ def ft_approx(x,t,Nfft):
     >>> t = np.arange(-5,5,1/fs)
     >>> x0 = ss.rect(t-.5,tau)
     >>> plt.figure(figsize=(6,5))
-    >>> plt.subplot(311)
     >>> plt.plot(t,x0)
     >>> plt.grid()
     >>> plt.ylim([-0.1,1.1])
     >>> plt.xlim([-2,2])
     >>> plt.title(r'Exact Waveform')
     >>> plt.xlabel(r'Time (s)')
-    >>> plt.ylabel(r'$x_0(t)$');
+    >>> plt.ylabel(r'$x_0(t)$')
+    >>> plt.show()
 
     >>> # FT Exact Plot
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> import sk_dsp_comm.sigsys as ss
+    >>> fs = 100 # sampling rate in Hz
+    >>> tau = 1
+    >>> t = np.arange(-5,5,1/fs)
+    >>> x0 = ss.rect(t-.5,tau)
     >>> fe = np.arange(-10,10,.01)
     >>> X0e = tau*np.sinc(fe*tau)
-    >>> plt.subplot(312)
     >>> plt.plot(fe,abs(X0e))
     >>> #plot(f,angle(X0))
     >>> plt.grid()
     >>> plt.xlim([-10,10])
-    >>> plt.title(r'Exact Spectrum Magnitude')
+    >>> plt.title(r'Exact (Theory) Spectrum Magnitude')
     >>> plt.xlabel(r'Frequency (Hz)')
-    >>> plt.ylabel(r'$|X_0e(f)|$');
+    >>> plt.ylabel(r'$|X_0e(f)|$')
+    >>> plt.show()
 
     >>> # FT Approximation Plot
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> import sk_dsp_comm.sigsys as ss
+    >>> fs = 100 # sampling rate in Hz
+    >>> tau = 1
+    >>> t = np.arange(-5,5,1/fs)
+    >>> x0 = ss.rect(t-.5,tau)
     >>> f,X0 = ss.ft_approx(x0,t,4096)
-    >>> plt.subplot(313)
     >>> plt.plot(f,abs(X0))
     >>> #plt.plot(f,angle(X0))
     >>> plt.grid()

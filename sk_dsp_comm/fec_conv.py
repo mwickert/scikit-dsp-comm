@@ -1,3 +1,4 @@
+from builtins import (zip)
 """
 A Convolutional Encoding and Decoding
 
@@ -395,11 +396,11 @@ class fec_conv(object):
         y_G1 = np.hstack((x_G1,x_E))
         y_G2 = np.hstack((x_G2,x_E))
         [g1_pp1.append(val) for idx,val in enumerate(g1_pp0)]
-        g1_comp = zip(g1_pp1,range(L_pp))
+        g1_comp = list(zip(g1_pp1,list(range(L_pp))))
         g1_comp.sort()
         G1_col_permute = [g1_comp[idx][1] for idx in range(L_pp)]
         [g2_pp1.append(val) for idx,val in enumerate(g2_pp0)]
-        g2_comp = zip(g2_pp1,range(L_pp))
+        g2_comp = list(zip(g2_pp1,list(range(L_pp))))
         g2_comp.sort()
         G2_col_permute = [g2_comp[idx][1] for idx in range(L_pp)]
         #permute columns to place erasure bits in the correct position

@@ -452,13 +452,13 @@ def QAM_SEP(tx_data,rx_data,mod_type,Ncorr = 1024,Ntransient = 0,SEP_disp=True):
         raise ValueError('Unknown mod_type')
     rx_data = np.rint((M-1)*(rx_data + (1+1j))/2.)
     # Fix-up edge points real part
-    s1r = mlab.find(rx_data.real > M - 1)
-    s2r = mlab.find(rx_data.real < 0)
+    s1r = np.nonzero(np.ravel(rx_data.real > M - 1))[0]
+    s2r = np.nonzero(np.ravel(rx_data.real < 0))[0]
     rx_data.real[s1r] = (M - 1)*np.ones(len(s1r))
     rx_data.real[s2r] = np.zeros(len(s2r))
     # Fix-up edge points imag part
-    s1i = mlab.find(rx_data.imag > M - 1)
-    s2i = mlab.find(rx_data.imag < 0)
+    s1i = np.nonzero(np.ravel(rx_data.imag > M - 1))[0]
+    s2i = np.nonzero(np.ravel(rx_data.imag < 0))[0]
     rx_data.imag[s1i] = (M - 1)*np.ones(len(s1i))
     rx_data.imag[s2i] = np.zeros(len(s2i))
     rx_data = 2*rx_data - (M - 1)*(1 + 1j)
@@ -503,7 +503,7 @@ def QAM_SEP(tx_data,rx_data,mod_type,Ncorr = 1024,Ntransient = 0,SEP_disp=True):
     errors = np.int16(abs(rx_data-tx_data))
     # Detect symbols errors
     # Could decode bit errors from symbol index difference
-    idx = mlab.find(errors != 0)
+    idx = np.nonzero(np.ravel(errors != 0))[0]
     if SEP_disp:
         print('Symbols = %d, Errors %d, SEP = %1.2e' \
                % (len(errors), len(idx), len(idx)/float(len(errors))))

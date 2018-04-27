@@ -1204,7 +1204,7 @@ def mux_pilot_blocks(IQ_data, Np):
 
     Notes
     -----
-    A helper function called by OFDM_tx that inserts pilot block for use
+    A helper function called by :func:`OFDM_tx` that inserts pilot block for use
     in channel estimation when a delay spread channel is present.
 
     """

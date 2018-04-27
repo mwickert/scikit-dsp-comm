@@ -205,8 +205,7 @@ class fec_conv(object):
         Parameters
         ----------
         x: Received noisy bit values centered on +/-1 at one sample per bit
-        matric_type: hard or soft decision decoding type. At present only 
-                     3-bit soft-decision is implemented.
+        metric_type: Hard or soft decision decoding type. At present only 3-bit soft-decision is implemented.
 
         Returns
         -------

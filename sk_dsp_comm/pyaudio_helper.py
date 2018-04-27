@@ -113,8 +113,8 @@ class DSP_io_stream(object):
         Click on the "Start Streaming" button to start streaming and click on "Stop Streaming"
         button to stop streaming.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
 
         Tsec : stream time in seconds if Tsec > 0. If Tsec = 0, then stream goes to infinite 
         mode. When in infinite mode, the "Stop Streaming" radio button or Tsec.stop() can be 
@@ -138,8 +138,8 @@ class DSP_io_stream(object):
         Stream audio in a thread using callback. The stream is threaded, so widgets can be
         used simultaneously during stream.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
 
         Tsec : stream time in seconds if Tsec > 0. If Tsec = 0, then stream goes to infinite 
         mode. When in infinite mode, Tsec.stop() can be used to stop the stream.
@@ -160,8 +160,8 @@ class DSP_io_stream(object):
         """
         Stream audio using callback
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
 
         Tsec : stream time in seconds if Tsec > 0. If Tsec = 0, then stream goes to infinite 
         mode. When in infinite mode, Tsec.stop() can be used to stop the stream.
@@ -338,12 +338,12 @@ class DSP_io_stream(object):
         Splits incoming packed stereo data into separate left and right channels
         and returns an array of left samples and an array of right samples
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         in_data : input data from the streaming object in the callback function. 
         
-        Returns:
-        --------
+        Returns
+        -------
         left_in : array of incoming left channel samples
         right_in : array of incoming right channel samples
         
@@ -360,13 +360,13 @@ class DSP_io_stream(object):
         Packs separate left and right channel data into one array to output
         and returns the output.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         left_out : left channel array of samples going to output
         right_out : right channel array of samples going to output
 
-        Returns:
-        --------
+        Returns
+        -------
         out : packed left and right channel array of samples
         """
         for i in range(0,self.frame_length*2):

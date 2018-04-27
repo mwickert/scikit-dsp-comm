@@ -1,4 +1,3 @@
-from builtins import (zip)
 """
 A Convolutional Encoding and Decoding
 
@@ -52,7 +51,6 @@ better understand the operation of the Viterbi decoder.
 
 Mark Wickert: February 2014.
 """
-
 import numpy as np
 from math import factorial
 import matplotlib.pyplot as plt

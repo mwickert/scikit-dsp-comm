@@ -409,7 +409,8 @@ class fec_conv(object):
 
     def trellis_plot(self,fsize=(6,4)):
         """
-        cc.trellis_plot()
+        Plots a trellis diagram of the possible state transitions.
+
         Parameters
         ----------
         fsize : Plot size for matplotlib.
@@ -449,7 +450,8 @@ class fec_conv(object):
 
     def traceback_plot(self,fsize=(6,4)):
         """
-        cc.traceback_plot()
+        Plots a path of the possible last 4 states.
+
         Parameters
         ----------
         fsize : Plot size for matplotlib.

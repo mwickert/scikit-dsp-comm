@@ -409,9 +409,18 @@ class fec_conv(object):
 
     def trellis_plot(self,fsize=(6,4)):
         """
-        trellis_plot()
-        
-        Mark Wickert February  2014
+        cc.trellis_plot()
+        Parameters
+        ----------
+        fsize : Plot size for matplotlib.
+
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sk_dsp_comm.fec_conv import fec_conv
+        >>> cc = fec_conv()
+        >>> cc.trellis_plot()
+        >>> plt.show()
         """
 
         branches_from = self.branches

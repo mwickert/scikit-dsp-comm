@@ -111,8 +111,8 @@ class fec_conv(object):
     """
     Class responsible for creating rate 1/2 convolutional code objects, and 
     then encoding and decoding the user code set in polynomials of G. Key
-    methods provided include conv_encode(), viterbi_decoder(), punture(), 
-    depuncture(), trellis_plot(), and traceback_plot().
+    methods provided include :func:`conv_encoder`, :func:`viterbi_decoder`, :func:`puncture`,
+    :func:`depuncture`, :func:`trellis_plot`, and :func:`traceback_plot`.
 
     Parameters
     ----------
@@ -125,7 +125,8 @@ class fec_conv(object):
 
     Examples
     --------
-    Get from the ece5630 final project notebook.
+    >>> from sk_dsp_comm import fec_conv
+    >>> cc1 = fec_conv.fec_conv(('101', '111'), Depth=10)  # decision depth is 10
 
 
 

@@ -42,3 +42,21 @@ class TestFecConv(SKDSPCommTest):
         y, state = cc1.conv_encoder(x, state)
         yp = cc1.puncture(y, ('110', '101'))
         npt.assert_almost_equal(yp_test, yp)
+
+    def test_fec_conv_depuncture(self):
+        zdpn_test = [-0.18077499,  0.24326595, -0.43694799,  3.5,         3.5,         7.41513671,
+                     -0.55673726,  7.77925472,  7.64176133,  3.5,         3.5,        -0.09960601,
+                     -0.50683017,  7.98234306,  6.58202794,  3.5,         3.5,        -1.0668518,
+                     1.54447404,  1.47065852, -0.24028734,  3.5,         3.5,         6.19633424,
+                     7.1760269,   0.89395647,  7.69735877,  3.5,         3.5,         1.29889556,
+                     -0.31122416,  0.05311373,  7.21216449,  3.5,         3.5,        -1.37679829]
+        cc1 = fec_conv.fec_conv()
+
+        x = np.random.randint(0, 2, 20)
+        state = '00'
+        y, state = cc1.conv_encoder(x, state)
+        yp = cc1.puncture(y, ('110', '101'))
+        ypn = dc.cpx_AWGN(2 * yp - 1, 8, 1)
+        ypn = (ypn.real + 1) / 2 * 7
+        zdpn = cc1.depuncture(ypn, ('110', '101'), 3.5)  # set erase threshold to 7/2
+        npt.assert_almost_equal(zdpn_test, zdpn)

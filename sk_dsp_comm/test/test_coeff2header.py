@@ -1,4 +1,4 @@
-from unittest import TestCase
+from .test_helper import SKDSPCommTest
 
 from sk_dsp_comm import coeff2header as c2head
 import tempfile
@@ -8,7 +8,7 @@ import numpy as np
 dir_path = os.path.dirname(os.path.realpath(__file__)) + '/'
 
 
-class TestCoeff2header(TestCase):
+class TestCoeff2header(SKDSPCommTest):
 
     @classmethod
     def setUpClass(cls):

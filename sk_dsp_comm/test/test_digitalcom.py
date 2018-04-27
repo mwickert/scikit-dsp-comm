@@ -1,15 +1,12 @@
-from unittest import TestCase
+from .test_helper import SKDSPCommTest
 
 import numpy as np
 from sk_dsp_comm import digitalcom as dc
 from numpy import testing as npt
 from scipy import signal
 
-class TestDigitalcom(TestCase):
+class TestDigitalcom(SKDSPCommTest):
     _multiprocess_can_split_ = True
-
-    def setUp(self):
-        np.random.seed(100)
 
     def test_farrow_example(self):
         x = np.arange(0, 10)

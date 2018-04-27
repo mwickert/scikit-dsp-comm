@@ -1,4 +1,4 @@
-from unittest import TestCase
+from .test_helper import SKDSPCommTest
 
 import numpy as np
 from numpy.random import randn
@@ -7,11 +7,8 @@ import numpy.testing as npt
 from sk_dsp_comm import sigsys as ss
 
 
-class TestSigsys(TestCase):
+class TestSigsys(SKDSPCommTest):
     _multiprocess_can_split_ = True
-
-    def setUp(self):
-        np.random.seed(100)
 
     def test_cic_case_1(self):
         correct = np.ones(10) / 10

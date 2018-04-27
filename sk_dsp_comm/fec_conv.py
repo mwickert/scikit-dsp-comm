@@ -449,10 +449,28 @@ class fec_conv(object):
 
     def traceback_plot(self,fsize=(6,4)):
         """
-        traceback_plot()
-        
-        
-        Mark Wickert February 2014
+        cc.traceback_plot()
+        Parameters
+        ----------
+        fsize : Plot size for matplotlib.
+
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sk_dsp_comm.fec_conv import fec_conv
+        >>> from sk_dsp_comm import digitalcom as dc
+        >>> import numpy as np
+        >>> cc = fec_conv()
+        >>> x = np.random.randint(0,2,100)
+        >>> state = '00'
+        >>> y,state = cc.conv_encoder(x,state)
+        >>> # Add channel noise to bits translated to +1/-1
+        >>> yn = dc.cpx_AWGN(2*y-1,5,1) # SNR = 5 dB
+        >>> # Translate noisy +1/-1 bits to soft values on [0,7]
+        >>> yn = (yn.real+1)/2*7
+        >>> z = cc.viterbi_decoder(yn)
+        >>> cc.traceback_plot()
+        >>> plt.show()
         """
         traceback_states = self.paths.traceback_states
         plt.figure(figsize=fsize)

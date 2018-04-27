@@ -32,3 +32,13 @@ class TestFecConv(SKDSPCommTest):
         yn = (yn.real + 1) / 2 * 7
         z = cc1.viterbi_decoder(yn)
         npt.assert_almost_equal(z_test, z)
+
+    def test_fec_conv_puncture(self):
+        yp_test = [0., 0.,  0.,  1.,  0.,  1.,  1.,  0.,  0.,  1.,  1.,  0.,  0.,  0.,  0.,  1.,  1.,  0.,
+                   1.,  0.,  0.,  0.,  1.,  0.]
+        cc1 = fec_conv.fec_conv()
+        x = np.random.randint(0, 2, 20)
+        state = '00'
+        y, state = cc1.conv_encoder(x, state)
+        yp = cc1.puncture(y, ('110', '101'))
+        npt.assert_almost_equal(yp_test, yp)

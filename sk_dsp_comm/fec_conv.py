@@ -490,12 +490,20 @@ class fec_conv(object):
 def conv_Pb_bound(R,dfree,Ck,SNRdB,hard_soft,M=2):
     """
     Coded bit error probabilty
-    Pb = conv_Pb_bound(R,dfree,Ck,SNR,hard_soft,M=2)
-    
+
     Convolution coding bit error probability upper bound
     according to Ziemer & Peterson 7-16, p. 507
     
     Mark Wickert November 2014
+
+    Parameters
+    ----------
+    R: Code rate :math:`R_{s} = \frac{k}{n}`
+    dfree: Free distance of the code
+    Ck: Weight coefficient
+    SNRdB: Signal to noise ratio in dB
+    hard_soft:
+    M: M-ary
     """
     Pb = np.zeros_like(SNRdB)
     SNR = 10.**(SNRdB/10.)

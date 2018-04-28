@@ -448,7 +448,7 @@ def splane(b,a,auto_scale=True,size=[-1,1,-1,1]):
         #N_roots = np.roots(b)
         N_uniq, N_mult=signal.unique_roots(N_roots,tol=1e-3, rtype='avg')
         plt.plot(np.real(N_uniq),np.imag(N_uniq),'ko',mfc='None',ms=8)
-        idx_N_mult = mlab.find(N_mult>1)
+        idx_N_mult = np.nonzero(np.ravel(N_mult>1))[0]
         for k in range(len(idx_N_mult)):
             x_loc = np.real(N_uniq[idx_N_mult[k]]) + x_off*x_scale
             y_loc =np.imag(N_uniq[idx_N_mult[k]]) + y_off*y_scale
@@ -457,7 +457,7 @@ def splane(b,a,auto_scale=True,size=[-1,1,-1,1]):
         #D_roots = np.roots(a)
         D_uniq, D_mult=signal.unique_roots(D_roots,tol=1e-3, rtype='avg')
         plt.plot(np.real(D_uniq),np.imag(D_uniq),'kx',ms=8)
-        idx_D_mult = mlab.find(D_mult>1)
+        idx_D_mult = np.nonzero(np.ravel(D_mult>1))[0]
         for k in range(len(idx_D_mult)):
             x_loc = np.real(D_uniq[idx_D_mult[k]]) + x_off*x_scale
             y_loc =np.imag(D_uniq[idx_D_mult[k]]) + y_off*y_scale
@@ -768,8 +768,8 @@ def simpleQuant(x,Btot,Xmax,Limit):
         xq = (np.mod(np.round(x*2**B)+2**B,2**Btot)-2**B)/2**B
     elif Limit.lower() == 'sat':
         xq = np.round(x*2**B)+2**B
-        s1 = mlab.find(xq >= 2**Btot-1)
-        s2 = mlab.find(xq < 0)
+        s1 = np.nonzero(np.ravel(xq >= 2**Btot-1))[0]
+        s2 = np.nonzero(np.ravel(xq < 0))[0]
         xq[s1] = (2**Btot - 1)*np.ones(len(s1))
         xq[s2] = np.zeros(len(s2))
         xq = (xq - 2**B)/2**B
@@ -1121,7 +1121,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
 
     plt.figure(figsize=fsize)
     # Eliminate zero valued coefficients
-    idx = pylab.find(Xk != 0)
+    idx = np.nonzero(Xk)[0]
     Xk = Xk[idx]
     fk = fk[idx]
     if mode == 'mag':
@@ -2777,7 +2777,7 @@ def zplane(b,a,auto_scale=True,size=2,detect_mult=True,tol=0.001):
         if detect_mult == True:
             N_uniq, N_mult = unique_cpx_roots(N_roots,tol=tol)
             plt.plot(np.real(N_uniq),np.imag(N_uniq),'ko',mfc='None',ms=8)
-            idx_N_mult = mlab.find(N_mult>1)
+            idx_N_mult = np.nonzero(np.ravel(N_mult>1))[0]
             for k in range(len(idx_N_mult)):
                 x_loc = np.real(N_uniq[idx_N_mult[k]]) + x_off*x_scale
                 y_loc =np.imag(N_uniq[idx_N_mult[k]]) + y_off*y_scale
@@ -2788,7 +2788,7 @@ def zplane(b,a,auto_scale=True,size=2,detect_mult=True,tol=0.001):
         if detect_mult == True:
             D_uniq, D_mult=unique_cpx_roots(D_roots,tol=tol)
             plt.plot(np.real(D_uniq),np.imag(D_uniq),'kx',ms=8)
-            idx_D_mult = mlab.find(D_mult>1)
+            idx_D_mult = np.nonzero(np.ravel(D_mult>1))[0]
             for k in range(len(idx_D_mult)):
                 x_loc = np.real(D_uniq[idx_D_mult[k]]) + x_off*x_scale
                 y_loc =np.imag(D_uniq[idx_D_mult[k]]) + y_off*y_scale

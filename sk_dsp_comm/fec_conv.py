@@ -498,12 +498,16 @@ def conv_Pb_bound(R,dfree,Ck,SNRdB,hard_soft,M=2):
 
     Parameters
     ----------
-    R: Code rate :math:`R_{s} = \frac{k}{n}`
+    R: Code rate
     dfree: Free distance of the code
     Ck: Weight coefficient
     SNRdB: Signal to noise ratio in dB
     hard_soft:
     M: M-ary
+
+    Notes
+    -----
+    The code rate R is given by :math:`R_{s} = \frac{k}{n}`.
     """
     Pb = np.zeros_like(SNRdB)
     SNR = 10.**(SNRdB/10.)

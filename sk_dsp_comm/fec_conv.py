@@ -61,7 +61,7 @@ from sys import exit
 class trellis_nodes(object):
     """
     A structure to hold the trellis from nodes and to nodes.
-    Ns is the number of states = 2**(K-1).
+    Ns is the number of states = :math:`2^{(K-1)}`.
     """
     def __init__(self,Ns):
         self.Ns = Ns
@@ -73,7 +73,7 @@ class trellis_branches(object):
     """
     A structure to hold the trellis states, bits, and input values
     for both '1' and '0' transitions.
-    Ns is the number of states = 2**(K-1).
+    Ns is the number of states = :math:`2^{(K-1)}.
     """
     def __init__(self,Ns):
         self.Ns = Ns
@@ -90,7 +90,7 @@ class trellis_paths(object):
     cumulative_metrics, and traceback_bits. A full decision depth history
     of all this infomation is not essential, but does allow the graphical
     depiction created by the method traceback_plot().
-    Ns is the number of states = 2**(K-1) and D is the decision depth.
+    Ns is the number of states = :math:`2^{(K-1)}` and D is the decision depth.
     As a rule, D should be about 5 times K.
 
     """

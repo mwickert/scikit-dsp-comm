@@ -507,7 +507,7 @@ def conv_Pb_bound(R,dfree,Ck,SNRdB,hard_soft,M=2):
 
     Notes
     -----
-    The code rate R is given by :math:`R_{s} = \frac{k}{n}`.
+    The code rate R is given by :math:`R_{s} = \\frac{k}{n}`.
     """
     Pb = np.zeros_like(SNRdB)
     SNR = 10.**(SNRdB/10.)

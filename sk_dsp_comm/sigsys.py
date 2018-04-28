@@ -1839,7 +1839,7 @@ def rc_imp(Ns,alpha,M=6):
     """
     A truncated raised cosine pulse used in digital communications.
 
-    The pulse shaping factor 0< alpha < 1 is required as well as the 
+    The pulse shaping factor :math:`0< \\alpha < 1` is required as well as the
     truncation factor M which sets the pulse duration to be 2*M*Tsymbol.
 
     Parameters

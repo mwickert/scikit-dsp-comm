@@ -73,7 +73,7 @@ class trellis_branches(object):
     """
     A structure to hold the trellis states, bits, and input values
     for both '1' and '0' transitions.
-    Ns is the number of states = :math:`2^{(K-1)}.
+    Ns is the number of states = :math:`2^{(K-1)}`.
     """
     def __init__(self,Ns):
         self.Ns = Ns

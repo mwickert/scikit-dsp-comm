@@ -60,3 +60,8 @@ class TestFecConv(SKDSPCommTest):
         ypn = (ypn.real + 1) / 2 * 7
         zdpn = cc1.depuncture(ypn, ('110', '101'), 3.5)  # set erase threshold to 7/2
         npt.assert_almost_equal(zdpn_test, zdpn)
+
+    def test_fec_conv_Nstates(self):
+        G = ('111', '101')
+        cc = fec_conv.fec_conv(G)
+        self.assertEqual(4, cc.Nstates)

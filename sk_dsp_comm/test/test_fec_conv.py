@@ -65,3 +65,23 @@ class TestFecConv(SKDSPCommTest):
         G = ('111', '101')
         cc = fec_conv.fec_conv(G)
         self.assertEqual(4, cc.Nstates)
+
+    def test_fec_conv_conv_Pb_bound_2(self):
+        Pb_uc_test = np.array([  3.75061284e-02,   2.61319950e-02,   1.71725417e-02,
+         1.05322374e-02,   5.95386715e-03,   3.05639669e-03,
+         1.39980484e-03,   5.60054773e-04,   1.90907774e-04,
+         5.38158927e-05,   1.21088933e-05,   2.08499657e-06,
+         2.61306795e-07,   2.24575706e-08])
+        SNRdB = np.arange(2, 12, .75)
+        Pb_uc = fec_conv.conv_Pb_bound(1 / 2, 5, [1, 4, 12, 32, 80, 192, 448, 1024], SNRdB, 2)
+        npt.assert_almost_equal(Pb_uc_test, Pb_uc)
+
+    def test_fec_conv_Pb_bound_1(self):
+        Pb_s_test = np.array([  4.38709821e-02,   1.10836941e-02,   2.49608462e-03,
+         5.06172637e-04,   9.14155349e-05,   1.41608827e-05,
+         1.77960366e-06,   1.69942208e-07,   1.14537090e-08,
+         5.00593591e-10,   1.28592062e-11,   1.73135359e-13,
+         1.06932930e-15,   2.59433518e-18])
+        SNRdB = np.arange(2, 12, .75)
+        Pb_s = fec_conv.conv_Pb_bound(1/2,5,[1,4,12,32,80,192,448,1024],SNRdB,1)
+        npt.assert_almost_equal(Pb_s_test, Pb_s)

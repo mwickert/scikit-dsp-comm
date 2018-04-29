@@ -262,7 +262,7 @@ def bit_errors(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     """
     Count bit errors between a transmitted and received BPSK signal.
     Time delay between streams is detected as well as ambiquity resolution
-    due to carrier phase lock offsets of k*pi, k=0,1.
+    due to carrier phase lock offsets of :math:`k*\\pi`, k=0,1.
     The ndarray tx_data is Tx 0/1 bits as real numbers I.
     The ndarray rx_data is Rx 0/1 bits as real numbers I.
     Note: Ncorr needs to be even
@@ -652,7 +652,7 @@ def QPSK_BEP(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     """
     Count bit errors between a transmitted and received QPSK signal.
     Time delay between streams is detected as well as ambiquity resolution
-    due to carrier phase lock offsets of k*pi/4, k=0,1,2,3.
+    due to carrier phase lock offsets of :math:`k*\\frac{\\pi}{4}`, k=0,1,2,3.
     The ndarray sdata is Tx +/-1 symbols as complex numbers I + j*Q.
     The ndarray data is Rx +/-1 symbols as complex numbers I + j*Q.
     Note: Ncorr needs to be even
@@ -722,7 +722,7 @@ def BPSK_BEP(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     """
     Count bit errors between a transmitted and received BPSK signal.
     Time delay between streams is detected as well as ambiquity resolution
-    due to carrier phase lock offsets of k*pi, k=0,1.
+    due to carrier phase lock offsets of :math:`k*\\pi`, k=0,1.
     The ndarray tx_data is Tx +/-1 symbols as real numbers I.
     The ndarray rx_data is Rx +/-1 symbols as real numbers I.
     Note: Ncorr needs to be even
@@ -821,8 +821,8 @@ def rc_imp(Ns,alpha,M=6):
     """
     A truncated raised cosine pulse used in digital communications.
 
-    The pulse shaping factor 0< alpha < 1 is required as well as the 
-    truncation factor M which sets the pulse duration to be 2*M*Tsymbol.
+    The pulse shaping factor :math:`0 < \\alpha < 1` is required as well as the
+    truncation factor M which sets the pulse duration to be :math:`2*M*T_{symbol}`.
 
     Parameters
     ----------
@@ -841,7 +841,7 @@ def rc_imp(Ns,alpha,M=6):
 
     Examples
     --------
-    Ten samples per symbol and alpha = 0.35.
+    Ten samples per symbol and :math:`\\alpha = 0.35`.
 
     >>> import matplotlib.pyplot as plt
     >>> from sk_dsp_comm.digitalcom import rc_imp
@@ -868,8 +868,8 @@ def sqrt_rc_imp(Ns,alpha,M=6):
     """
     A truncated square root raised cosine pulse used in digital communications.
 
-    The pulse shaping factor 0< alpha < 1 is required as well as the 
-    truncation factor M which sets the pulse duration to be 2*M*Tsymbol.
+    The pulse shaping factor :math:`0 < \\alpha < 1` is required as well as the
+    truncation factor M which sets the pulse duration to be :math:`2*M*T_{symbol}`.
      
 
     Parameters
@@ -886,15 +886,15 @@ def sqrt_rc_imp(Ns,alpha,M=6):
     -----
     The pulse shape b is typically used as the FIR filter coefficients
     when forming a pulse shaped digital communications waveform. When 
-    square root raised cosine (SRC) pulse is used generate Tx signals and 
+    square root raised cosine (SRC) pulse is used to generate Tx signals and
     at the receiver used as a matched filter (receiver FIR filter), the 
-    received signal is now raised cosine shaped, this having zero 
+    received signal is now raised cosine shaped, thus having zero
     intersymbol interference and the optimum removal of additive white 
     noise if present at the receiver input.
 
     Examples
     --------
-    Ten samples per symbol and alpha = 0.35.
+    Ten samples per symbol and :math:`\\alpha = 0.35`.
 
     >>> import matplotlib.pyplot as plt
     >>> from numpy import arange

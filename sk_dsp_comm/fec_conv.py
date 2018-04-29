@@ -61,7 +61,7 @@ from sys import exit
 class trellis_nodes(object):
     """
     A structure to hold the trellis from nodes and to nodes.
-    Ns is the number of states = 2**(K-1).
+    Ns is the number of states = :math:`2^{(K-1)}`.
     """
     def __init__(self,Ns):
         self.Ns = Ns
@@ -73,7 +73,7 @@ class trellis_branches(object):
     """
     A structure to hold the trellis states, bits, and input values
     for both '1' and '0' transitions.
-    Ns is the number of states = 2**(K-1).
+    Ns is the number of states = :math:`2^{(K-1)}`.
     """
     def __init__(self,Ns):
         self.Ns = Ns
@@ -90,7 +90,7 @@ class trellis_paths(object):
     cumulative_metrics, and traceback_bits. A full decision depth history
     of all this infomation is not essential, but does allow the graphical
     depiction created by the method traceback_plot().
-    Ns is the number of states = 2**(K-1) and D is the decision depth.
+    Ns is the number of states = :math:`2^{(K-1)}` and D is the decision depth.
     As a rule, D should be about 5 times K.
 
     """
@@ -490,12 +490,24 @@ class fec_conv(object):
 def conv_Pb_bound(R,dfree,Ck,SNRdB,hard_soft,M=2):
     """
     Coded bit error probabilty
-    Pb = conv_Pb_bound(R,dfree,Ck,SNR,hard_soft,M=2)
-    
+
     Convolution coding bit error probability upper bound
     according to Ziemer & Peterson 7-16, p. 507
     
     Mark Wickert November 2014
+
+    Parameters
+    ----------
+    R: Code rate
+    dfree: Free distance of the code
+    Ck: Weight coefficient
+    SNRdB: Signal to noise ratio in dB
+    hard_soft:
+    M: M-ary
+
+    Notes
+    -----
+    The code rate R is given by :math:`R_{s} = \\frac{k}{n}`.
     """
     Pb = np.zeros_like(SNRdB)
     SNR = 10.**(SNRdB/10.)

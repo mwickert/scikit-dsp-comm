@@ -56,6 +56,7 @@ from math import factorial
 import matplotlib.pyplot as plt
 import scipy.special as special
 from sys import exit
+import warnings
 
 # Data structure support classes
 class trellis_nodes(object):
@@ -309,17 +310,45 @@ class fec_conv(object):
 
     def puncture(self,code_bits,puncture_pattern = ('110','101')):
         """
-        y = puncture(code_bits,puncture_pattern = ('110','101'))
         Apply puncturing to the serial bits produced by convolutionally
-        encoding.  
+        encoding.
+
+        :param code_bits:
+        :param puncture_pattern:
+        :return:
+
+        Examples
+        --------
+        This example uses the following puncture matrix:
+
+        .. math::
+
+           \\begin{align*}
+               \\mathbf{A} = \\begin{bmatrix}
+                1 & 1 & 0 \\\\
+                1 & 0 & 1
+                \\end{bmatrix}
+           \\end{align*}
+
+        The upper row operates on the outputs for the :math:`G_{1}` polynomial and the lower row operates on the outputs of
+        the  :math:`G_{2}`  polynomial.
+
+        >>> import numpy as np
+        >>> from sk_dsp_comm.fec_conv import fec_conv
+        >>> cc = fec_conv(('101','111'))
+        >>> x = np.array([0, 0, 1, 1, 1, 0, 0, 0, 0, 0])
+        >>> state = '00'
+        >>> y, state = cc.conv_encoder(x, state)
+        >>> cc.puncture(y, ('110','101'))
+        array([ 0.,  0.,  0.,  1.,  1.,  0.,  0.,  0.,  1.,  1.,  0.,  0.])
         """
-        # Check to see that the length of code_bits is consistent with a rate 
+        # Check to see that the length of code_bits is consistent with a rate
         # 1/2 code.
         L_pp = len(puncture_pattern[0])
         N_codewords = int(np.floor(len(code_bits)/float(2)))
         if 2*N_codewords != len(code_bits):
-            print('Number of code bits must be even!')
-            print('Truncating bits to be compatible.')
+            warnings.warn('Number of code bits must be even!')
+            warnings.warn('Truncating bits to be compatible.')
             code_bits = code_bits[:2*N_codewords]
         # Extract the G1 and G2 encoded bits from the serial stream.
         # Assume the stream is of the form [G1 G2 G1 G2 ...   ]
@@ -331,8 +360,8 @@ class fec_conv(object):
         # length of the puncture pattern
         N_punct_periods = int(np.floor(N_codewords/float(L_pp)))
         if L_pp*N_punct_periods != N_codewords:
-            print('Code bit length is not a multiple pp = %d!' % L_pp)
-            print('Truncating bits to be compatible.')
+            warnings.warn('Code bit length is not a multiple pp = %d!' % L_pp)
+            warnings.warn('Truncating bits to be compatible.')
             x_G1 = x_G1[:L_pp*N_punct_periods]
             x_G2 = x_G2[:L_pp*N_punct_periods]
         #Puncture x_G1 and x_G1

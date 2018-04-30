@@ -66,7 +66,8 @@ def farrow_resample(x, fs_old, fs_new):
     the input sampling rate.
 
     Time alignment can be found for a integer value M, found with the following:
-    :math:`f_{s,out} = f_{s,in} (M - 1) / M`.
+
+    .. math:: f_{s,out} = f_{s,in} (M - 1) / M
     
     The filter coefficients used here and a more comprehensive listing can be
     found in H. Meyr, M. Moeneclaey, & S. Fechtel, "Digital Communication 
@@ -834,6 +835,10 @@ def rc_imp(Ns,alpha,M=6):
     -------
     b : ndarray containing the pulse shape
 
+    See Also
+    --------
+    sqrt_rc_imp
+
     Notes
     -----
     The pulse shape b is typically used as the FIR filter coefficients
@@ -1202,11 +1207,14 @@ def mux_pilot_blocks(IQ_data, Np):
     -------
     IQ_datap : IQ_data with pilot blocks inserted
 
+    See Also
+    --------
+    OFDM_tx
+
     Notes
     -----
     A helper function called by :func:`OFDM_tx` that inserts pilot block for use
     in channel estimation when a delay spread channel is present.
-
     """
     N_OFDM = IQ_data.shape[0]
     Npb = N_OFDM // (Np - 1)
@@ -1236,6 +1244,10 @@ def OFDM_tx(IQ_data, Nf, N, Np=0, cp=False, Ncp=0):
     Returns
     -------
     x_out : complex baseband OFDM waveform output after P/S and CP insertion
+
+    See Also
+    --------
+    OFDM_rx
 
     Examples
     --------
@@ -1369,6 +1381,10 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
     -------
     z_out : Recovered complex baseband QAM symbols as a serial stream; as appropriate channel estimation has been applied.
     H : channel estimate (in the frequency domain at each subcarrier)
+
+    See Also
+    --------
+    OFDM_tx
 
     Examples
     --------

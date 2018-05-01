@@ -56,6 +56,7 @@ from math import factorial
 import matplotlib.pyplot as plt
 import scipy.special as special
 from sys import exit
+import warnings
 
 # Data structure support classes
 class trellis_nodes(object):
@@ -309,17 +310,45 @@ class fec_conv(object):
 
     def puncture(self,code_bits,puncture_pattern = ('110','101')):
         """
-        y = puncture(code_bits,puncture_pattern = ('110','101'))
         Apply puncturing to the serial bits produced by convolutionally
-        encoding.  
+        encoding.
+
+        :param code_bits:
+        :param puncture_pattern:
+        :return:
+
+        Examples
+        --------
+        This example uses the following puncture matrix:
+
+        .. math::
+
+           \\begin{align*}
+               \\mathbf{A} = \\begin{bmatrix}
+                1 & 1 & 0 \\\\
+                1 & 0 & 1
+                \\end{bmatrix}
+           \\end{align*}
+
+        The upper row operates on the outputs for the :math:`G_{1}` polynomial and the lower row operates on the outputs of
+        the  :math:`G_{2}`  polynomial.
+
+        >>> import numpy as np
+        >>> from sk_dsp_comm.fec_conv import fec_conv
+        >>> cc = fec_conv(('101','111'))
+        >>> x = np.array([0, 0, 1, 1, 1, 0, 0, 0, 0, 0])
+        >>> state = '00'
+        >>> y, state = cc.conv_encoder(x, state)
+        >>> cc.puncture(y, ('110','101'))
+        array([ 0.,  0.,  0.,  1.,  1.,  0.,  0.,  0.,  1.,  1.,  0.,  0.])
         """
-        # Check to see that the length of code_bits is consistent with a rate 
+        # Check to see that the length of code_bits is consistent with a rate
         # 1/2 code.
         L_pp = len(puncture_pattern[0])
         N_codewords = int(np.floor(len(code_bits)/float(2)))
         if 2*N_codewords != len(code_bits):
-            print('Number of code bits must be even!')
-            print('Truncating bits to be compatible.')
+            warnings.warn('Number of code bits must be even!')
+            warnings.warn('Truncating bits to be compatible.')
             code_bits = code_bits[:2*N_codewords]
         # Extract the G1 and G2 encoded bits from the serial stream.
         # Assume the stream is of the form [G1 G2 G1 G2 ...   ]
@@ -331,8 +360,8 @@ class fec_conv(object):
         # length of the puncture pattern
         N_punct_periods = int(np.floor(N_codewords/float(L_pp)))
         if L_pp*N_punct_periods != N_codewords:
-            print('Code bit length is not a multiple pp = %d!' % L_pp)
-            print('Truncating bits to be compatible.')
+            warnings.warn('Code bit length is not a multiple pp = %d!' % L_pp)
+            warnings.warn('Truncating bits to be compatible.')
             x_G1 = x_G1[:L_pp*N_punct_periods]
             x_G2 = x_G2[:L_pp*N_punct_periods]
         #Puncture x_G1 and x_G1
@@ -350,13 +379,42 @@ class fec_conv(object):
     def depuncture(self,soft_bits,puncture_pattern = ('110','101'),
                    erase_value = 3.5):
         """
-        y = depuncture(soft_bits,puncture_pattern = ('110','101'),
-                       erase_value = 4)
         Apply de-puncturing to the soft bits coming from the channel. Erasure bits
         are inserted to return the soft bit values back to a form that can be
-        Viterbi decoded.  
+        Viterbi decoded.
+
+        :param soft_bits:
+        :param puncture_pattern:
+        :param erase_value:
+        :return:
+
+        Examples
+        --------
+        This example uses the following puncture matrix:
+
+        .. math::
+
+           \\begin{align*}
+               \\mathbf{A} = \\begin{bmatrix}
+                1 & 1 & 0 \\\\
+                1 & 0 & 1
+                \\end{bmatrix}
+           \\end{align*}
+
+        The upper row operates on the outputs for the :math:`G_{1}` polynomial and the lower row operates on the outputs of
+        the  :math:`G_{2}`  polynomial.
+
+        >>> import numpy as np
+        >>> from sk_dsp_comm.fec_conv import fec_conv
+        >>> cc = fec_conv(('101','111'))
+        >>> x = np.array([0, 0, 1, 1, 1, 0, 0, 0, 0, 0])
+        >>> state = '00'
+        >>> y, state = cc.conv_encoder(x, state)
+        >>> yp = cc.puncture(y, ('110','101'))
+        >>> cc.depuncture(yp, ('110', '101'), 1)
+        array([ 0., 0., 0., 1., 1., 1., 1., 0., 0., 1., 1., 0., 1., 1., 0., 1., 1., 0.]
         """
-        # Check to see that the length of soft_bits is consistent with a rate 
+        # Check to see that the length of soft_bits is consistent with a rate
         # 1/2 code.
         L_pp = len(puncture_pattern[0])
         L_pp1 = len([g1 for g1 in puncture_pattern[0] if g1 == '1'])
@@ -364,8 +422,8 @@ class fec_conv(object):
         #L_pp0 = len([g1 for g1 in pp1 if g1 == '0'])
         N_softwords = int(np.floor(len(soft_bits)/float(2)))
         if 2*N_softwords != len(soft_bits):
-            print('Number of soft bits must be even!')
-            print('Truncating bits to be compatible.')
+            warnings.warn('Number of soft bits must be even!')
+            warnings.warn('Truncating bits to be compatible.')
             soft_bits = soft_bits[:2*N_softwords]
         # Extract the G1p and G2p encoded bits from the serial stream.
         # Assume the stream is of the form [G1p G2p G1p G2p ...   ],
@@ -378,9 +436,9 @@ class fec_conv(object):
         # puncture length period of the soft bits
         N_punct_periods = int(np.floor(N_softwords/float(L_pp1)))
         if L_pp1*N_punct_periods != N_softwords:
-            print('Number of soft bits per puncture period is %d' % L_pp1)
-            print('The number of soft bits is not a multiple')
-            print('Truncating soft bits to be compatible.')
+            warnings.warn('Number of soft bits per puncture period is %d' % L_pp1)
+            warnings.warn('The number of soft bits is not a multiple')
+            warnings.warn('Truncating soft bits to be compatible.')
             x_G1 = x_G1[:L_pp1*N_punct_periods]
             x_G2 = x_G2[:L_pp1*N_punct_periods]
         x_G1 = x_G1.reshape(N_punct_periods,L_pp1)
@@ -502,8 +560,27 @@ def conv_Pb_bound(R,dfree,Ck,SNRdB,hard_soft,M=2):
     dfree: Free distance of the code
     Ck: Weight coefficient
     SNRdB: Signal to noise ratio in dB
-    hard_soft:
+    hard_soft: 0 hard, 1 soft, 2 uncoded
     M: M-ary
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from sk_dsp_comm import fec_conv as fec
+    >>> import matplotlib.pyplot as plt
+    >>> SNRdB = np.arange(2,12,.1)
+    >>> Pb = fec.conv_Pb_bound(1./2,10,[36, 0, 211, 0, 1404, 0, 11633],SNRdB,2)
+    >>> Pb_1_2 = fec.conv_Pb_bound(1./2,10,[36, 0, 211, 0, 1404, 0, 11633],SNRdB,1)
+    >>> Pb_3_4 = fec.conv_Pb_bound(3./4,4,[164, 0, 5200, 0, 151211, 0, 3988108],SNRdB,1)
+    >>> plt.semilogy(SNRdB,Pb)
+    >>> plt.semilogy(SNRdB,Pb_1_2)
+    >>> plt.semilogy(SNRdB,Pb_3_4)
+    >>> plt.axis([2,12,1e-7,1e0])
+    >>> plt.xlabel(r'$E_b/N_0$ (dB)')
+    >>> plt.ylabel(r'Symbol Error Probability')
+    >>> plt.legend(('Uncoded BPSK','R=1/2, K=7, Soft','R=3/4 (punc), K=7, Soft'),loc='best')
+    >>> plt.grid();
+    >>> plt.show()
 
     Notes
     -----

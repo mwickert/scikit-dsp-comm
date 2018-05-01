@@ -44,6 +44,7 @@ from .sigsys import NRZ_bits2
 from .sigsys import PN_gen
 from .sigsys import m_seq
 from .sigsys import cpx_AWGN
+from .sigsys import CIC
 
 
 def farrow_resample(x, fs_old, fs_new):
@@ -309,40 +310,6 @@ def bit_errors(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     rx_I = np.int16((rx_data.real + 1)/2)
     Bit_errors = tx_I ^ rx_I
     return Bit_count,np.sum(Bit_errors)
-
-
-def CIC(M,K):
-    """
-    A functional form implementation of a cascade of integrator comb (CIC) filters.
-
-    Parameters
-    ----------
-    M : Effective number of taps per section (typically the decimation factor).
-    K : The number of CIC sections cascaded (larger K gives the filter a wider image rejection bandwidth.
-
-    Returns
-    -------
-    b : FIR filter coefficients for a simple direct form implementation using the filter() function.
-
-    Notes
-    -----
-    Commonly used in multirate signal processing digital down-converters and digital up-converters. A true CIC filter
-    requires no multiplies, only add and subtract operations. The functional form created here is a simple FIR requiring
-    real coefficient multiplies via filter().
-
-    Mark Wickert July 2013
-    """
-    
-    if K == 1:
-        b = np.ones(M)
-    else:
-        h = np.ones(M)
-        b = h
-        for i in range(1,K):
-            b = signal.convolve(b,h) # cascade by convolving impulse responses
-    
-    # Make filter have unity gain at DC
-    return b/np.sum(b)
 
 
 def QAM_bb(N_symb,Ns,mod_type='16qam',pulse='rect',alpha=0.35):

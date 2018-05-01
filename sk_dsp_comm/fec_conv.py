@@ -57,6 +57,7 @@ import matplotlib.pyplot as plt
 import scipy.special as special
 from sys import exit
 import warnings
+from .digitalcom import Q_fctn
 
 # Data structure support classes
 class trellis_nodes(object):
@@ -643,12 +644,6 @@ def soft_Pk(k,R,SNR,M=2):
              Q_fctn(np.sqrt(3*k*R*np.log2(M)/float(M-1)*SNR))
     
     return Pk
-
-def Q_fctn(x):
-    """
-    Gaussian Q-function
-    """
-    return 1./2*special.erfc(x/np.sqrt(2.))
 
 if __name__ == '__main__':
     #x = np.arange(12)

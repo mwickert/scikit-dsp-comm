@@ -19,7 +19,7 @@ def read(fname):
 requirements = read(fpath('requirements.txt'))
 
 setup(name='scikit-dsp-comm',
-      version='0.0.4',
+      version='0.0.5',
       description='DSP and Comm package.',
       long_description=read_md(fpath('README.md')),
       author='Mark Wickert',

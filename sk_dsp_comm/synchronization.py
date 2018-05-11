@@ -43,56 +43,8 @@ Mark Wickert August 2014
 import numpy as np
 import scipy.signal as signal
 from . import digitalcom as dc
+from .digitalcom import MPSK_bb
 
-def MPSK_bb(N_symb,Ns,M,pulse='rect',alpha = 0.25,MM=6):
-    """
-    Generate non-return-to-zero (NRZ) data bits with pulse shaping.
-
-    A baseband digital data signal using +/-1 amplitude signal values
-    and including pulse shaping.
-
-    Parameters
-    ----------
-    N_bits : number of NRZ +/-1 data bits to produce
-    Ns : the number of samples per bit,
-    pulse_type : 'rect' , 'rc', 'src' (default 'rect')
-    alpha : excess bandwidth factor(default 0.25)
-    M : single sided pulse duration (default = 6) 
-
-    Returns
-    -------
-    x : ndarray of the NRZ signal values
-    b : ndarray of the pulse shape
-    data : ndarray of the underlying data bits
-
-    Notes
-    -----
-    Pulse shapes include 'rect' (rectangular), 'rc' (raised cosine), 
-    'src' (root raised cosine). The actual pulse length is 2*M+1 samples.
-    This function is used by BPSK_tx in the Case Study article.
-
-    Examples
-    --------
-    >>> x,b,data = NRZ_bits(100,10)
-    >>> t = arange(len(x))
-    >>> plot(t,x)
-    """
-    data = np.random.randint(0,M,N_symb) 
-    xs = np.exp(1j*2*np.pi/M*data)
-    x = np.hstack((xs.reshape(N_symb,1),np.zeros((N_symb,Ns-1))))
-    x =x.flatten()
-    if pulse.lower() == 'rect':
-        b = np.ones(Ns)
-    elif pulse.lower() == 'rc':
-        b = dc.rc_imp(Ns,alpha,MM)
-    elif pulse.lower() == 'src':
-        b = dc.sqrt_rc_imp(Ns,alpha,MM)
-    else:
-        print('pulse type must be rec, rc, or src')
-    x = signal.lfilter(b,1,x)
-    if M == 4:
-        x = x*np.exp(1j*np.pi/4); # For QPSK points in quadrants
-    return x,b/float(Ns),data
 
 def NDA_symb_sync(z,Ns,L,BnTs,zeta=0.707,I_ord=3):
     """

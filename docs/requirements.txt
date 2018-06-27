@@ -2,4 +2,5 @@ sphinx
 numpydoc
 matplotlib
 m2r
+ipykernel
 nbsphinx

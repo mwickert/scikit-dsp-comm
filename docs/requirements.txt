@@ -2,3 +2,4 @@ sphinx
 numpydoc
 matplotlib
 m2r
+nbsphinx

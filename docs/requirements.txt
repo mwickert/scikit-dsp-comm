@@ -3,4 +3,5 @@ numpydoc
 matplotlib
 m2r
 ipykernel
+ipywidgets
 nbsphinx

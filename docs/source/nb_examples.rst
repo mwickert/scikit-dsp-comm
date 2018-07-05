@@ -8,5 +8,5 @@ Jupyter Notebook Examples
 
 .. toctree::
    :caption: FIR and IIR Filter Design
-   
-   ../nb_exmaples/FIR_and_IIR_Filter_Design
+
+   ../nb_examples/FIR_and_IIR_Filter_Design

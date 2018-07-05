@@ -15,8 +15,11 @@ Examples
 --------
 
 * `SciPy 2017 Tutorial <https://github.com/mwickert/SP-Comm-Tutorial-using-scikit-dsp-comm>`_
-* :doc:`nb_examples`
 
+.. toctree::
+   :titlesonly:
+
+   nb_examples
 
 .. toctree::
    :maxdepth: 2

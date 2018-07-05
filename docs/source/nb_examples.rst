@@ -10,3 +10,8 @@ Jupyter Notebook Examples
    :caption: FIR and IIR Filter Design
 
    ../nb_examples/FIR_and_IIR_Filter_Design
+
+.. toctree::
+   :caption: Multirate Processing
+
+   ../nb_examples/Multirate_Processing.ipynb

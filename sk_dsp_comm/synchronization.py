@@ -292,29 +292,30 @@ def phase_step(z,Ns,p_step,Nstep):
 
 def PLL1(theta,fs,loop_type,Kv,fn,zeta,non_lin):
     """
-    [theta_hat, ev, phi] = PLL1(theta,fs,loop_type,Kv,fn,zeta,non_lin)
     Baseband Analog PLL Simulation Model
-    ===================================================================
-        theta = input phase deviation in radians
-           fs = sampling rate in sample per second or Hz
-    loop_type = 1, first-order loop filter F(s)=K_LF; 2, integrator 
-                with lead compensation F(s) = (1 + s tau2)/(s tau1), 
+
+    :param theta: input phase deviation in radians
+    :param fs: sampling rate in sample per second or Hz
+    :param loop_type: 1, first-order loop filter F(s)=K_LF; 2, integrator
+                with lead compensation F(s) = (1 + s tau2)/(s tau1),
                 i.e., a type II, or 3, lowpass with lead compensation
                 F(s) = (1 + s tau2)/(1 + s tau1)
-           Kv = VCO gain in Hz/v; note presently assume Kp = 1v/rad 
+    :param Kv: VCO gain in Hz/v; note presently assume Kp = 1v/rad
                 and K_LF = 1; the user can easily change this
-           fn = Loop natural frequency (loops 2 & 3) or cutoff 
+    :param fn: Loop natural frequency (loops 2 & 3) or cutoff
                 frquency (loop 1)
-         zeta = Damping factor for loops 2 & 3
-      non_lin = 0, linear phase detector; 1, sinusoidal phase detector
-    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    theta_hat = Output phase estimate of the input theta in radians
-           ev = VCO control voltage
-          phi = phase error = theta - theta_hat
-    ===================================================================
+    :param zeta: Damping factor for loops 2 & 3
+    :param non_lin: 0, linear phase detector; 1, sinusoidal phase detector
+    :return: theta_hat = Output phase estimate of the input theta in radians,
+             ev = VCO control voltage,
+             phi = phase error = theta - theta_hat
+
+    Notes
+    -----
     Alternate input in place of natural frequency, fn, in Hz is
     the noise equivalent bandwidth Bn in Hz.
-    ===================================================================
+
+
     Mark Wickert, April 2007 for ECE 5625/4625
     Modified February 2008 and July 2014 for ECE 5675/4675
     Python version August 2014

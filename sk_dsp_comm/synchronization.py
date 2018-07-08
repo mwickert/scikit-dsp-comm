@@ -271,18 +271,16 @@ def time_step(z,Ns,t_step,Nstep):
 
 def phase_step(z,Ns,p_step,Nstep):
     """
-    z_rot = phase_step(z,Ns,theta_step,Nsymb)
-    
     Create a one sample per symbol signal containing a phase rotation
     step Nsymb into the waveform.
 
-             z = complex baseband signal after matched filter
-            Ns = number of sample per symbol
-    theta_step = size in radians of the phase step
-         Nstep = symbol sample location where the step turns on
-         z_rot = the one sample symbol signal containing the phase step
-    
-        Mark Wickert July 2014
+    :param z: complex baseband signal after matched filter
+    :param Ns: number of sample per symbol
+    :param p_step: size in radians of the phase step
+    :param Nstep: symbol sample location where the step turns on
+    :return: the one sample symbol signal containing the phase step
+
+    Mark Wickert July 2014
     """
     nn = np.arange(0,len(z[::Ns]))
     theta = np.zeros(len(nn))

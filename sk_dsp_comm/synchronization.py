@@ -409,9 +409,9 @@ def PLL_cbb(x,fs,loop_type,Kv,fn,zeta):
     :param fn: Loop natural frequency (loops 2 & 3) or cutoff
                 frequency (loop 1)
     :param zeta: Damping factor for loops 2 & 3
-    :return: theta_hat = Output phase estimate of the input theta in radians
-           ev = VCO control voltage
-          phi = phase error = theta - theta_hat
+    :return: theta_hat = Output phase estimate of the input theta in radians,
+             ev = VCO control voltage,
+             phi = phase error = theta - theta_hat
 
     Mark Wickert, April 2007 for ECE 5625/4625
     Modified February 2008 and July 2014 for ECE 5675/4675

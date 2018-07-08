@@ -251,23 +251,23 @@ def DD_carrier_sync(z,M,BnTs,zeta=0.707,type=0):
     #    z_prime = z_prime*np.sqrt(2)
     return z_prime, a_hat, e_phi, theta_h
 
+
 def time_step(z,Ns,t_step,Nstep):
     """
-    z_step = time_step(z,Ns,time_step,Nstep)
-    
     Create a one sample per symbol signal containing a phase rotation
     step Nsymb into the waveform.
-    
-            z = complex baseband signal after matched filter
-           Ns = number of sample per symbol
-    time_step = in samples relative to Ns
-        Nstep = symbol sample location where the step turns on    
-       z_step = the one sample per symbol signal containing the phase step
-    
+
+    :param z: complex baseband signal after matched filter
+    :param Ns: number of sample per symbol
+    :param t_step: in samples relative to Ns
+    :param Nstep: symbol sample location where the step turns on
+    :return: the one sample per symbol signal containing the phase step
+
     Mark Wickert July 2014
     """
     z_step = np.hstack((z[:Ns*Nstep], z[(Ns*Nstep+t_step):], np.zeros(t_step)))
     return z_step
+
 
 def phase_step(z,Ns,p_step,Nstep):
     """
@@ -275,7 +275,7 @@ def phase_step(z,Ns,p_step,Nstep):
     
     Create a one sample per symbol signal containing a phase rotation
     step Nsymb into the waveform.
-    
+
              z = complex baseband signal after matched filter
             Ns = number of sample per symbol
     theta_step = size in radians of the phase step

@@ -72,6 +72,9 @@ class DSP_io_stream(object):
         self.p = pyaudio.PyAudio()
         self.stream_data = False
         self.capture_sample_count = 0
+        self.data_capture = list()
+        self.data_capture_left = list()
+        self.data_capture_right = list()
         self.Tcapture = Tcapture
         self.Ncapture = int(self.fs*self.Tcapture)
         self.left_in = np.zeros(frame_length)
@@ -79,7 +82,9 @@ class DSP_io_stream(object):
         self.out = np.zeros(frame_length*2)
         self.interactiveFG = 0
         self.print_when_done = 1
-     
+        self.DSP_tic = list()
+        self.DSP_toc = list()
+
     def in_out_check(self):
         """
         Checks the input and output to see if they are valid

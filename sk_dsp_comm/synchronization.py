@@ -251,38 +251,36 @@ def DD_carrier_sync(z,M,BnTs,zeta=0.707,type=0):
     #    z_prime = z_prime*np.sqrt(2)
     return z_prime, a_hat, e_phi, theta_h
 
+
 def time_step(z,Ns,t_step,Nstep):
     """
-    z_step = time_step(z,Ns,time_step,Nstep)
-    
     Create a one sample per symbol signal containing a phase rotation
     step Nsymb into the waveform.
-    
-            z = complex baseband signal after matched filter
-           Ns = number of sample per symbol
-    time_step = in samples relative to Ns
-        Nstep = symbol sample location where the step turns on    
-       z_step = the one sample per symbol signal containing the phase step
-    
+
+    :param z: complex baseband signal after matched filter
+    :param Ns: number of sample per symbol
+    :param t_step: in samples relative to Ns
+    :param Nstep: symbol sample location where the step turns on
+    :return: the one sample per symbol signal containing the phase step
+
     Mark Wickert July 2014
     """
     z_step = np.hstack((z[:Ns*Nstep], z[(Ns*Nstep+t_step):], np.zeros(t_step)))
     return z_step
 
+
 def phase_step(z,Ns,p_step,Nstep):
     """
-    z_rot = phase_step(z,Ns,theta_step,Nsymb)
-    
     Create a one sample per symbol signal containing a phase rotation
     step Nsymb into the waveform.
-    
-             z = complex baseband signal after matched filter
-            Ns = number of sample per symbol
-    theta_step = size in radians of the phase step
-         Nstep = symbol sample location where the step turns on
-         z_rot = the one sample symbol signal containing the phase step
-    
-        Mark Wickert July 2014
+
+    :param z: complex baseband signal after matched filter
+    :param Ns: number of sample per symbol
+    :param p_step: size in radians of the phase step
+    :param Nstep: symbol sample location where the step turns on
+    :return: the one sample symbol signal containing the phase step
+
+    Mark Wickert July 2014
     """
     nn = np.arange(0,len(z[::Ns]))
     theta = np.zeros(len(nn))
@@ -294,29 +292,30 @@ def phase_step(z,Ns,p_step,Nstep):
 
 def PLL1(theta,fs,loop_type,Kv,fn,zeta,non_lin):
     """
-    [theta_hat, ev, phi] = PLL1(theta,fs,loop_type,Kv,fn,zeta,non_lin)
     Baseband Analog PLL Simulation Model
-    ===================================================================
-        theta = input phase deviation in radians
-           fs = sampling rate in sample per second or Hz
-    loop_type = 1, first-order loop filter F(s)=K_LF; 2, integrator 
-                with lead compensation F(s) = (1 + s tau2)/(s tau1), 
+
+    :param theta: input phase deviation in radians
+    :param fs: sampling rate in sample per second or Hz
+    :param loop_type: 1, first-order loop filter F(s)=K_LF; 2, integrator
+                with lead compensation F(s) = (1 + s tau2)/(s tau1),
                 i.e., a type II, or 3, lowpass with lead compensation
                 F(s) = (1 + s tau2)/(1 + s tau1)
-           Kv = VCO gain in Hz/v; note presently assume Kp = 1v/rad 
+    :param Kv: VCO gain in Hz/v; note presently assume Kp = 1v/rad
                 and K_LF = 1; the user can easily change this
-           fn = Loop natural frequency (loops 2 & 3) or cutoff 
+    :param fn: Loop natural frequency (loops 2 & 3) or cutoff
                 frquency (loop 1)
-         zeta = Damping factor for loops 2 & 3
-      non_lin = 0, linear phase detector; 1, sinusoidal phase detector
-    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    theta_hat = Output phase estimate of the input theta in radians
-           ev = VCO control voltage
-          phi = phase error = theta - theta_hat
-    ===================================================================
+    :param zeta: Damping factor for loops 2 & 3
+    :param non_lin: 0, linear phase detector; 1, sinusoidal phase detector
+    :return: theta_hat = Output phase estimate of the input theta in radians,
+             ev = VCO control voltage,
+             phi = phase error = theta - theta_hat
+
+    Notes
+    -----
     Alternate input in place of natural frequency, fn, in Hz is
     the noise equivalent bandwidth Bn in Hz.
-    ===================================================================
+
+
     Mark Wickert, April 2007 for ECE 5625/4625
     Modified February 2008 and July 2014 for ECE 5675/4675
     Python version August 2014
@@ -395,30 +394,26 @@ def PLL1(theta,fs,loop_type,Kv,fn,zeta,non_lin):
         theta_hat[k] = vco_out
     return theta_hat, ev, phi
 
+
 def PLL_cbb(x,fs,loop_type,Kv,fn,zeta):
     """
-    [theta_hat, ev, phi] = PLL_cbb(theta,fs,loop_type,Kv,fn,zeta)
     Baseband Analog PLL Simulation Model
-    ===================================================================
-        theta = input phase deviation in radians
-           fs = sampling rate in sample per second or Hz
-    loop_type = 1, first-order loop filter F(s)=K_LF; 2, integrator 
-                with lead compensation F(s) = (1 + s tau2)/(s tau1), 
+
+    :param x: input phase deviation in radians
+    :param fs: sampling rate in sample per second or Hz
+    :param loop_type: 1, first-order loop filter F(s)=K_LF; 2, integrator
+                with lead compensation F(s) = (1 + s tau2)/(s tau1),
                 i.e., a type II, or 3, lowpass with lead compensation
                 F(s) = (1 + s tau2)/(1 + s tau1)
-           Kv = VCO gain in Hz/v; note presently assume Kp = 1v/rad 
+    :param Kv: VCO gain in Hz/v; note presently assume Kp = 1v/rad
                 and K_LF = 1; the user can easily change this
-           fn = Loop natural frequency (loops 2 & 3) or cutoff 
-                frquency (loop 1)
-         zeta = Damping factor for loops 2 & 3
-    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    theta_hat = Output phase estimate of the input theta in radians
-           ev = VCO control voltage
-          phi = phase error = theta - theta_hat
-    ===================================================================
-    Alternate input in place of natural frequency, fn, in Hz is
-    the noise equivalent bandwidth Bn in Hz.
-    ===================================================================
+    :param fn: Loop natural frequency (loops 2 & 3) or cutoff
+                frequency (loop 1)
+    :param zeta: Damping factor for loops 2 & 3
+    :return: theta_hat = Output phase estimate of the input theta in radians,
+             ev = VCO control voltage,
+             phi = phase error = theta - theta_hat
+
     Mark Wickert, April 2007 for ECE 5625/4625
     Modified February 2008 and July 2014 for ECE 5675/4675
     Python version August 2014

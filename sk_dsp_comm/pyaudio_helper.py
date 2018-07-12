@@ -62,6 +62,16 @@ class DSP_io_stream(object):
     """
     def __init__(self, stream_callback, in_idx = 1, out_idx = 4, frame_length = 1024, 
                  fs = 44100, Tcapture = 0, sleep_time = 0.1):
+        """
+
+        :param stream_callback: Function that will provide the callback functionality
+        :param in_idx: Input device id
+        :param out_idx: Output device id
+        :param frame_length:
+        :param fs: Sampling frequency
+        :param Tcapture: Time to capture (seconds)
+        :param sleep_time:
+        """
         self.in_idx = in_idx
         self.out_idx = out_idx
         self.in_out_check()
@@ -72,6 +82,9 @@ class DSP_io_stream(object):
         self.p = pyaudio.PyAudio()
         self.stream_data = False
         self.capture_sample_count = 0
+        self.data_capture = list()
+        self.data_capture_left = list()
+        self.data_capture_right = list()
         self.Tcapture = Tcapture
         self.Ncapture = int(self.fs*self.Tcapture)
         self.left_in = np.zeros(frame_length)
@@ -79,22 +92,28 @@ class DSP_io_stream(object):
         self.out = np.zeros(frame_length*2)
         self.interactiveFG = 0
         self.print_when_done = 1
-     
+        self.DSP_tic = list()
+        self.DSP_toc = list()
+
     def in_out_check(self):
         """
         Checks the input and output to see if they are valid
         
         """
-        pA = pyaudio.PyAudio() 
-        in_check = pA.get_device_info_by_index(self.in_idx)
-        out_check = pA.get_device_info_by_index(self.out_idx)
-        if((in_check['maxInputChannels'] == 0) and (out_check['maxOutputChannels']==0)):
+        devices = available_devices()
+        if not self.in_idx in devices:
+            raise OSError("Input device is unavailable")
+        in_check = devices[self.in_idx]
+        if not devices:
+            raise OSError("Output device is unavailable")
+        out_check = devices[self.out_idx]
+        if((in_check['inputs'] == 0) and (out_check['outputs']==0)):
             warnings.warn('Invalid input and output devices')
-        elif(in_check['maxInputChannels'] == 0):
+        elif(in_check['inputs'] == 0):
             warnings.warn('Invalid input device')
-        elif(out_check['maxOutputChannels'] == 0):
+        elif(out_check['outputs'] == 0):
             warnings.warn('Invalid output device')
-            
+        return True
         
     def interaction(self,Stream):
         if(Stream == 'Start Streaming'):
@@ -409,13 +428,16 @@ def available_devices():
     Display available input and output audio devices along with their
     port indices.
 
+    :return:  Dictionary containing device id and number of inputs and outputs
+    :rtype: dict
     """
+    devices = {}
     pA = pyaudio.PyAudio() 
     for k in range(pA.get_device_count()):
         dev = pA.get_device_info_by_index(k)
+        devices[k] = {'name': dev['name'], 'inputs': dev['maxInputChannels'], 'outputs': dev['maxOutputChannels']}
         print('Index %d device name = %s, inputs = %d, outputs = %d' % \
               (k,dev['name'],dev['maxInputChannels'],dev['maxOutputChannels']))
-
-
+    return devices
 
 # plt.figure(figsize=fsize)

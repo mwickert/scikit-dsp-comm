@@ -30,26 +30,23 @@ either expressed or implied, of the FreeBSD Project.
 """
 
 import numpy as np
-import scipy.signal as signal
 import warnings
+import logging
 try:
     import pyaudio
 except ImportError:
     warnings.warn("Please install the helpers extras for full functionality", ImportWarning)
-#import wave
 import time
-import sys
 import matplotlib.pyplot as plt
-from matplotlib import pylab
 from matplotlib import mlab 
 from threading import Thread
-#from __future__ import print_function
 try:
     from ipywidgets import interactive
     from ipywidgets import ToggleButtons
 except ImportError:
     warnings.warn("Please install ipywidgets for full functionality", ImportWarning)
     
+logger = logging.getLogger(__name__)
 
 
 class DSP_io_stream(object):
@@ -432,12 +429,12 @@ def available_devices():
     :rtype: dict
     """
     devices = {}
-    pA = pyaudio.PyAudio() 
+    pA = pyaudio.PyAudio()
+    device_string = str()
     for k in range(pA.get_device_count()):
         dev = pA.get_device_info_by_index(k)
         devices[k] = {'name': dev['name'], 'inputs': dev['maxInputChannels'], 'outputs': dev['maxOutputChannels']}
-        print('Index %d device name = %s, inputs = %d, outputs = %d' % \
-              (k,dev['name'],dev['maxInputChannels'],dev['maxOutputChannels']))
+        device_string += 'Index %d device name = %s, inputs = %d, outputs = %d\n' % \
+                        (k,dev['name'],dev['maxInputChannels'],dev['maxOutputChannels'])
+    logger.debug(device_string)
     return devices
-
-# plt.figure(figsize=fsize)

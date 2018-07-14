@@ -425,7 +425,7 @@ def available_devices():
     Display available input and output audio devices along with their
     port indices.
 
-    :return:  Dictionary containing device id and number of inputs and outputs
+    :return:  Dictionary whose keys are the device index, the number of inputs and outputs, and their names.
     :rtype: dict
     """
     devices = {}

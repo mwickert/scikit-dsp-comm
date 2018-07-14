@@ -46,6 +46,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'm2r',
     'nbsphinx',
+    'jupyter_sphinx.embed_widgets',
 ]
 
 exclude_patterns = ['_build', '**.ipynb_checkpoints']

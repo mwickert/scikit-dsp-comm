@@ -23,4 +23,4 @@ doc/sphinx/
 
 # Backup files
 *~
-.vscode/settings.json
+.vscode/*

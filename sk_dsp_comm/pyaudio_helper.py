@@ -396,18 +396,22 @@ class loop_audio(object):
     """
     Loop signal ndarray during playback.
     Optionally start_offset samples into the array.
-    
+    Array may be 1D (one channel) or 2D (two channel, Nsamps by 2)
     
     Mark Wickert July 2017
     """
     def __init__(self,x,start_offset = 0):
         """
-        
+        Create a 1D or 2D array for audio looping
         """
+        self.n_chan = x.ndim
+        if self.n_chan == 2:
+            # Transpose if data is in rows
+            if x.shape[1] != 2:
+                x = x.T
         self.x = x
-        self.x_len = len(x)
-        self.loop_pointer = start_offset
-        
+        self.x_len = x.shape[0]
+        self.loop_pointer = start_offset  
         
     def get_samples(self,frame_count):
         """
@@ -417,7 +421,11 @@ class loop_audio(object):
             # wrap to the beginning if a full frame is not available
             self.loop_pointer = 0
         self.loop_pointer += frame_count
-        return self.x[self.loop_pointer - frame_count:self.loop_pointer]
+        if self.n_chan == 1:
+            buffer = self.x[self.loop_pointer - frame_count:self.loop_pointer]
+        else:
+            buffer = self.x[self.loop_pointer - frame_count:self.loop_pointer,:]
+        return buffer
         
 
 def available_devices():

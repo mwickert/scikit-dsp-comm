@@ -30,26 +30,23 @@ either expressed or implied, of the FreeBSD Project.
 """
 
 import numpy as np
-import scipy.signal as signal
 import warnings
+import logging
 try:
     import pyaudio
 except ImportError:
     warnings.warn("Please install the helpers extras for full functionality", ImportWarning)
-#import wave
 import time
-import sys
 import matplotlib.pyplot as plt
-from matplotlib import pylab
 from matplotlib import mlab 
 from threading import Thread
-#from __future__ import print_function
 try:
     from ipywidgets import interactive
     from ipywidgets import ToggleButtons
 except ImportError:
     warnings.warn("Please install ipywidgets for full functionality", ImportWarning)
     
+logger = logging.getLogger(__name__)
 
 
 class DSP_io_stream(object):
@@ -104,15 +101,15 @@ class DSP_io_stream(object):
         if not self.in_idx in devices:
             raise OSError("Input device is unavailable")
         in_check = devices[self.in_idx]
-        if not devices:
+        if not self.out_idx in devices:
             raise OSError("Output device is unavailable")
         out_check = devices[self.out_idx]
         if((in_check['inputs'] == 0) and (out_check['outputs']==0)):
-            warnings.warn('Invalid input and output devices')
+            raise StandardError('Invalid input and output devices')
         elif(in_check['inputs'] == 0):
-            warnings.warn('Invalid input device')
+            raise ValueError('Selected input device has no inputs')
         elif(out_check['outputs'] == 0):
-            warnings.warn('Invalid output device')
+            raise ValueError('Selected output device has no outputs')
         return True
         
     def interaction(self,Stream):
@@ -428,16 +425,16 @@ def available_devices():
     Display available input and output audio devices along with their
     port indices.
 
-    :return:  Dictionary containing device id and number of inputs and outputs
+    :return:  Dictionary whose keys are the device index, the number of inputs and outputs, and their names.
     :rtype: dict
     """
     devices = {}
-    pA = pyaudio.PyAudio() 
+    pA = pyaudio.PyAudio()
+    device_string = str()
     for k in range(pA.get_device_count()):
         dev = pA.get_device_info_by_index(k)
         devices[k] = {'name': dev['name'], 'inputs': dev['maxInputChannels'], 'outputs': dev['maxOutputChannels']}
-        print('Index %d device name = %s, inputs = %d, outputs = %d' % \
-              (k,dev['name'],dev['maxInputChannels'],dev['maxOutputChannels']))
+        device_string += 'Index %d device name = %s, inputs = %d, outputs = %d\n' % \
+                        (k,dev['name'],dev['maxInputChannels'],dev['maxOutputChannels'])
+    logger.debug(device_string)
     return devices
-
-# plt.figure(figsize=fsize)

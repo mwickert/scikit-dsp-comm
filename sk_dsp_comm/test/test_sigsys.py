@@ -680,6 +680,14 @@ class TestSigsys(SKDSPCommTest):
         with self.assertRaisesRegexp(ValueError, 'shape must be tri or line')as lp_s_err:
             ss.lp_samp(10, 25, 50, 10, shape='square')
 
+    def test_simpleQuant_12_sat(self):
+        n = np.arange(0, 10)
+        x = np.cos(2 * np.pi * 0.211 * n)
+        test_q = [0.99951172, 0.24267578, -0.88232422, -0.67089844, 0.55664062, 0.94091797, -0.10058594, -0.98974609,
+                  -0.37988281, 0.80517578]
+        q = ss.simpleQuant(x, 12, 1, 'sat')
+        npt.assert_almost_equal(q, test_q)
+
     def test_simpleQuant_value_err(self):
         with self.assertRaisesRegexp(ValueError, "limit must be the string over, sat, or none") as sQ_err:
             ss.simpleQuant(np.ones(12), 12, 12, 'under')

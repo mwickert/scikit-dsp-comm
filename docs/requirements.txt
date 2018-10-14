@@ -5,3 +5,4 @@ m2r
 ipykernel
 ipywidgets
 nbsphinx
+jupyter_sphinx

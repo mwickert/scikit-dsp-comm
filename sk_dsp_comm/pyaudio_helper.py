@@ -30,26 +30,23 @@ either expressed or implied, of the FreeBSD Project.
 """
 
 import numpy as np
-import scipy.signal as signal
 import warnings
+import logging
 try:
     import pyaudio
 except ImportError:
     warnings.warn("Please install the helpers extras for full functionality", ImportWarning)
-#import wave
 import time
-import sys
 import matplotlib.pyplot as plt
-from matplotlib import pylab
 from matplotlib import mlab 
 from threading import Thread
-#from __future__ import print_function
 try:
     from ipywidgets import interactive
     from ipywidgets import ToggleButtons
 except ImportError:
     warnings.warn("Please install ipywidgets for full functionality", ImportWarning)
     
+logger = logging.getLogger(__name__)
 
 
 class DSP_io_stream(object):
@@ -104,15 +101,15 @@ class DSP_io_stream(object):
         if not self.in_idx in devices:
             raise OSError("Input device is unavailable")
         in_check = devices[self.in_idx]
-        if not devices:
+        if not self.out_idx in devices:
             raise OSError("Output device is unavailable")
         out_check = devices[self.out_idx]
         if((in_check['inputs'] == 0) and (out_check['outputs']==0)):
-            warnings.warn('Invalid input and output devices')
+            raise StandardError('Invalid input and output devices')
         elif(in_check['inputs'] == 0):
-            warnings.warn('Invalid input device')
+            raise ValueError('Selected input device has no inputs')
         elif(out_check['outputs'] == 0):
-            warnings.warn('Invalid output device')
+            raise ValueError('Selected output device has no outputs')
         return True
         
     def interaction(self,Stream):
@@ -399,18 +396,22 @@ class loop_audio(object):
     """
     Loop signal ndarray during playback.
     Optionally start_offset samples into the array.
-    
+    Array may be 1D (one channel) or 2D (two channel, Nsamps by 2)
     
     Mark Wickert July 2017
     """
     def __init__(self,x,start_offset = 0):
         """
-        
+        Create a 1D or 2D array for audio looping
         """
+        self.n_chan = x.ndim
+        if self.n_chan == 2:
+            # Transpose if data is in rows
+            if x.shape[1] != 2:
+                x = x.T
         self.x = x
-        self.x_len = len(x)
-        self.loop_pointer = start_offset
-        
+        self.x_len = x.shape[0]
+        self.loop_pointer = start_offset  
         
     def get_samples(self,frame_count):
         """
@@ -420,7 +421,11 @@ class loop_audio(object):
             # wrap to the beginning if a full frame is not available
             self.loop_pointer = 0
         self.loop_pointer += frame_count
-        return self.x[self.loop_pointer - frame_count:self.loop_pointer]
+        if self.n_chan == 1:
+            buffer = self.x[self.loop_pointer - frame_count:self.loop_pointer]
+        else:
+            buffer = self.x[self.loop_pointer - frame_count:self.loop_pointer,:]
+        return buffer
         
 
 def available_devices():
@@ -428,16 +433,16 @@ def available_devices():
     Display available input and output audio devices along with their
     port indices.
 
-    :return:  Dictionary containing device id and number of inputs and outputs
+    :return:  Dictionary whose keys are the device index, the number of inputs and outputs, and their names.
     :rtype: dict
     """
     devices = {}
-    pA = pyaudio.PyAudio() 
+    pA = pyaudio.PyAudio()
+    device_string = str()
     for k in range(pA.get_device_count()):
         dev = pA.get_device_info_by_index(k)
         devices[k] = {'name': dev['name'], 'inputs': dev['maxInputChannels'], 'outputs': dev['maxOutputChannels']}
-        print('Index %d device name = %s, inputs = %d, outputs = %d' % \
-              (k,dev['name'],dev['maxInputChannels'],dev['maxOutputChannels']))
+        device_string += 'Index %d device name = %s, inputs = %d, outputs = %d\n' % \
+                        (k,dev['name'],dev['maxInputChannels'],dev['maxOutputChannels'])
+    logger.debug(device_string)
     return devices
-
-# plt.figure(figsize=fsize)

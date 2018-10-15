@@ -664,7 +664,7 @@ class TestSigsys(SKDSPCommTest):
 
     def test_downsample_M(self):
         x = np.zeros(0)
-        with self.assertRaisesRegex(TypeError, "M must be an int") as tdM:
+        with self.assertRaisesRegexp(TypeError, "M must be an int") as tdM:
             ss.downsample(x, 3.0)
 
     def test_rect_conv(self):

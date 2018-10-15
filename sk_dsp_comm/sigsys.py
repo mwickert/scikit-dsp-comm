@@ -2673,7 +2673,7 @@ def downsample(x,M,p=0):
     Parameters
     ----------
     x : ndarray of input signal values
-    M : upsample factor
+    M : downsample factor
     p : phase of decimated value, 0 (default), 1, ..., M-1
 
     Returns
@@ -2685,6 +2685,8 @@ def downsample(x,M,p=0):
     >>> y = downsample(x,3)
     >>> y = downsample(x,3,1)
     """
+    if not isinstance(M, int):
+        raise TypeError("M must be an int")
     x = x[0:int(np.floor(len(x)/M))*M]
     x = x.reshape((int(np.floor(len(x)/M)),M))
     y = x[:,p]

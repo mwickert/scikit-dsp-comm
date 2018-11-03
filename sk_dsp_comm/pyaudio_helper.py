@@ -38,7 +38,6 @@ except ImportError:
     warnings.warn("Please install the helpers extras for full functionality", ImportWarning)
 import time
 import matplotlib.pyplot as plt
-from matplotlib import mlab 
 from threading import Thread
 try:
     from ipywidgets import interactive
@@ -307,6 +306,8 @@ class DSP_io_stream(object):
         
         """
         Tp = self.frame_length/float(self.fs)*1000
+        print('Delay (latency) in Entering the Callback the First Time = %6.2f (ms)' \
+              % (self.DSP_tic[0]*1000,))
         print('Ideal Callback period = %1.2f (ms)' % Tp)
         Tmp_mean = np.mean(np.diff(np.array(self.DSP_tic))[1:]*1000)
         print('Average Callback Period = %1.2f (ms)' % Tmp_mean)
@@ -323,12 +324,12 @@ class DSP_io_stream(object):
         
         """
         # Find bounding k values that contain the [start_ms,stop_ms]
-        k_min_idx = mlab.find(np.array(self.DSP_tic)*1000 < start_ms)
+        k_min_idx = np.nonzero(np.ravel(np.array(self.DSP_tic)*1000 < start_ms))[0]
         if len(k_min_idx) < 1:
             k_min = 0
         else:
             k_min = k_min_idx[-1]
-        k_max_idx = mlab.find(np.array(self.DSP_tic)*1000 > stop_ms)
+        k_max_idx = np.nonzero(np.ravel(np.array(self.DSP_tic)*1000 > stop_ms))[0]
         if len(k_min_idx) < 1:
             k_max= len(self.DSP_tic)
         else:

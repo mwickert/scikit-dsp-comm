@@ -4,3 +4,4 @@ include sk_dsp_comm/ca1thru37.txt
 include logo.png
 include Capture_Buffer.png
 include two_channel_stream.png
+include LICENSE.md

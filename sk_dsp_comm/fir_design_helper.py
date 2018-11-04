@@ -31,7 +31,6 @@ either expressed or implied, of the FreeBSD Project.
 
 import numpy as np
 import scipy.signal as signal
-from . import optfir
 import matplotlib.pyplot as plt
 from matplotlib import pylab
 
@@ -212,6 +211,100 @@ def firwin_kaiser_bsf(f_stop1, f_pass1, f_pass2, f_stop2, d_stop,
     return b_k_bs
 
 
+def lowpass_order(f_pass, f_stop, dpass_dB, dstop_dB, fsamp = 1):
+    """
+    Optimal FIR (equal ripple) Lowpass Order Determination
+    
+    Text reference: Ifeachor, Digital Signal Processing a Practical Approach, 
+    second edition, Prentice Hall, 2002.
+    Journal paper reference: Herriman et al., Practical Design Rules for Optimum
+    Finite Imulse Response Digitl Filters, Bell Syst. Tech. J., vol 52, pp. 
+    769-799, July-Aug., 1973.IEEE, 1973.
+    """
+    dpass = 1 - 10**(-dpass_dB/20)
+    dstop = 10**(-dstop_dB/20)
+    Df = (f_stop - f_pass)/fsamp
+    a1 = 5.309e-3
+    a2 = 7.114e-2
+    a3 = -4.761e-1
+    a4 = -2.66e-3
+    a5 = -5.941e-1
+    a6 = -4.278e-1
+    
+    Dinf = np.log10(dstop)*(a1*np.log10(dpass)**2 + a2*np.log10(dpass) + a3) \
+           + (a4*np.log10(dpass)**2 + a5*np.log10(dpass) + a6)
+    f = 11.01217 + 0.51244*(np.log10(dpass) - np.log10(dstop))
+    N = Dinf/Df - f*Df + 1
+    ff = 2*np.array([0, f_pass, f_stop, fsamp/2])/fsamp
+    aa = np.array([1, 1, 0, 0])
+    wts = np.array([1.0, dpass/dstop])
+    return int(N), ff, aa, wts
+
+
+def bandpass_order(f_stop1, f_pass1, f_pass2, f_stop2, dpass_dB, dstop_dB, fsamp = 1):
+    """
+    Optimal FIR (equal ripple) Bandpass Order Determination
+    
+    Text reference: Ifeachor, Digital Signal Processing a Practical Approach, 
+    second edition, Prentice Hall, 2002.
+    Journal paper reference: F. Mintzer & B. Liu, Practical Design Rules for Optimum
+    FIR Bandpass Digital Filters, IEEE Transactions on Acoustics and Speech, pp. 
+    204-206, April,1979.
+    """
+    dpass = 1 - 10**(-dpass_dB/20)
+    dstop = 10**(-dstop_dB/20)
+    Df1 = (f_pass1 - f_stop1)/fsamp
+    Df2 = (f_stop2 - f_pass2)/fsamp
+    b1 = 0.01201
+    b2 = 0.09664
+    b3 = -0.51325
+    b4 = 0.00203
+    b5 = -0.5705
+    b6 = -0.44314
+    
+    Df = min(Df1, Df2)
+    Cinf = np.log10(dstop)*(b1*np.log10(dpass)**2 + b2*np.log10(dpass) + b3) \
+           + (b4*np.log10(dpass)**2 + b5*np.log10(dpass) + b6)
+    g = -14.6*np.log10(dpass/dstop) - 16.9
+    N = Cinf/Df + g*Df + 1
+    ff = 2*np.array([0, f_stop1, f_pass1, f_pass2, f_stop2, fsamp/2])/fsamp
+    aa = np.array([0, 0, 1, 1, 0, 0])
+    wts = np.array([dpass/dstop, 1, dpass/dstop])
+    return int(N), ff, aa, wts
+
+
+def bandstop_order(f_stop1, f_pass1, f_pass2, f_stop2, dpass_dB, dstop_dB, fsamp = 1):
+    """
+    Optimal FIR (equal ripple) Bandstop Order Determination
+    
+    Text reference: Ifeachor, Digital Signal Processing a Practical Approach, 
+    second edition, Prentice Hall, 2002.
+    Journal paper reference: F. Mintzer & B. Liu, Practical Design Rules for Optimum
+    FIR Bandpass Digital Filters, IEEE Transactions on Acoustics and Speech, pp. 
+    204-206, April,1979.
+    """
+    dpass = 1 - 10**(-dpass_dB/20)
+    dstop = 10**(-dstop_dB/20)
+    Df1 = (f_pass1 - f_stop1)/fsamp
+    Df2 = (f_stop2 - f_pass2)/fsamp
+    b1 = 0.01201
+    b2 = 0.09664
+    b3 = -0.51325
+    b4 = 0.00203
+    b5 = -0.5705
+    b6 = -0.44314
+    
+    Df = min(Df1, Df2)
+    Cinf = np.log10(dstop)*(b1*np.log10(dpass)**2 + b2*np.log10(dpass) + b3) \
+           + (b4*np.log10(dpass)**2 + b5*np.log10(dpass) + b6)
+    g = -14.6*np.log10(dpass/dstop) - 16.9
+    N = Cinf/Df + g*Df + 1
+    ff = 2*np.array([0, f_stop1, f_pass1, f_pass2, f_stop2, fsamp/2])/fsamp
+    aa = np.array([1, 1, 0, 0, 1, 1])
+    wts = np.array([2, dpass/dstop, 2])
+    return int(N), ff, aa, wts
+
+
 def fir_remez_lpf(f_pass, f_stop, d_pass, d_stop, fs = 1.0, N_bump=5):
     """
     Design an FIR lowpass filter using remez with order
@@ -220,11 +313,9 @@ def fir_remez_lpf(f_pass, f_stop, d_pass, d_stop, fs = 1.0, N_bump=5):
     d_pass dB and stopband attenuation d_stop dB all 
     relative to a sampling rate of fs Hz.
 
-    Mark Wickert October 2016
+    Mark Wickert October 2016, updated October 2018
     """
-    n, ff, aa, wts=optfir.remezord([f_pass,f_stop], [1,0], 
-                                   [1-10**(-d_pass/20.),10**(-d_stop/20.)], 
-                                   fsamp=fs)
+    n, ff, aa, wts = lowpass_order(f_pass, f_stop, d_pass, d_stop, fsamp=fs)
     # Bump up the order by N_bump to bring down the final d_pass & d_stop
     N_taps = n
     N_taps += N_bump
@@ -241,15 +332,13 @@ def fir_remez_hpf(f_stop, f_pass, d_pass, d_stop, fs = 1.0, N_bump=5):
     d_pass dB and stopband attenuation d_stop dB all 
     relative to a sampling rate of fs Hz.
 
-    Mark Wickert October 2016
+    Mark Wickert October 2016, updated October 2018
     """
     # Transform HPF critical frequencies to lowpass equivalent
     f_pass_eq = fs/2. - f_pass
     f_stop_eq = fs/2. - f_stop
-    # Design LPF equivalent    
-    n, ff, aa, wts=optfir.remezord([f_pass_eq,f_stop_eq], [1,0], 
-                                   [1-10**(-d_pass/20.),10**(-d_stop/20.)], 
-                                   fsamp=fs)
+    # Design LPF equivalent
+    n, ff, aa, wts = lowpass_order(f_pass_eq, f_stop_eq, d_pass, d_stop, fsamp=fs)
     # Bump up the order by N_bump to bring down the final d_pass & d_stop
     N_taps = n
     N_taps += N_bump
@@ -270,13 +359,10 @@ def fir_remez_bpf(f_stop1, f_pass1, f_pass2, f_stop2, d_pass, d_stop,
     desired passband ripple d_pass dB and stopband attenuation
     d_stop dB all relative to a sampling rate of fs Hz.
 
-    Mark Wickert October 2016
+    Mark Wickert October 2016, updated October 2018
     """
-    n, ff, aa, wts=optfir.remezord([f_stop1,f_pass1,f_pass2,f_stop2], 
-                                   [0,1,0], 
-                                   [10**(-d_stop/20.),1-10**(-d_pass/20.),
-                                    10**(-d_stop/20.)], 
-                                   fsamp=fs)
+    n, ff, aa, wts = bandpass_order(f_stop1, f_pass1, f_pass2, f_stop2, 
+                                  d_pass, d_stop, fsamp=fs)
     # Bump up the order by N_bump to bring down the final d_pass & d_stop
     N_taps = n
     N_taps += N_bump
@@ -293,17 +379,19 @@ def fir_remez_bsf(f_pass1, f_stop1, f_stop2, f_pass2, d_pass, d_stop,
     desired passband ripple d_pass dB and stopband attenuation
     d_stop dB all relative to a sampling rate of fs Hz.
 
-    Mark Wickert October 2016
+    Mark Wickert October 2016, updated October 2018
     """
-    n, ff, aa, wts=optfir.remezord([f_pass1,f_stop1,f_stop2,f_pass2], 
-                                   [1,0,1], 
-                                   [1-10**(-d_pass/20.),10**(-d_stop/20.),
-                                    1-10**(-d_pass/20.)], 
-                                   fsamp=fs)
+    n, ff, aa, wts = bandstop_order(f_pass1, f_stop1, f_stop2, f_pass2, 
+                                    d_pass, d_stop, fsamp=fs)
     # Bump up the order by N_bump to bring down the final d_pass & d_stop
+    # Initially make sure the number of taps is even so N_bump needs to be odd
+    if np.mod(n,2) != 0:
+        n += 1
     N_taps = n
     N_taps += N_bump
-    b = signal.remez(N_taps, ff, aa[0::2], wts,Hz=2)
+    b = signal.remez(N_taps, ff, aa[0::2], wts, Hz=2,
+                     maxiter = 25, grid_density = 16)
+    print('N_bump must be odd to maintain odd filter length')
     print('Remez filter taps = %d.' % N_taps)
     return b
 
@@ -372,7 +460,7 @@ def freqz_resp_list(b,a=np.array([1]),mode = 'dB',fs=1.0,Npts = 1024,fsize=(6,4)
             f_diff = np.diff(f)
             Tg = -np.diff(theta2)/np.diff(w)
             # For gain almost zero set groupdelay = 0
-            idx = pylab.find(20*np.log10(H[:-1]) < -400)
+            idx = np.nonzero(np.ravel(20*np.log10(H[:-1]) < -400))[0]
             Tg[idx] = np.zeros(len(idx))
             max_Tg = np.max(Tg)
             #print(max_Tg)

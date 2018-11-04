@@ -274,7 +274,7 @@ def freqz_resp_list(b,a=np.array([1]),mode = 'dB',fs=1.0,Npts = 1024,fsize=(6,4)
             f_diff = np.diff(f)
             Tg = -np.diff(theta2)/np.diff(w)
             # For gain almost zero set groupdelay = 0
-            idx = pylab.find(20*np.log10(H[:-1]) < -400)
+            idx = np.nonzero(np.ravel(20*np.log10(H[:-1]) < -400))[0]
             Tg[idx] = np.zeros(len(idx))
             max_Tg = np.max(Tg)
             #print(max_Tg)

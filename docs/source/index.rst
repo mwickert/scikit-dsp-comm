@@ -31,7 +31,6 @@ Examples
    fir_design_helper
    iir_design_helper
    multirate_helper
-   optfir
    pyaudio_helper
    rtlsdr_helper
    sigsys

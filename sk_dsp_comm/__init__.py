@@ -4,6 +4,5 @@ from . import fec_conv
 from . import fir_design_helper
 from . import iir_design_helper
 from . import multirate_helper
-from . import optfir
 from . import sigsys
 from . import synchronization

@@ -273,84 +273,46 @@ class fec_conv(object):
                      # must be a multiple of 3 for rate 1/3
         y = np.zeros(NS-self.decision_depth) # Decoded bit sequence
         k = 0
+        symbolL = self.rate.denominator
 
-        if(self.rate == Fraction(1,2)):
-            # Calculate branch metrics and update traceback states and traceback bits
-            for n in range(0,NS,2):
-                cm_past = self.paths.cumulative_metric[:,0]
-                tb_states_temp = self.paths.traceback_states[:,:-1].copy()
-                tb_bits_temp = self.paths.traceback_bits[:,:-1].copy()
-                for m in range(self.Nstates):
-                    d1 = self.bm_calc(self.branches.bits1[m],
-                                        x[n:n+2],metric_type,
-                                        quant_level)
-                    d1 = d1 + cm_past[self.branches.states1[m]]
-                    d2 = self.bm_calc(self.branches.bits2[m],
-                                        x[n:n+2],metric_type,
-                                        quant_level)
-                    d2 = d2 + cm_past[self.branches.states2[m]]
-                    if d1 <= d2: # Find the survivor assuming minimum distance wins
-                        cm_present[m] = d1
-                        self.paths.traceback_states[m,:] = np.hstack((self.branches.states1[m],
-                                        tb_states_temp[int(self.branches.states1[m]),:]))
-                        self.paths.traceback_bits[m,:] = np.hstack((self.branches.input1[m],
-                                        tb_bits_temp[int(self.branches.states1[m]),:]))
-                    else:
-                        cm_present[m] = d2
-                        self.paths.traceback_states[m,:] = np.hstack((self.branches.states2[m],
-                                        tb_states_temp[int(self.branches.states2[m]),:]))
-                        self.paths.traceback_bits[m,:] = np.hstack((self.branches.input2[m],
-                                        tb_bits_temp[int(self.branches.states2[m]),:]))
-                # Update cumulative metric history
-                self.paths.cumulative_metric = np.hstack((cm_present, 
-                                                self.paths.cumulative_metric[:,:-1]))
-                
-                # Obtain estimate of input bit sequence from the oldest bit in 
-                # the traceback having the smallest (most likely) cumulative metric
-                min_metric = min(self.paths.cumulative_metric[:,0])
-                min_idx = np.where(self.paths.cumulative_metric[:,0] == min_metric)
-                if n >= 2*self.decision_depth-2:  # 2 since Rate = 1/2
-                    y[k] = self.paths.traceback_bits[min_idx[0][0],-1]
-                    k += 1
-            y = y[:k] # trim final length
-        elif(self.rate == Fraction(1,3)):
-            for n in range(0,NS,3):
-                cm_past = self.paths.cumulative_metric[:,0]
-                tb_states_temp = self.paths.traceback_states[:,:-1].copy()
-                tb_bits_temp = self.paths.traceback_bits[:,:-1].copy()
-                for m in range(self.Nstates):
-                    d1 = self.bm_calc(self.branches.bits1[m],
-                                    x[n:n+3],metric_type,
+        # Calculate branch metrics and update traceback states and traceback bits
+        for n in range(0,NS,symbolL):
+            cm_past = self.paths.cumulative_metric[:,0]
+            tb_states_temp = self.paths.traceback_states[:,:-1].copy()
+            tb_bits_temp = self.paths.traceback_bits[:,:-1].copy()
+            for m in range(self.Nstates):
+                d1 = self.bm_calc(self.branches.bits1[m],
+                                    x[n:n+symbolL],metric_type,
                                     quant_level)
-                    d1 = d1 + cm_past[self.branches.states1[m]]
-                    d2 = self.bm_calc(self.branches.bits2[m],
-                                    x[n:n+3],metric_type,
+                d1 = d1 + cm_past[self.branches.states1[m]]
+                d2 = self.bm_calc(self.branches.bits2[m],
+                                    x[n:n+symbolL],metric_type,
                                     quant_level)
-                    d2 = d2 + cm_past[self.branches.states2[m]]
-                    if d1 <= d2: # Find the survivor assuming minimum distance wins
-                        cm_present[m] = d1
-                        self.paths.traceback_states[m,:] = np.hstack((self.branches.states1[m],
+                d2 = d2 + cm_past[self.branches.states2[m]]
+                if d1 <= d2: # Find the survivor assuming minimum distance wins
+                    cm_present[m] = d1
+                    self.paths.traceback_states[m,:] = np.hstack((self.branches.states1[m],
                                     tb_states_temp[int(self.branches.states1[m]),:]))
-                        self.paths.traceback_bits[m,:] = np.hstack((self.branches.input1[m],
+                    self.paths.traceback_bits[m,:] = np.hstack((self.branches.input1[m],
                                     tb_bits_temp[int(self.branches.states1[m]),:]))
-                    else:
-                        cm_present[m] = d2
-                        self.paths.traceback_states[m,:] = np.hstack((self.branches.states2[m],
+                else:
+                    cm_present[m] = d2
+                    self.paths.traceback_states[m,:] = np.hstack((self.branches.states2[m],
                                     tb_states_temp[int(self.branches.states2[m]),:]))
-                        self.paths.traceback_bits[m,:] = np.hstack((self.branches.input2[m],
+                    self.paths.traceback_bits[m,:] = np.hstack((self.branches.input2[m],
                                     tb_bits_temp[int(self.branches.states2[m]),:]))
-                # Update cumulative metric history
-                self.paths.cumulative_metric = np.hstack((cm_present, 
+            # Update cumulative metric history
+            self.paths.cumulative_metric = np.hstack((cm_present, 
                                             self.paths.cumulative_metric[:,:-1]))
-                
-                # Obtain estimate of input bit sequence from the oldest bit in 
-                # the traceback having the smallest (most likely) cumulative metric
-                min_metric = min(self.paths.cumulative_metric[:,0])
-                min_idx = np.where(self.paths.cumulative_metric[:,0] == min_metric)
-                if n >= 3*self.decision_depth-3:  # 3 since Rate = 1/3
-                    y[k] = self.paths.traceback_bits[min_idx[0][0],-1]
-                    k += 1
-            y = y[:k] # trim final length
+            
+            # Obtain estimate of input bit sequence from the oldest bit in 
+            # the traceback having the smallest (most likely) cumulative metric
+            min_metric = min(self.paths.cumulative_metric[:,0])
+            min_idx = np.where(self.paths.cumulative_metric[:,0] == min_metric)
+            if n >= symbolL*self.decision_depth-symbolL:  # 2 since Rate = 1/2
+                y[k] = self.paths.traceback_bits[min_idx[0][0],-1]
+                k += 1
+        y = y[:k] # trim final length
         return y
 
     def bm_calc(self,ref_code_bits, rec_code_bits, metric_type, quant_level):

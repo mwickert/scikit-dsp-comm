@@ -322,64 +322,27 @@ class fec_conv(object):
 
         Mark Wickert and Andrew Smit October 2018
         """
-
+        distance = 0
         if metric_type == 'soft': # squared distance metric
-            if(self.rate == Fraction(1,2)):
-                bits = binary(int(ref_code_bits),2)
-                ref_MSB = (2**quant_level-1)*int(bits[0],2)
-                ref_LSB = (2**quant_level-1)*int(bits[1],2)
-                distance = (int(rec_code_bits[0]) - ref_MSB)**2
-                distance += (int(rec_code_bits[1]) - ref_LSB)**2
-            elif(self.rate == Fraction(1,3)):
-                bits = binary(int(ref_code_bits),3)
-                ref_MSB = (2**quant_level-1)*int(bits[0],2)
-                ref_B = (2**quant_level-1)*int(bits[1],2)
-                ref_LSB = (2**quant_level-1)*int(bits[2],2)
-                distance = (int(rec_code_bits[0]) - ref_MSB)**2
-                distance += (int(rec_code_bits[1]) - ref_B)**2
-                distance += (int((rec_code_bits[2])) - ref_LSB)**2
+            bits = binary(int(ref_code_bits),self.rate.denominator)
+            for k in range(len(bits)):
+                ref_bit = (2**quant_level-1)*int(bits[k],2)
+                distance += (int(rec_code_bits[k]) - ref_bit)**2
         elif metric_type == 'hard': # hard decisions
-            if(self.rate == Fraction(1,2)):
-                bits = binary(int(ref_code_bits),2)
-                ref_MSB = int(bits[0])
-                ref_LSB = int(bits[1])
-                for n in range(len(rec_code_bits)):
-                    if(rec_code_bits[n] >= 0.5):
-                        rec_code_bits[n] = 1
-                    else:
-                        rec_code_bits[n] = 0
-                distance = abs(rec_code_bits[0] - ref_MSB)
-                distance += abs(rec_code_bits[1] - ref_LSB)
-            elif(self.rate == Fraction(1,3)):
-                bits = binary(int(ref_code_bits),3)
-                ref_MSB = int(bits[0],2)
-                ref_B = int(bits[1],2)
-                ref_LSB = int(bits[2],2)
-                for n in range(len(rec_code_bits)):
-                    if(rec_code_bits[n] >= 0.5):
-                        rec_code_bits[n] = 1
-                    else:
-                        rec_code_bits[n] = 0
-                distance = abs(rec_code_bits[0] - ref_MSB)
-                distance += abs(rec_code_bits[1] - ref_B)
-                distance += abs(rec_code_bits[2] - ref_LSB)
+            bits = binary(int(ref_code_bits),self.rate.denominator)
+            for k in range(len(rec_code_bits)):
+                if(rec_code_bits[k] >= 0.5):
+                    rec_code_bits[k] = 1
+                else:
+                    rec_code_bits[k] = 0
+                distance += abs(rec_code_bits[k] - int(bits[k]))
         elif metric_type == 'unquant': # unquantized
-            if(self.rate == Fraction(1,2)):
-                bits = binary(int(ref_code_bits),2)
-                ref_MSB = float(bits[0])
-                ref_LSB = float(bits[1])
-                distance = (float(rec_code_bits[0]) - ref_MSB)**2
-                distance += abs(float(rec_code_bits[1]) - ref_LSB)**2
-            elif(self.rate == Fraction(1,3)):
-                bits = binary(int(ref_code_bits),3)
-                ref_MSB = float(bits[0])
-                ref_B = float(bits[1])
-                ref_LSB = float(bits[2])
-                distance = (float(rec_code_bits[0]) - ref_MSB)**2
-                distance += (float(rec_code_bits[1]) - ref_B)**2
-                distance += (float(rec_code_bits[2]) - ref_LSB)**2
+            bits = binary(int(ref_code_bits),self.rate.denominator)
+            for k in range(len(bits)):
+                distance += (float(rec_code_bits[k])-float(bits[k]))**2
         else:
             print('Invalid metric type specified')
+            raise ValueError('Invalid metric type specified. Use soft, hard, or unquant')
         return distance 
 
     def conv_encoder(self,input,state):

@@ -54,6 +54,7 @@ Mark Wickert and Andrew Smit: October 2018.
 
 import numpy as np
 from math import factorial
+from fractions import Fraction
 import matplotlib.pyplot as plt
 import scipy.special as special
 from sys import exit
@@ -183,13 +184,10 @@ class fec_conv(object):
         self.input_zero = trellis_nodes(self.Nstates)
         self.input_one = trellis_nodes(self.Nstates)
         self.paths = trellis_paths(self.Nstates,self.decision_depth)
+        self.rate = Fraction(1,len(G))
         
-        if(len(G) == 2):
-            self.rate = 'one half'
-            print('Rate 1/2 Object')
-        elif(len(G) == 3):
-            self.rate = 'one third'
-            print('Rate 1/3 Object')
+        if(len(G) == 2 or len(G) == 3):
+            print('Rate %s Object' %(self.rate))
         else:
             print('Invalid rate. Use Rate 1/2 or 1/3 only')
             raise ValueError('Invalid rate. Use Rate 1/2 or 1/3 only')
@@ -205,10 +203,10 @@ class fec_conv(object):
                              binary(m,self.constraint_length-1))
             self.input_zero.tn[m] = int(state0,2)
             self.input_one.tn[m] = int(state1,2)
-            if(self.rate == 'one half'):
+            if(self.rate == Fraction(1,2)):
                 self.input_zero.out_bits[m] = 2*output0[0] + output0[1]
                 self.input_one.out_bits[m] = 2*output1[0] + output1[1]
-            elif(self.rate == 'one third'):
+            elif(self.rate == Fraction(1,3)):
                 self.input_zero.out_bits[m] = 4*output0[0] + 2*output0[1] + output0[2]
                 self.input_one.out_bits[m] = 4*output1[0] + 2*output1[1] + output1[2]
 
@@ -276,7 +274,7 @@ class fec_conv(object):
         y = np.zeros(NS-self.decision_depth) # Decoded bit sequence
         k = 0
 
-        if(self.rate == 'one half'):
+        if(self.rate == Fraction(1,2)):
             # Calculate branch metrics and update traceback states and traceback bits
             for n in range(0,NS,2):
                 cm_past = self.paths.cumulative_metric[:,0]
@@ -315,7 +313,7 @@ class fec_conv(object):
                     y[k] = self.paths.traceback_bits[min_idx[0][0],-1]
                     k += 1
             y = y[:k] # trim final length
-        elif(self.rate == 'one third'):
+        elif(self.rate == Fraction(1,3)):
             for n in range(0,NS,3):
                 cm_past = self.paths.cumulative_metric[:,0]
                 tb_states_temp = self.paths.traceback_states[:,:-1].copy()
@@ -364,13 +362,13 @@ class fec_conv(object):
         """
 
         if metric_type == 'soft': # squared distance metric
-            if(self.rate == 'one half'):
+            if(self.rate == Fraction(1,2)):
                 bits = binary(int(ref_code_bits),2)
                 ref_MSB = (2**quant_level-1)*int(bits[0],2)
                 ref_LSB = (2**quant_level-1)*int(bits[1],2)
                 distance = (int(rec_code_bits[0]) - ref_MSB)**2
                 distance += (int(rec_code_bits[1]) - ref_LSB)**2
-            elif(self.rate == 'one third'):
+            elif(self.rate == Fraction(1,3)):
                 bits = binary(int(ref_code_bits),3)
                 ref_MSB = (2**quant_level-1)*int(bits[0],2)
                 ref_B = (2**quant_level-1)*int(bits[1],2)
@@ -379,7 +377,7 @@ class fec_conv(object):
                 distance += (int(rec_code_bits[1]) - ref_B)**2
                 distance += (int((rec_code_bits[2])) - ref_LSB)**2
         elif metric_type == 'hard': # hard decisions
-            if(self.rate == 'one half'):
+            if(self.rate == Fraction(1,2)):
                 bits = binary(int(ref_code_bits),2)
                 ref_MSB = int(bits[0])
                 ref_LSB = int(bits[1])
@@ -390,7 +388,7 @@ class fec_conv(object):
                         rec_code_bits[n] = 0
                 distance = abs(rec_code_bits[0] - ref_MSB)
                 distance += abs(rec_code_bits[1] - ref_LSB)
-            elif(self.rate == 'one third'):
+            elif(self.rate == Fraction(1,3)):
                 bits = binary(int(ref_code_bits),3)
                 ref_MSB = int(bits[0],2)
                 ref_B = int(bits[1],2)
@@ -404,13 +402,13 @@ class fec_conv(object):
                 distance += abs(rec_code_bits[1] - ref_B)
                 distance += abs(rec_code_bits[2] - ref_LSB)
         elif metric_type == 'unquant': # unquantized
-            if(self.rate == 'one half'):
+            if(self.rate == Fraction(1,2)):
                 bits = binary(int(ref_code_bits),2)
                 ref_MSB = float(bits[0])
                 ref_LSB = float(bits[1])
                 distance = (float(rec_code_bits[0]) - ref_MSB)**2
                 distance += abs(float(rec_code_bits[1]) - ref_LSB)**2
-            elif(self.rate == 'one third'):
+            elif(self.rate == Fraction(1,3)):
                 bits = binary(int(ref_code_bits),3)
                 ref_MSB = float(bits[0])
                 ref_B = float(bits[1])
@@ -438,8 +436,7 @@ class fec_conv(object):
 
         output = []
 
-        if(self.rate == 'one half'):
-            # print('conv_encoder one half')
+        if(self.rate == Fraction(1,2)):
             for n in range(len(input)):
                 u1 = int(input[n])
                 u2 = int(input[n])
@@ -451,7 +448,7 @@ class fec_conv(object):
                 # G1 placed first, G2 placed second
                 output = np.hstack((output, [u1, u2]))
                 state = bin(int(input[n]))[-1] + state[:-1]
-        elif(self.rate == 'one third'):
+        elif(self.rate == Fraction(1,3)):
             for n in range(len(input)):
                 if(int(self.G_polys[0][0]) == 1):
                     u1 = int(input[n])
@@ -607,10 +604,7 @@ class fec_conv(object):
         #plt.grid()
         plt.xlabel('One Symbol Transition')
         plt.ylabel('-State Index')
-        if(self.rate == 'one half'):
-            msg = 'Rate 1/2, K = %d Trellis' % (int(np.ceil(np.log2(self.Nstates)+1)))
-        elif(self.rate == 'one third'):
-            msg = 'Rate 1/3, K = %d Trellis' % (int(np.ceil(np.log2(self.Nstates)+1)))
+        msg = 'Rate %s, K = %d Trellis' %(self.rate, int(np.ceil(np.log2(self.Nstates)+1)))
         plt.title(msg)
 
     def traceback_plot(self,fsize=(6,4)):

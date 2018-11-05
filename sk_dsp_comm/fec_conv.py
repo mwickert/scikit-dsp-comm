@@ -192,7 +192,7 @@ class fec_conv(object):
             print('Rate 1/3 Object')
         else:
             print('Invalid rate. Use Rate 1/2 or 1/3 only')
-            exit(1)
+            raise ValueError('Invalid rate. Use Rate 1/2 or 1/3 only')
             pass
 
         for m in range(self.Nstates):

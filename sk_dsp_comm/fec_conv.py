@@ -49,10 +49,11 @@ pattern of '101'.
 Graphical display functions are included to allow the user to
 better understand the operation of the Viterbi decoder.
 
-Mark Wickert: February 2014.
+Mark Wickert and Andrew Smit: October 2018.
 """
 import numpy as np
 from math import factorial
+from fractions import Fraction
 import matplotlib.pyplot as plt
 import scipy.special as special
 from sys import exit
@@ -128,26 +129,61 @@ class fec_conv(object):
     Examples
     --------
     >>> from sk_dsp_comm import fec_conv
+    >>> # Rate 1/2
     >>> cc1 = fec_conv.fec_conv(('101', '111'), Depth=10)  # decision depth is 10
 
-
+    >>> # Rate 1/3
+    >>> from sk_dsp_comm import fec_conv
+    >>> cc2 = fec_conv.fec_conv(('101','011','111'), Depth=15)  # decision depth is 15
 
     
     """
     def __init__(self,G = ('111','101'), Depth = 10):
         """
         cc1 = fec_conv(G = ('111','101'), Depth = 10)
-        Instantiate a Rate 1/2 convolutional coder/decoder object. 
-        Polys G1 and G2 are entered as binary strings, e.g,
+        Instantiate a Rate 1/2 or Rate 1/3 convolutional 
+        coder/decoder object. Polys G1 and G2 are entered 
+        as binary strings, e.g,
+        
+        Rate 1/2
         G1 = '111' and G2 = '101' for K = 3 and
-        G1 = '1011011' and G2 = '1111001' for K = 7.
+        G1 = '1111001' and G2 = '1011011' for K = 7.
+
+        Rate 1/3
+        G1 = '111', G2 = '011' and G3 = '101' for K = 3 and
+        G1 = '1111001', G2 = '1100101' and G3 = '1011011'
+        for K= 7
+
+        The rate will automatically be selected by the number
+        of G polynomials (only rate 1/2 and 1/3 are available)
 
         Viterbi decoding has a decision depth of Depth.
 
         Data structures than manage the VA are created 
         upon instantiation via the __init__ method.
 
-        Mark Wickert February 2014
+        Other ideal polynomial considerations (taken from
+        "Introduction to Digital Communication" Second Edition
+        by Ziemer and Peterson:
+        
+        Rate 1/2
+        K=3 ('111','101')
+        K=4 ('1111','1101')
+        K=5 ('11101','10011')
+        K=6 ('111101','101011')
+        K=7 ('1111001','1011011')
+        K=8 ('11111001','10100111')
+        K=9 ('111101011','101110001')
+
+        Rate 1/3
+        K=3 ('111','111','101')
+        K=4 ('1111','1101','1011')
+        K=5 ('11111','11011','10101')
+        K=6 ('111101','101011','100111')
+        K=7 ('1111001','1100101','1011011')
+        K=8 ('11110111','11011001','10010101')
+
+        Mark Wickert and Andrew Smit October 2018
         """
         self.G_polys = G
         self.constraint_length = len(self.G_polys[0]) 
@@ -156,6 +192,14 @@ class fec_conv(object):
         self.input_zero = trellis_nodes(self.Nstates)
         self.input_one = trellis_nodes(self.Nstates)
         self.paths = trellis_paths(self.Nstates,self.decision_depth)
+        self.rate = Fraction(1,len(G))
+        
+        if(len(G) == 2 or len(G) == 3):
+            print('Rate %s Object' %(self.rate))
+        else:
+            print('Invalid rate. Use Rate 1/2 or 1/3 only')
+            raise ValueError('Invalid rate. Use Rate 1/2 or 1/3 only')
+            pass
 
         for m in range(self.Nstates):
             self.input_zero.fn[m] = m
@@ -167,8 +211,12 @@ class fec_conv(object):
                              binary(m,self.constraint_length-1))
             self.input_zero.tn[m] = int(state0,2)
             self.input_one.tn[m] = int(state1,2)
-            self.input_zero.out_bits[m] = 2*output0[0] + output0[1]
-            self.input_one.out_bits[m] = 2*output1[0] + output1[1]
+            if(self.rate == Fraction(1,2)):
+                self.input_zero.out_bits[m] = 2*output0[0] + output0[1]
+                self.input_one.out_bits[m] = 2*output1[0] + output1[1]
+            elif(self.rate == Fraction(1,3)):
+                self.input_zero.out_bits[m] = 4*output0[0] + 2*output0[1] + output0[2]
+                self.input_one.out_bits[m] = 4*output1[0] + 2*output1[1] + output1[2]
 
         # Now organize the results into a branches_from structure that holds the
         # from state, the u2 u1 bit sequence in decimal form, and the input bit.
@@ -196,9 +244,8 @@ class fec_conv(object):
             else:
                 print('branch calculation error')
                 exit(1)
-        # self.branches, self.input_zero, self.input_one
 
-    def viterbi_decoder(self,x,metric_type='three_bit'):
+    def viterbi_decoder(self,x,metric_type='soft',quant_level=3):
         """
         A method which performs Viterbi decoding of noisy bit stream,
         taking as input soft bit values centered on +/-1 and returning 
@@ -207,7 +254,15 @@ class fec_conv(object):
         Parameters
         ----------
         x: Received noisy bit values centered on +/-1 at one sample per bit
-        metric_type: Hard or soft decision decoding type. At present only 3-bit soft-decision is implemented.
+        metric_type: 
+            'hard' - Hard decision metric. Expects binary or 0/1 input values.
+            'unquant' - unquantized soft decision decoding. Expects +/-1
+                input values.
+            'soft' - soft decision decoding.
+        quant_level: The quantization level for soft decoding. Expected 
+        input values between 0 and 2^quant_level-1. 0 represents the most 
+        confident 0 and 2^quant_level-1 represents the most confident 1. 
+        Only used for 'soft' metric type.
 
         Returns
         -------
@@ -223,90 +278,135 @@ class fec_conv(object):
 
         NS = len(x) # number of channel symbols to process; 
                      # must be even for rate 1/2
+                     # must be a multiple of 3 for rate 1/3
         y = np.zeros(NS-self.decision_depth) # Decoded bit sequence
         k = 0
+        symbolL = self.rate.denominator
 
         # Calculate branch metrics and update traceback states and traceback bits
-        for n in range(0,NS,2):
+        for n in range(0,NS,symbolL):
             cm_past = self.paths.cumulative_metric[:,0]
             tb_states_temp = self.paths.traceback_states[:,:-1].copy()
             tb_bits_temp = self.paths.traceback_bits[:,:-1].copy()
             for m in range(self.Nstates):
                 d1 = self.bm_calc(self.branches.bits1[m],
-                                  x[n:n+2],metric_type)
+                                    x[n:n+symbolL],metric_type,
+                                    quant_level)
                 d1 = d1 + cm_past[self.branches.states1[m]]
                 d2 = self.bm_calc(self.branches.bits2[m],
-                                  x[n:n+2],metric_type)
+                                    x[n:n+symbolL],metric_type,
+                                    quant_level)
                 d2 = d2 + cm_past[self.branches.states2[m]]
                 if d1 <= d2: # Find the survivor assuming minimum distance wins
                     cm_present[m] = d1
                     self.paths.traceback_states[m,:] = np.hstack((self.branches.states1[m],
-                                  tb_states_temp[int(self.branches.states1[m]),:]))
+                                    tb_states_temp[int(self.branches.states1[m]),:]))
                     self.paths.traceback_bits[m,:] = np.hstack((self.branches.input1[m],
-                                  tb_bits_temp[int(self.branches.states1[m]),:]))
+                                    tb_bits_temp[int(self.branches.states1[m]),:]))
                 else:
                     cm_present[m] = d2
                     self.paths.traceback_states[m,:] = np.hstack((self.branches.states2[m],
-                                  tb_states_temp[int(self.branches.states2[m]),:]))
+                                    tb_states_temp[int(self.branches.states2[m]),:]))
                     self.paths.traceback_bits[m,:] = np.hstack((self.branches.input2[m],
-                                  tb_bits_temp[int(self.branches.states2[m]),:]))
+                                    tb_bits_temp[int(self.branches.states2[m]),:]))
             # Update cumulative metric history
             self.paths.cumulative_metric = np.hstack((cm_present, 
-                                           self.paths.cumulative_metric[:,:-1]))
+                                            self.paths.cumulative_metric[:,:-1]))
             
             # Obtain estimate of input bit sequence from the oldest bit in 
             # the traceback having the smallest (most likely) cumulative metric
             min_metric = min(self.paths.cumulative_metric[:,0])
             min_idx = np.where(self.paths.cumulative_metric[:,0] == min_metric)
-            if n >= 2*self.decision_depth-2:  # 2 since Rate = 1/2
+            if n >= symbolL*self.decision_depth-symbolL:  # 2 since Rate = 1/2
                 y[k] = self.paths.traceback_bits[min_idx[0][0],-1]
                 k += 1
         y = y[:k] # trim final length
         return y
 
-    def bm_calc(self,ref_code_bits, rec_code_bits, metric_type):
+    def bm_calc(self,ref_code_bits, rec_code_bits, metric_type, quant_level):
         """
         distance = bm_calc(ref_code_bits, rec_code_bits, metric_type)
         Branch metrics calculation
 
-        Mark Wickert February 2014
+        Mark Wickert and Andrew Smit October 2018
         """
-
-        if metric_type == 'three_bit': # squared distance metric
-            bits = binary(int(ref_code_bits),2)
-            ref_MSB = 7*int(bits[0],2)
-            ref_LSB = 7*int(bits[1],2)
-            distance = (rec_code_bits[0] - ref_MSB)**2
-            distance += (rec_code_bits[1] - ref_LSB)**2
+        distance = 0
+        if metric_type == 'soft': # squared distance metric
+            bits = binary(int(ref_code_bits),self.rate.denominator)
+            for k in range(len(bits)):
+                ref_bit = (2**quant_level-1)*int(bits[k],2)
+                distance += (int(rec_code_bits[k]) - ref_bit)**2
+        elif metric_type == 'hard': # hard decisions
+            bits = binary(int(ref_code_bits),self.rate.denominator)
+            for k in range(len(rec_code_bits)):
+                if(rec_code_bits[k] >= 0.5):
+                    rec_code_bits[k] = 1
+                else:
+                    rec_code_bits[k] = 0
+                distance += abs(rec_code_bits[k] - int(bits[k]))
+        elif metric_type == 'unquant': # unquantized
+            bits = binary(int(ref_code_bits),self.rate.denominator)
+            for k in range(len(bits)):
+                distance += (float(rec_code_bits[k])-float(bits[k]))**2
         else:
             print('Invalid metric type specified')
+            raise ValueError('Invalid metric type specified. Use soft, hard, or unquant')
         return distance 
 
     def conv_encoder(self,input,state):
         """
         output, state = conv_encoder(input,state)
-        We assume a rate 1/2 encoder.
+        We get the 1/2 or 1/3 rate from self.rate
         Polys G1 and G2 are entered as binary strings, e.g,
         G1 = '111' and G2 = '101' for K = 3
         G1 = '1011011' and G2 = '1111001' for K = 7
+        G3 is also included for rate 1/3
         Input state as a binary string of length K-1, e.g., '00' or '0000000' 
         e.g., state = '00' for K = 3
         e.g., state = '000000' for K = 7
-        Mark Wickert February 2014
+        Mark Wickert and Andrew Smit 2018
         """
 
         output = []
-        for n in range(len(input)):
-            u1 = int(input[n])
-            u2 = int(input[n])
-            for m in range(1,self.constraint_length):
-                if int(self.G_polys[0][m]) == 1: # XOR if we have a connection
-                    u1 = u1 ^ int(state[m-1])
-                if int(self.G_polys[1][m]) == 1: # XOR if we have a connection
-                    u2 = u2 ^ int(state[m-1])
-            # G1 placed first, G2 placed second
-            output = np.hstack((output, [u1, u2]))
-            state = bin(int(input[n]))[-1] + state[:-1]
+
+        if(self.rate == Fraction(1,2)):
+            for n in range(len(input)):
+                u1 = int(input[n])
+                u2 = int(input[n])
+                for m in range(1,self.constraint_length):
+                    if int(self.G_polys[0][m]) == 1: # XOR if we have a connection
+                        u1 = u1 ^ int(state[m-1])
+                    if int(self.G_polys[1][m]) == 1: # XOR if we have a connection
+                        u2 = u2 ^ int(state[m-1])
+                # G1 placed first, G2 placed second
+                output = np.hstack((output, [u1, u2]))
+                state = bin(int(input[n]))[-1] + state[:-1]
+        elif(self.rate == Fraction(1,3)):
+            for n in range(len(input)):
+                if(int(self.G_polys[0][0]) == 1):
+                    u1 = int(input[n])
+                else:
+                    u1 = 0
+                if(int(self.G_polys[1][0]) == 1):
+                    u2 = int(input[n])
+                else:
+                    u2 = 0
+                if(int(self.G_polys[2][0]) == 1):
+                    u3 = int(input[n])
+                else:
+                    u3 = 0
+                for m in range(1,self.constraint_length):
+                    if int(self.G_polys[0][m]) == 1: # XOR if we have a connection
+                        u1 = u1 ^ int(state[m-1])
+                    if int(self.G_polys[1][m]) == 1: # XOR if we have a connection
+                        u2 = u2 ^ int(state[m-1])
+                    if int(self.G_polys[2][m]) == 1: # XOR if we have a connection
+                        u3 = u3 ^ int(state[m-1])
+                # G1 placed first, G2 placed second, G3 placed third
+                output = np.hstack((output, [u1, u2, u3]))
+                
+                state = bin(int(input[n]))[-1] + state[:-1]
+
         return output, state
 
     def puncture(self,code_bits,puncture_pattern = ('110','101')):
@@ -504,7 +604,7 @@ class fec_conv(object):
         #plt.grid()
         plt.xlabel('One Symbol Transition')
         plt.ylabel('-State Index')
-        msg = 'Rate 1/2, K = %d Trellis' % (int(np.ceil(np.log2(self.Nstates)+1)))
+        msg = 'Rate %s, K = %d Trellis' %(self.rate, int(np.ceil(np.log2(self.Nstates)+1)))
         plt.title(msg)
 
     def traceback_plot(self,fsize=(6,4)):
@@ -586,6 +686,7 @@ def conv_Pb_bound(R,dfree,Ck,SNRdB,hard_soft,M=2):
     Notes
     -----
     The code rate R is given by :math:`R_{s} = \\frac{k}{n}`.
+    Mark Wickert and Andrew Smit 2018
     """
     Pb = np.zeros_like(SNRdB)
     SNR = 10.**(SNRdB/10.)
@@ -610,8 +711,10 @@ def hard_Pk(k,R,SNR,M=2):
     
     Calculates Pk as found in Ziemer & Peterson eq. 7-12, p.505
     
-    Mark Wickert November 2014
+    Mark Wickert and Andrew Smit 2018
     """
+
+    k = int(k)
 
     if M == 2:
         p = Q_fctn(np.sqrt(2.*R*SNR))
@@ -619,13 +722,16 @@ def hard_Pk(k,R,SNR,M=2):
         p = 4./np.log2(M)*(1 - 1./np.sqrt(M))*\
             Q_fctn(np.sqrt(3*R*np.log2(M)/float(M-1)*SNR))
     Pk = 0
-    if 2*k//2 == k:
-        for e in range(k/2+1,k+1):
+    #if 2*k//2 == k:
+    if np.mod(k,2) == 0:
+        for e in range(int(k/2+1),int(k+1)):
             Pk += float(factorial(k))/(factorial(e)*factorial(k-e))*p**e*(1-p)**(k-e);
-        Pk += 1./2*float(factorial(k))/(factorial(k/2)*factorial(k-k/2))*\
-              p**(k/2)*(1-p)**(k//2);
-    else:
-        for e in range((k+1)//2,k+1):
+        # Pk += 1./2*float(factorial(k))/(factorial(int(k/2))*factorial(int(k-k/2)))*\
+        #       p**(k/2)*(1-p)**(k//2);
+        Pk += 1./2*float(factorial(k))/(factorial(int(k/2))*factorial(int(k-k/2)))*\
+            p**(k/2)*(1-p)**(k/2);
+    elif np.mod(k,2) == 1:
+        for e in range(int((k+1)//2),int(k+1)):
             Pk += factorial(k)/(factorial(e)*factorial(k-e))*p**e*(1-p)**(k-e);
     return Pk
 
@@ -651,7 +757,7 @@ if __name__ == '__main__':
     cc2 = fec_conv()
     y = cc2.puncture(x,('011','101'))
     z = cc2.depuncture(y,('011','101'))
-    #x = ssd.m_seq(7)
+    #x = ss.m_seq(7)
     """
     x = [0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0,
          1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1,

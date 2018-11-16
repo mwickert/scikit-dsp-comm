@@ -271,7 +271,9 @@ class fec_conv(object):
         Examples
         --------
         >>> import numpy as np
+        >>> from numpy.random import randint
         >>> import sk_dsp_comm.fec_conv as fec
+        >>> import sk_dsp_comm.digitalcom as dc
         >>> import matplotlib.pyplot as plt
         >>> # Soft decision rate 1/2 simulation
         >>> N_bits_per_frame = 10000
@@ -287,19 +289,19 @@ class fec_conv(object):
         >>>     y,state = cc1.conv_encoder(x,state)
         >>>     # Add channel noise to bits, include antipodal level shift to [-1,1]
         >>>     yn_soft = dc.cpx_AWGN(2*y-1,EbN0-3,1) # Channel SNR is 3 dB less for rate 1/2
-        >>>     yn_hard = ((sign(yn_soft.real)+1)/2).astype(int)
+        >>>     yn_hard = ((np.sign(yn_soft.real)+1)/2).astype(int)
         >>>     z = cc1.viterbi_decoder(yn_hard,'hard')
         >>>     # Count bit errors
         >>>     bit_count, bit_errors = dc.bit_errors(x,z)
         >>>     total_bit_errors += bit_errors
         >>>     total_bit_count += bit_count
         >>>     print('Bits Received = %d, Bit errors = %d, BEP = %1.2e' %\
-        >>>         (total_bit_count, total_bit_errors,\
-        >>>         total_bit_errors/total_bit_count))
+                    (total_bit_count, total_bit_errors,\
+                    total_bit_errors/total_bit_count))
         >>> print('*****************************************************')
         >>> print('Bits Received = %d, Bit errors = %d, BEP = %1.2e' %\
-        >>>     (total_bit_count, total_bit_errors,\
-        >>>     total_bit_errors/total_bit_count))
+                (total_bit_count, total_bit_errors,\
+                total_bit_errors/total_bit_count))
         Rate 1/2 Object
         kmax =  0, taumax = 0
         Bits Received = 9976, Bit errors = 77, BEP = 7.72e-03
@@ -311,6 +313,7 @@ class fec_conv(object):
 
         >>> # Consider the trellis traceback after the sim completes
         >>> cc1.traceback_plot()
+        >>> plt.show()
 
 
         >>> # Compare a collection of simulation results with soft decision
@@ -339,10 +342,10 @@ class fec_conv(object):
         >>> plt.xlabel(r'$E_b/N_0$ (dB)')
         >>> plt.ylabel(r'Symbol Error Probability')
         >>> plt.legend(('Uncoded BPSK','R=1/3, K=3, Soft',\
-        >>>         'R=1/3, K=4, Soft','R=1/3, K=5, Soft',\
-        >>>         'R=1/3, K=6, Soft','R=1/3, K=7, Soft',\
-        >>>         'R=1/3, K=8, Soft','R=1/3, K=5, Sim', \
-        >>>         'Simulation'),loc='upper right')
+                    'R=1/3, K=4, Soft','R=1/3, K=5, Soft',\
+                    'R=1/3, K=6, Soft','R=1/3, K=7, Soft',\
+                    'R=1/3, K=8, Soft','R=1/3, K=5, Sim', \
+                    'Simulation'),loc='upper right')
         >>> plt.grid();
         >>> plt.show()
 
@@ -360,20 +363,20 @@ class fec_conv(object):
         >>>     x = randint(0,2,N_bits_per_frame)
         >>>     y,state = cc2.conv_encoder(x,state)
         >>>     # Add channel noise to bits, include antipodal level shift to [-1,1]
-        >>>     yn_soft = dc.cpx_AWGN(2*y-1,EbN0-10*log10(3),1) # Channel SNR is 10*log10(3) dB less
-        >>>     yn_hard = ((sign(yn_soft.real)+1)/2).astype(int)
+        >>>     yn_soft = dc.cpx_AWGN(2*y-1,EbN0-10*np.log10(3),1) # Channel SNR is 10*log10(3) dB less
+        >>>     yn_hard = ((np.sign(yn_soft.real)+1)/2).astype(int)
         >>>     z = cc2.viterbi_decoder(yn_hard.real,'hard')
         >>>     # Count bit errors
         >>>     bit_count, bit_errors = dc.bit_errors(x,z)
         >>>     total_bit_errors += bit_errors
         >>>     total_bit_count += bit_count
         >>>     print('Bits Received = %d, Bit errors = %d, BEP = %1.2e' %\
-        >>>         (total_bit_count, total_bit_errors,\
-        >>>         total_bit_errors/total_bit_count))
+                    (total_bit_count, total_bit_errors,\
+                    total_bit_errors/total_bit_count))
         >>> print('*****************************************************')
         >>> print('Bits Received = %d, Bit errors = %d, BEP = %1.2e' %\
-        >>>     (total_bit_count, total_bit_errors,\
-        >>>     total_bit_errors/total_bit_count))
+                (total_bit_count, total_bit_errors,\
+                total_bit_errors/total_bit_count))
         Rate 1/3 Object
         kmax =  0, taumax = 0
         Bits Received = 9976, Bit errors = 251, BEP = 2.52e-02
@@ -388,20 +391,20 @@ class fec_conv(object):
         >>> Pb_s_third_3_hard = fec.conv_Pb_bound(1/3,8,[3, 0, 15, 0, 58, 0, 201, 0],SNRdB,0)
         >>> Pb_s_third_5_hard = fec.conv_Pb_bound(1/3,12,[12, 0, 12, 0, 56, 0, 320, 0],SNRdB,0)
         >>> Pb_s_third_7_hard = fec.conv_Pb_bound(1/3,14,[1, 0, 20, 0, 53, 0, 184],SNRdB,0)
-        >>> Pb_s_third_5_hard_sim = array([8.94e-04,1.11e-04,8.73e-06])
+        >>> Pb_s_third_5_hard_sim = np.array([8.94e-04,1.11e-04,8.73e-06])
         >>> plt.figure(figsize=(5,5))
         >>> plt.semilogy(SNRdB,Pb_uc)
         >>> plt.semilogy(SNRdB,Pb_s_third_3_hard,'r--')
         >>> plt.semilogy(SNRdB,Pb_s_third_5_hard,'g--')
         >>> plt.semilogy(SNRdB,Pb_s_third_7_hard,'k--')
-        >>> plt.semilogy(array([5,6,7]),Pb_s_third_5_hard_sim,'sg')
+        >>> plt.semilogy(np.array([5,6,7]),Pb_s_third_5_hard_sim,'sg')
         >>> plt.axis([0,12,1e-7,1e0])
         >>> plt.title(r'Hard Decision Rate 1/3 Coding Measurements')
         >>> plt.xlabel(r'$E_b/N_0$ (dB)')
         >>> plt.ylabel(r'Symbol Error Probability')
         >>> plt.legend(('Uncoded BPSK','R=1/3, K=3, Hard',\
-        >>>         'R=1/3, K=5, Hard', 'R=1/3, K=7, Hard',\
-        >>>         ),loc='upper right')
+                    'R=1/3, K=5, Hard', 'R=1/3, K=7, Hard',\
+                    ),loc='upper right')
         >>> plt.grid();
         >>> plt.show()
 

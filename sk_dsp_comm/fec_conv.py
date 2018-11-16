@@ -270,6 +270,9 @@ class fec_conv(object):
 
         Examples
         --------
+        >>> import numpy as np
+        >>> import sk_dsp_comm.fec_conv as fec
+        >>> import matplotlib.pyplot as plt
         >>> # Soft decision rate 1/2 simulation
         >>> N_bits_per_frame = 10000
         >>> EbN0 = 4
@@ -312,7 +315,7 @@ class fec_conv(object):
 
         >>> # Compare a collection of simulation results with soft decision
         >>> # bounds
-        >>> SNRdB = arange(0,12,.1)
+        >>> SNRdB = np.arange(0,12,.1)
         >>> Pb_uc = fec.conv_Pb_bound(1/3,7,[4, 12, 20, 72, 225],SNRdB,2)
         >>> Pb_s_third_3 = fec.conv_Pb_bound(1/3,8,[3, 0, 15],SNRdB,1)
         >>> Pb_s_third_4 = fec.conv_Pb_bound(1/3,10,[6, 0, 6, 0],SNRdB,1)
@@ -321,27 +324,27 @@ class fec_conv(object):
         >>> Pb_s_third_7 = fec.conv_Pb_bound(1/3,14,[1, 0, 20, 0, 53, 0, 184],SNRdB,1)
         >>> Pb_s_third_8 = fec.conv_Pb_bound(1/3,16,[1, 0, 24, 0, 113, 0, 287, 0],SNRdB,1)
         >>> Pb_s_half = fec.conv_Pb_bound(1/2,7,[4, 12, 20, 72, 225],SNRdB,1)
-        >>> figure(figsize=(5,5))
-        >>> semilogy(SNRdB,Pb_uc)
-        >>> semilogy(SNRdB,Pb_s_third_3,'--')
-        >>> semilogy(SNRdB,Pb_s_third_4,'--')
-        >>> semilogy(SNRdB,Pb_s_third_5,'g')
-        >>> semilogy(SNRdB,Pb_s_third_6,'--')
-        >>> semilogy(SNRdB,Pb_s_third_7,'--')
-        >>> semilogy(SNRdB,Pb_s_third_8,'--')
-        >>> #semilogy(SNRdB,Pb_s_half,'--')
-        >>> semilogy([0,1,2,3,4,5],[9.08e-02,2.73e-02,6.52e-03,\
+        >>> plt.figure(figsize=(5,5))
+        >>> plt.semilogy(SNRdB,Pb_uc)
+        >>> plt.semilogy(SNRdB,Pb_s_third_3,'--')
+        >>> plt.semilogy(SNRdB,Pb_s_third_4,'--')
+        >>> plt.semilogy(SNRdB,Pb_s_third_5,'g')
+        >>> plt.semilogy(SNRdB,Pb_s_third_6,'--')
+        >>> plt.semilogy(SNRdB,Pb_s_third_7,'--')
+        >>> plt.semilogy(SNRdB,Pb_s_third_8,'--')
+        >>> plt.semilogy([0,1,2,3,4,5],[9.08e-02,2.73e-02,6.52e-03,\
                                 8.94e-04,8.54e-05,5e-6],'gs')
-        >>> axis([0,12,1e-7,1e0])
-        >>> title(r'Soft Decision Rate 1/2 Coding Measurements')
-        >>> xlabel(r'$E_b/N_0$ (dB)')
-        >>> ylabel(r'Symbol Error Probability')
-        >>> legend(('Uncoded BPSK','R=1/3, K=3, Soft',\
+        >>> plt.axis([0,12,1e-7,1e0])
+        >>> plt.title(r'Soft Decision Rate 1/2 Coding Measurements')
+        >>> plt.xlabel(r'$E_b/N_0$ (dB)')
+        >>> plt.ylabel(r'Symbol Error Probability')
+        >>> plt.legend(('Uncoded BPSK','R=1/3, K=3, Soft',\
         >>>         'R=1/3, K=4, Soft','R=1/3, K=5, Soft',\
         >>>         'R=1/3, K=6, Soft','R=1/3, K=7, Soft',\
         >>>         'R=1/3, K=8, Soft','R=1/3, K=5, Sim', \
         >>>         'Simulation'),loc='upper right')
-        >>> grid();
+        >>> plt.grid();
+        >>> plt.show()
 
 
         >>> # Hard decision rate 1/3 simulation
@@ -380,26 +383,27 @@ class fec_conv(object):
 
         >>> # Compare a collection of simulation results with hard decision
         >>> # bounds
-        >>> SNRdB = arange(0,12,.1)
+        >>> SNRdB = np.arange(0,12,.1)
         >>> Pb_uc = fec.conv_Pb_bound(1/3,7,[4, 12, 20, 72, 225],SNRdB,2)
         >>> Pb_s_third_3_hard = fec.conv_Pb_bound(1/3,8,[3, 0, 15, 0, 58, 0, 201, 0],SNRdB,0)
         >>> Pb_s_third_5_hard = fec.conv_Pb_bound(1/3,12,[12, 0, 12, 0, 56, 0, 320, 0],SNRdB,0)
         >>> Pb_s_third_7_hard = fec.conv_Pb_bound(1/3,14,[1, 0, 20, 0, 53, 0, 184],SNRdB,0)
         >>> Pb_s_third_5_hard_sim = array([8.94e-04,1.11e-04,8.73e-06])
-        >>> figure(figsize=(5,5))
-        >>> semilogy(SNRdB,Pb_uc)
-        >>> semilogy(SNRdB,Pb_s_third_3_hard,'r--')
-        >>> semilogy(SNRdB,Pb_s_third_5_hard,'g--')
-        >>> semilogy(SNRdB,Pb_s_third_7_hard,'k--')
-        >>> semilogy(array([5,6,7]),Pb_s_third_5_hard_sim,'sg')
-        >>> axis([0,12,1e-7,1e0])
-        >>> title(r'Hard Decision Rate 1/3 Coding Measurements')
-        >>> xlabel(r'$E_b/N_0$ (dB)')
-        >>> ylabel(r'Symbol Error Probability')
-        >>> legend(('Uncoded BPSK','R=1/3, K=3, Hard',\
+        >>> plt.figure(figsize=(5,5))
+        >>> plt.semilogy(SNRdB,Pb_uc)
+        >>> plt.semilogy(SNRdB,Pb_s_third_3_hard,'r--')
+        >>> plt.semilogy(SNRdB,Pb_s_third_5_hard,'g--')
+        >>> plt.semilogy(SNRdB,Pb_s_third_7_hard,'k--')
+        >>> plt.semilogy(array([5,6,7]),Pb_s_third_5_hard_sim,'sg')
+        >>> plt.axis([0,12,1e-7,1e0])
+        >>> plt.title(r'Hard Decision Rate 1/3 Coding Measurements')
+        >>> plt.xlabel(r'$E_b/N_0$ (dB)')
+        >>> plt.ylabel(r'Symbol Error Probability')
+        >>> plt.legend(('Uncoded BPSK','R=1/3, K=3, Hard',\
         >>>         'R=1/3, K=5, Hard', 'R=1/3, K=7, Hard',\
         >>>         ),loc='upper right')
-        >>> grid();
+        >>> plt.grid();
+        >>> plt.show()
 
         >>> # Show the traceback for the rate 1/3 hard decision case
         >>> cc2.traceback_plot()

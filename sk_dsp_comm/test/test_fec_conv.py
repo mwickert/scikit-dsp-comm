@@ -5,7 +5,8 @@ import numpy as np
 from numpy import testing as npt
 from sk_dsp_comm import digitalcom as dc
 
-class TestFecConv(SKDSPCommTest):
+
+class TestFecConv_1_2(SKDSPCommTest):
     _multiprocess_can_split_ = True
 
     def test_fec_conv_inst(self):

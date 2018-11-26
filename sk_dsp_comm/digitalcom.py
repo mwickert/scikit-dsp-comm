@@ -1094,19 +1094,30 @@ def PCM_encode(x,N_bits):
     xq = np.int16(np.rint(x*2**(N_bits-1)))
     x_bits = np.zeros((N_bits,len(xq)))
     for k, xk in enumerate(xq):
-        x_bits[:,k] = tobin(xk,N_bits)
+        x_bits[:,k] = to_bin(xk,N_bits)
     # Reshape into a serial bit stream
     x_bits = np.reshape(x_bits,(1,len(x)*N_bits),'F')
     return np.int16(x_bits.flatten())
 
 
-# A helper function for PCM_encode
-def tobin(data, width):
+# A helper function for PCM_encode and elsewhere
+def to_bin(data, width):
     """
-    
+    Convert an unsigned integer to a numpy binary array with the first
+    element the MSB and the last element the LSB.
     """
     data_str = bin(data & (2**width-1))[2:].zfill(width)
     return [int(x) for x in tuple(data_str)]
+
+
+def from_bin(bin_array):
+    """
+    Convert binary array back a nonnegative integer. The array length is 
+    the bit width. The first input index holds the MSB and the last holds the LSB.
+    """
+    width = len(bin_array)
+    bin_wgts = 2**np.arange(width-1,-1,-1)
+    return int(np.dot(bin_array,bin_wgts))
 
 
 def PCM_decode(x_bits,N_bits):
@@ -1150,7 +1161,7 @@ def AWGN_chan(x_bits,EBN0_dB):
     Mark Wickert, March 2015
     """
     x_bits = 2*x_bits - 1 # convert from 0/1 to -1/1 signal values
-    var_noise = 10**(-EBN0_dB/10)/2;
+    var_noise = 10**(-EBN0_dB/10)/2
     y_bits = x_bits + np.sqrt(var_noise)*np.random.randn(np.size(x_bits))
 
     # Make hard decisions
@@ -1417,3 +1428,334 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
         H = np.ones(Nf)
     # Multiplex into original serial symbol stream
     return z_out.flatten(), H
+
+
+def bin2gray(d_word,b_width):
+    """
+    Convert integer bit words to gray encoded binary words via
+    Gray coding starting from the MSB to the LSB
+    
+    Mark Wickert November 2018
+    """
+    bits_in = to_bin(d_word,b_width)
+    bits_out = np.zeros(b_width,dtype=np.int)
+    for k, bit_k in enumerate(bits_in):
+        if k > 0:
+            bits_out[k] = bit_k^bits_in[k-1]
+        else:
+            bits_out[k] = bit_k
+    return from_bin(bits_out)
+
+
+def gray2bin(d_word,b_width):
+    """
+    Convert gray encoded binary words to integer bit words via
+    Gray decoding starting from the MSB to the LSB
+    
+    Mark Wickert November 2018
+    """
+    bits_in = to_bin(d_word,b_width)
+    bits_out = np.zeros(b_width,dtype=np.int)
+    for k, bit_k in enumerate(bits_in):
+        if k > 0:
+            bits_out[k] = bit_k^bits_out[k-1]
+        else:
+            bits_out[k] = bit_k
+    return from_bin(bits_out)
+
+
+def QAM_gray_encode_bb(N_symb,Ns,M=4,pulse='rect',alpha=0.35,ext_data=None):
+    """
+    QAM_gray_bb: A gray code mapped QAM complex baseband transmitter 
+    x,b,tx_data = QAM_gray_bb(K,Ns,M)
+    
+    Parameters
+    ----------
+    N_symb : The number of symbols to process
+    Ns : Number of samples per symbol
+    M : Modulation order: 2, 4, 16, 64, 256 QAM. Note 2 <=> BPSK, 4 <=> QPSK
+    alpha : Square root raised cosine excess bandwidth factor.
+            For DOCSIS alpha = 0.12 to 0.18. In general alpha can range over 0 < alpha < 1.
+    pulse : 'rect', 'src', or 'rc'
+
+    Returns
+    -------
+    x : Complex baseband digital modulation
+    b : Transmitter shaping filter, rectangle or SRC
+    tx_data : xI+1j*xQ = inphase symbol sequence + 1j*quadrature symbol sequence
+
+    See Also
+    --------
+    QAM_gray_decode
+
+    Examples
+    --------
+    
+    
+    
+    """ 
+    # Create a random bit stream then encode using gray code mapping
+    # Gray code LUTs for 4, 16, 64, and 256 QAM
+    # which employs M = 2, 4, 6, and 8 bits per symbol  
+    bin2gray1 = [0,1]
+    bin2gray2 = [0,1,3,2]
+    bin2gray3 = [0,1,3,2,7,6,4,5] # arange(8) 
+    bin2gray4 = [0,1,3,2,7,6,4,5,15,14,12,13,8,9,11,10]
+    x_m = np.sqrt(M)-1
+    # Create the serial bit stream [Ibits,Qbits,Ibits,Qbits,...], msb to lsb
+    # except for the case M = 2
+    if N_symb == None:
+        # Truncate so an integer number of symbols is formed
+        N_symb = int(np.floor(len(ext_data)/np.log2(M)))
+        data = ext_data[:N_symb*int(np.log2(M))]
+    else:
+        data = np.random.randint(0,2,size=int(np.log2(M))*N_symb)
+    x_IQ = np.zeros(N_symb,dtype=np.complex128)
+    N_word = int(np.log2(M)/2)
+    # binary weights for converting binary to decimal using dot()
+    w = 2**np.arange(N_word-1,-1,-1)
+    if M == 2: # Special case of BPSK for convenience
+        x_IQ = 2*data - 1
+        x_m = 1
+    elif M == 4: # total constellation points
+        for k in range(N_symb):
+            wordI = data[2*k*N_word:(2*k+1)*N_word]
+            wordQ = data[2*k*N_word+N_word:(2*k+1)*N_word+N_word]
+            x_IQ[k] = (2*bin2gray1[np.dot(wordI,w)] - x_m) + \
+                   1j*(2*bin2gray1[np.dot(wordQ,w)] - x_m)
+    elif M == 16:
+        for k in range(N_symb):
+            wordI = data[2*k*N_word:(2*k+1)*N_word]
+            wordQ = data[2*k*N_word+N_word:(2*k+1)*N_word+N_word]
+            x_IQ[k] = (2*bin2gray2[np.dot(wordI,w)] - x_m) + \
+                   1j*(2*bin2gray2[np.dot(wordQ,w)] - x_m)
+    elif M == 64:
+        for k in range(N_symb):
+            wordI = data[2*k*N_word:(2*k+1)*N_word]
+            wordQ = data[2*k*N_word+N_word:(2*k+1)*N_word+N_word]
+            x_IQ[k] = (2*bin2gray3[np.dot(wordI,w)] - x_m) + \
+                   1j*(2*bin2gray3[np.dot(wordQ,w)] - x_m)
+    elif M == 256:
+        for k in range(N_symb):
+            wordI = data[2*k*N_word:(2*k+1)*N_word]
+            wordQ = data[2*k*N_word+N_word:(2*k+1)*N_word+N_word]
+            x_IQ[k] = (2*bin2gray4[np.dot(wordI,w)] - x_m) + \
+                   1j*(2*bin2gray4[np.dot(wordQ,w)] - x_m)
+    else:
+        raise ValueError('M must be 2, 4, 16, 64, 256')        
+    
+    if Ns > 1:
+        # Design the pulse shaping filter to be of duration 12 
+        # symbols and fix the excess bandwidth factor at alpha = 0.35
+        if pulse.lower() == 'src':
+            b = sqrt_rc_imp(Ns,alpha,6)
+        elif pulse.lower() == 'rc':
+            b = rc_imp(Ns,alpha,6)    
+        elif pulse.lower() == 'rect':
+            b = np.ones(int(Ns)) #alt. rect. pulse shape
+        else:
+            raise ValueError('pulse shape must be src, rc, or rect')
+        # Filter the impulse train signal
+        x = signal.lfilter(b,1,upsample(x_IQ,Ns))
+        # Scale shaping filter to have unity DC gain
+        b = b/sum(b)
+        return x/x_m, b, data
+    else:
+        return x_IQ/x_m, 1, data
+
+
+def QAM_gray_decode(x_hat,M = 4):
+    """
+    Decode MQAM IQ symbols to a serial bit stream using
+    gray2bin decoding
+    
+    x_hat = symbol spaced samples of the QAM waveform taken at the maximum
+            eye opening. Normally this is following the matched filter
+    
+    Mark Wickert April 2018
+    """
+    # Inverse Gray code LUTs for 4, 16, 64, and 256 QAM
+    # which employs M = 2, 4, 6, and 8 bits per symbol
+    gray2bin1 = [0,1]
+    gray2bin2 = [0,1,3,2]
+    gray2bin3 = [0,1,3,2,6,7,5,4] # arange(8) 
+    gray2bin4 = [0,1,3,2,6,7,5,4,12,13,15,14,10,11,9,8]
+    x_m = np.sqrt(M)-1
+    if M == 2: x_m = 1
+    N_symb = len(x_hat)
+    N_word = int(np.log2(M)/2)
+    
+    # Scale input up by x_m
+    #x_hat = x_hat*x_m
+    # Scale adaptively assuming var(x_hat) is proportional to 
+    # signal power using a known relationship for QAM.
+    x_hat = x_hat/(np.std(x_hat) * np.sqrt(3/(2*(M-1))))
+    
+    k_hat_gray = (x_hat + x_m*(1+1j))/2
+    # Soft IQ symbol values are converted to hard symbol decisions
+    k_hat_grayI = np.int16(np.clip(np.rint(k_hat_gray.real),0,x_m))
+    k_hat_grayQ = np.int16(np.clip(np.rint(k_hat_gray.imag),0,x_m))
+    data_hat = np.zeros(2*N_word*N_symb,dtype=int)
+    # Create the serial bit stream [Ibits,Qbits,Ibits,Qbits,...], msb to lsb
+    for k in range(N_symb):
+        if M == 2: # special case for BPSK
+            data_hat = k_hat_grayI
+        elif M == 4: # total points of the square constellation
+            data_hat[2*k*N_word:2*(k+1)*N_word] \
+              = np.hstack((to_bin(gray2bin1[k_hat_grayI[k]],N_word),
+                        to_bin(gray2bin1[k_hat_grayQ[k]],N_word)))
+        elif M == 16:
+            data_hat[2*k*N_word:2*(k+1)*N_word] \
+              = np.hstack((to_bin(gray2bin2[k_hat_grayI[k]],N_word),
+                        to_bin(gray2bin2[k_hat_grayQ[k]],N_word)))            
+        elif M == 64:
+            data_hat[2*k*N_word:2*(k+1)*N_word] \
+              = np.hstack((to_bin(gray2bin3[k_hat_grayI[k]],N_word),
+                        to_bin(gray2bin3[k_hat_grayQ[k]],N_word)))            
+        elif M == 256:
+            data_hat[2*k*N_word:2*(k+1)*N_word] \
+              = np.hstack((to_bin(gray2bin4[k_hat_grayI[k]],N_word),
+                        to_bin(gray2bin4[k_hat_grayQ[k]],N_word)))
+        else:
+            raise ValueError('M must be 2, 4, 16, 64, 256')  
+            
+    return data_hat
+
+
+def MPSK_gray_encode_bb(N_symb,Ns,M=4,pulse='rect',alpha=0.35,ext_data=None):
+    """
+    MPSK_gray_bb: A gray code mapped MPSK complex baseband transmitter 
+    x,b,tx_data = MPSK_gray_bb(K,Ns,M)
+
+    //////////// Inputs //////////////////////////////////////////////////
+      N_symb = the number of symbols to process
+          Ns = number of samples per symbol
+           M = modulation order: 2, 4, 8, 16 MPSK
+       alpha = squareroot raised cosine excess bandwidth factor.
+               Can range over 0 < alpha < 1.
+       pulse = 'rect', 'src', or 'rc'
+    //////////// Outputs /////////////////////////////////////////////////
+           x = complex baseband digital modulation
+           b = transmitter shaping filter, rectangle or SRC
+     tx_data = xI+1j*xQ = inphase symbol sequence + 
+               1j*quadrature symbol sequence
+
+    Mark Wickert November 2018
+    """ 
+    # Create a random bit stream then encode using gray code mapping
+    # Gray code LUTs for 2, 4, 8, 16, and 32 MPSK
+    # which employs M = 1, 2, 3, 4, and 5  bits per symbol  
+    bin2gray1 = [0,1]
+    bin2gray2 = [0,1,3,2]
+    bin2gray3 = [0,1,3,2,7,6,4,5] 
+    bin2gray4 = [0,1,3,2,7,6,4,5,15,14,12,13,8,9,11,10]
+    bin2gray5 = [0,1,3,2,7,6,4,5,15,14,12,13,8,9,11,10,31,30,
+                 28,29,24,25,27,26,16,17,19,18,23,22,20,21]
+    # Create the serial bit stream msb to lsb
+    # except for the case M = 2
+    N_word = int(np.log2(M))
+    if N_symb == None:
+        # Truncate so an integer number of symbols is formed
+        N_symb = int(np.floor(len(ext_data)/N_word))
+        data = ext_data[:N_symb*N_word]
+    else:
+        data = np.random.randint(0,2,size=int(np.log2(M))*N_symb)
+    x_IQ = np.zeros(N_symb,dtype=np.complex128)
+    # binary weights for converting binary to decimal using dot()
+    bin_wgts = 2**np.arange(N_word-1,-1,-1)
+    if M == 2: # Special case of BPSK for convenience
+        x_IQ = 2*data - 1
+    elif M == 4: # total constellation points
+        for k in range(N_symb):
+            word_phase = data[k*N_word:(k+1)*N_word]
+            x_phase = 2*np.pi*bin2gray2[np.dot(word_phase,bin_wgts)]/M + np.pi/M
+            x_IQ[k] = np.exp(1j*x_phase)
+    elif M == 8:
+        for k in range(N_symb):
+            word_phase = data[k*N_word:(k+1)*N_word]
+            x_phase = 2*np.pi*bin2gray3[np.dot(word_phase,bin_wgts)]/M
+            x_IQ[k] = np.exp(1j*x_phase)
+    elif M == 16:
+        for k in range(N_symb):
+            word_phase = data[k*N_word:(k+1)*N_word]
+            x_phase = 2*np.pi*bin2gray4[np.dot(word_phase,bin_wgts)]/M
+            x_IQ[k] = np.exp(1j*x_phase)
+    elif M == 32:
+        for k in range(N_symb):
+            word_phase = data[k*N_word:(k+1)*N_word]
+            x_phase = 2*np.pi*bin2gray5[np.dot(word_phase,bin_wgts)]/M
+            x_IQ[k] = np.exp(1j*x_phase)
+    else:
+        raise ValueError('M must be 2, 4, 8, 16, or 32')        
+    
+    if Ns > 1:
+        # Design the pulse shaping filter to be of duration 12 
+        # symbols and fix the excess bandwidth factor at alpha = 0.35
+        if pulse.lower() == 'src':
+            b = sqrt_rc_imp(Ns,alpha,6)
+        elif pulse.lower() == 'rc':
+            b = rc_imp(Ns,alpha,6)    
+        elif pulse.lower() == 'rect':
+            b = np.ones(int(Ns)) #alt. rect. pulse shape
+        else:
+            raise ValueError('pulse shape must be src, rc, or rect')
+        # Filter the impulse train signal
+        x = signal.lfilter(b,1,upsample(x_IQ,Ns))
+        # Scale shaping filter to have unity DC gain
+        b = b/sum(b)
+        return x, b, data
+    else:
+        return x_IQ, 1, data
+
+
+def MPSK_gray_decode(x_hat,M = 4):
+    """
+    Decode MPSK IQ symbols to a serial bit stream using
+    gray2bin decoding
+    
+    x_hat = symbol spaced samples of the MPSK waveform taken at the maximum
+            eye opening. Normally this is following the matched filter
+    
+    Mark Wickert November 2018
+    """
+    # Inverse Gray code LUTs for 2, 4, 8, 16, and 32 MPSK
+    # which employs M = 1, 2, 3, 4, and 5  bits per symbol
+    gray2bin1 = [0,1]
+    gray2bin2 = [0,1,3,2]
+    gray2bin3 = [0,1,3,2,6,7,5,4] 
+    gray2bin4 = [0,1,3,2,6,7,5,4,12,13,15,14,10,11,9,8]
+    gray2bin5 = [0,1,3,2,6,7,5,4,12,13,15,14,10,11,9,8,24,25,
+                 27,26,30,31,29,28,20,21,23,22,18,19,17,16]
+    N_symb = len(x_hat)
+    N_word = int(np.log2(M))
+    
+   
+    # Soft IQ symbol angle values are converted to hard symbol decisions as 
+    # decimal angles over the range [0, M-1]
+    if M == 4:
+        # For QPSK (M=4) rotate constellation angles to start at zero
+        k_hat_gray_theta = np.mod(np.int64(np.rint(np.angle(x_hat *\
+                           np.exp(-1j*np.pi/4))*M/2/np.pi)),M)
+    else:
+        k_hat_gray_theta = np.mod(np.int64(np.rint(np.angle(x_hat)*M/2/np.pi)),M)
+
+    data_hat = np.zeros(N_symb*N_word,dtype=int)
+    # Create the serial bit stream using Gray decoding, msb to lsb
+    for k in range(N_symb):
+        if M == 2: # special case for BPSK
+            data_hat[k] = k_hat_gray_theta[k]
+        elif M == 4: # total points of the square constellation
+            data_hat[k*N_word:(k+1)*N_word] \
+              = to_bin(gray2bin2[k_hat_gray_theta[k]],N_word)
+        elif M == 8:
+            data_hat[k*N_word:(k+1)*N_word] \
+              = to_bin(gray2bin3[k_hat_gray_theta[k]],N_word)            
+        elif M == 16:
+            data_hat[k*N_word:(k+1)*N_word] \
+              = to_bin(gray2bin4[k_hat_gray_theta[k]],N_word)            
+        elif M == 32:
+            data_hat[k*N_word:(k+1)*N_word] \
+              = to_bin(gray2bin5[k_hat_gray_theta[k]],N_word)
+        else:
+            raise ValueError('M must be 2, 4, 8, 16, or 32')  
+    return data_hat

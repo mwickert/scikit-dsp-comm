@@ -166,7 +166,7 @@ class fec_hamming(object):
         if(np.dtype(x[0]) != int):
             raise ValueError('Error: Invalid data type. Input must be a vector of ints')
 
-        if(len(x) % self.k):
+        if(len(x) % self.k or len(x) < self.k):
             raise ValueError('Error: Invalid input vector length. Length must be a multiple of %d' %self.k)
 
         N_symbols = int(len(x)/self.k)
@@ -195,9 +195,9 @@ class fec_hamming(object):
         if(np.dtype(codewords[0]) != int):
             raise ValueError('Error: Invalid data type. Input must be a vector of ints')
 
-        if(len(codewords) % self.n):
+        if(len(codewords) % self.n or len(codewords) < self.n):
             raise ValueError('Error: Invalid input vector length. Length must be a multiple of %d' %self.n)
-            
+
         # Calculate the number of symbols (codewords) in the input array
         N_symbols = int(len(codewords)/self.n)
         
@@ -305,8 +305,7 @@ class fec_cyclic(object):
         """
         
         # Check block length
-        block_remainder = len(x) % self.k
-        if(block_remainder):
+        if(len(x) % self.k or len(x) < self.k):
             raise ValueError('Error: Incomplete block in input array. Make sure input array length is a multiple of %d' %self.k)
         
         # Check data type of input vector
@@ -370,8 +369,7 @@ class fec_cyclic(object):
         """
         
         # Check block length
-        block_remainder = len(codewords) % self.n
-        if(block_remainder):
+        if(len(codewords) % self.n or len(codewords) < self.n):
             raise ValueError('Error: Incomplete coded block in input array. Make sure coded input array length is a multiple of %d' %self.n)
         
         # Check input data type

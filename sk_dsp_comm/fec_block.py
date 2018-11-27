@@ -58,7 +58,6 @@ import scipy.special as special
 from .digitalcom import Q_fctn
 from .fec_conv import binary
 
-
 class fec_hamming(object):
     """
     Class responsible for creating hamming block codes and then 
@@ -454,9 +453,9 @@ def block_single_error_Pb_bound(j,SNRdB,coded=True,M=2):
     
     parameters:
     -----------
-    j: number of parity bits used in hamming block code
+    j: number of parity bits used in single error correction block code
     SNRdB: Eb/N0 values in dB
-    coded: Select hamming code (True) or uncoded (False)
+    coded: Select single error correction code (True) or uncoded (False)
     M: modulation order
     
     returns:

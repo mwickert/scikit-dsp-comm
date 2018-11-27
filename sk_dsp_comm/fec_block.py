@@ -163,6 +163,12 @@ class fec_hamming(object):
         
         Andrew Smit November 2018
         """
+        if(np.dtype(x[0]) != int):
+            raise ValueError('Error: Invalid data type. Input must be a vector of ints')
+
+        if(len(x) % self.k):
+            raise ValueError('Error: Invalid input vector length. Length must be a multiple of %d' %self.k)
+
         N_symbols = int(len(x)/self.k)
         codewords = np.zeros(N_symbols*self.n)
         x = np.reshape(x,(1,len(x)))
@@ -186,6 +192,12 @@ class fec_hamming(object):
         
         Andrew Smit November 2018
         """
+        if(np.dtype(codewords[0]) != int):
+            raise ValueError('Error: Invalid data type. Input must be a vector of ints')
+
+        if(len(codewords) % self.n):
+            raise ValueError('Error: Invalid input vector length. Length must be a multiple of %d' %self.n)
+            
         # Calculate the number of symbols (codewords) in the input array
         N_symbols = int(len(codewords)/self.n)
         

@@ -1737,7 +1737,8 @@ def MPSK_gray_decode(x_hat,M = 4):
         k_hat_gray_theta = np.mod(np.int64(np.rint(np.angle(x_hat *\
                            np.exp(-1j*np.pi/4))*M/2/np.pi)),M)
     else:
-        k_hat_gray_theta = np.mod(np.int64(np.rint(np.angle(x_hat)*M/2/np.pi)),M)
+        #k_hat_gray_theta = np.mod(np.int64(np.rint(np.angle(x_hat)*M/2/np.pi)),M)
+        k_hat_gray_theta = np.mod((np.rint(np.angle(x_hat)*M/2/np.pi)).astype(np.int),M)
 
     data_hat = np.zeros(N_symb*N_word,dtype=int)
     # Create the serial bit stream using Gray decoding, msb to lsb
@@ -1759,3 +1760,42 @@ def MPSK_gray_decode(x_hat,M = 4):
         else:
             raise ValueError('M must be 2, 4, 8, 16, or 32')  
     return data_hat
+
+
+def MPSK_BEP_thy(SNR_dB, M, EbN0_Mode = True):
+    """
+    Approximate the bit error probability of MPSK assuming Gray encoding
+    
+    Mark Wickert November 2018
+    """
+    if EbN0_Mode:
+        EsN0_dB = SNR_dB + 10*np.log10(np.log2(M))
+    else:
+        EsN0_dB = SNR_dB
+    Symb2Bits = np.log2(M)
+    if M == 2:
+        BEP = Q_fctn(np.sqrt(2*10**(EsN0_dB/10)))
+    else:
+        SEP = 2*Q_fctn(np.sqrt(2*10**(EsN0_dB/10))*np.sin(np.pi/M))
+        BEP = SEP/Symb2Bits
+    return BEP 
+
+
+def QAM_BEP_thy(SNR_dB,M,EbN0_Mode = True):
+    """
+    Approximate the bit error probability of QAM assuming Gray encoding
+    
+    Mark Wickert November 2018
+    """
+    if EbN0_Mode:
+        EsN0_dB = SNR_dB + 10*np.log10(np.log2(M))
+    else:
+        EsN0_dB = SNR_dB
+    if M == 2:
+        BEP = Q_fctn(np.sqrt(2*10**(EsN0_dB/10)))
+    elif M > 2:
+        SEP = 4*(1 - 1/np.sqrt(M))*Q_fctn(np.sqrt(3/(M-1)*10**(EsN0_dB/10)))
+        BEP = SEP/np.log2(M)
+    return BEP
+
+

@@ -376,7 +376,7 @@ def freqz_resp_cas_list(sos,mode = 'dB',fs=1.0,Npts = 1024,fsize=(6,4)):
             f_diff = np.diff(f)
             Tg = -np.diff(theta2)/np.diff(w)
             # For gain almost zero set groupdelay = 0
-            idx = pylab.find(20*np.log10(H[:-1]) < -400)
+            idx = np.nonzero(np.ravel(20*np.log10(H[:-1]) < -400))[0]
             Tg[idx] = np.zeros(len(idx))
             max_Tg = np.max(Tg)
             #print(max_Tg)
@@ -505,7 +505,7 @@ def sos_zplane(sos,auto_scale=True,size=2,tol = 0.001):
         #N_roots = np.roots(b)
         N_uniq, N_mult=unique_cpx_roots(N_roots,tol=tol)
         plt.plot(np.real(N_uniq),np.imag(N_uniq),'ko',mfc='None',ms=8)
-        idx_N_mult = mlab.find(N_mult>1)
+        idx_N_mult = np.nonzero(np.ravel(N_mult>1))[0]
         for k in range(len(idx_N_mult)):
             x_loc = np.real(N_uniq[idx_N_mult[k]]) + x_off*x_scale
             y_loc =np.imag(N_uniq[idx_N_mult[k]]) + y_off*y_scale
@@ -515,7 +515,7 @@ def sos_zplane(sos,auto_scale=True,size=2,tol = 0.001):
         #D_roots = np.roots(a)
         D_uniq, D_mult=unique_cpx_roots(D_roots,tol=tol)
         plt.plot(np.real(D_uniq),np.imag(D_uniq),'kx',ms=8)
-        idx_D_mult = mlab.find(D_mult>1)
+        idx_D_mult = np.nonzero(np.ravel(D_mult>1))[0]
         for k in range(len(idx_D_mult)):
             x_loc = np.real(D_uniq[idx_D_mult[k]]) + x_off*x_scale
             y_loc =np.imag(D_uniq[idx_D_mult[k]]) + y_off*y_scale

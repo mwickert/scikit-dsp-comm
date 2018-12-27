@@ -25,3 +25,8 @@ Jupyter Notebook Examples
    :caption: Convolutional Codes
 
    ../nb_examples/Convolutional_Codes
+
+.. toctree::
+   :caption: Block Codes
+
+   ../nb_examples/Block_Codes

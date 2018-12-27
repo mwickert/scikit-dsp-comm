@@ -1083,12 +1083,15 @@ def Q_fctn(x):
 
 def PCM_encode(x,N_bits):
     """
-    x_bits = PCM_encode(x,N_bits)
-    /////////////////////////////////////////////////////////////
-         x = signal samples to be PCM encoded
-    N_bits = bit precision of PCM samples
+    Parameters
+    ----------
+    x : signal samples to be PCM encoded
+    N_bits ; bit precision of PCM samples
+
+    Returns
+    -------
     x_bits = encoded serial bit stream of 0/1 values. MSB first.
-    /////////////////////////////////////////////////////////////
+
     Mark Wickert, Mark 2015
     """
     xq = np.int16(np.rint(x*2**(N_bits-1)))
@@ -1122,13 +1125,16 @@ def from_bin(bin_array):
 
 def PCM_decode(x_bits,N_bits):
     """
-    xhat = PCM_decode(x_bits,N_bits)
-    /////////////////////////////////////////////////////////////
-    x_bits = serial bit stream of 0/1 values. The length of 
+    Parameters
+    ----------
+    x_bits : serial bit stream of 0/1 values. The length of
              x_bits must be a multiple of N_bits
-    N_bits = bit precision of PCM samples
-      xhat = decoded PCM signal samples
-    /////////////////////////////////////////////////////////////
+    N_bits : bit precision of PCM samples
+
+    Returns
+    -------
+      xhat : decoded PCM signal samples
+
     Mark Wickert, March 2015
     """
     N_samples = len(x_bits)//N_bits
@@ -1238,6 +1244,7 @@ def OFDM_tx(IQ_data, Nf, N, Np=0, cp=False, Ncp=0):
     >>> plt.ylim([-40,0])
     >>> plt.xlim([-.5,.5])
     >>> plt.show()
+
     """
     N_symb = len(IQ_data)
     N_OFDM = N_symb // Nf
@@ -1398,6 +1405,7 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
     >>> plt.axis('equal')
     >>> plt.grid()
     >>> plt.show()
+
     """
     N_symb = len(x) // (N + Ncp)
     y_out = np.zeros(N_symb * N, dtype=np.complex128)

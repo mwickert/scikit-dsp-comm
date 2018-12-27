@@ -1151,18 +1151,18 @@ def PCM_decode(x_bits,N_bits):
     return xq/2**(N_bits-1)
 
 
-
 def AWGN_chan(x_bits,EBN0_dB):
     """
+
     Parameters
     ----------
     x_bits : serial bit stream of 0/1 values.
-    EBNO_dB : Energy per bit to noise power density ratio in dB of the serial bit stream sent through the AWGN channel. Frequently we equate EBN0 to SNR in link budget calculations
+    EBN0_dB : Energy per bit to noise power density ratio in dB of the serial bit stream sent through the AWGN channel. Frequently we equate EBN0 to SNR in link budget calculations.
 
     Returns
     -------
-    y_bits : Received serial bit stream following hard decisions. This bit will have bit errors. To check the estimated bit error probability use :func:`BPSK_BEP` or simply
-    >> Pe_est = sum(xor(x_bits,y_bits))/length(x_bits);
+    y_bits : Received serial bit stream following hard decisions. This bit will have bit errors. To check the estimated bit error probability use :func:`BPSK_BEP` or simply:
+    >>> Pe_est = sum(xor(x_bits,y_bits))/length(x_bits);
 
     Mark Wickert, March 2015
     """

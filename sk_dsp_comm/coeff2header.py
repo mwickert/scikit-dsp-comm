@@ -275,9 +275,9 @@ def CA_code_header(fname_out, Nca):
             f.write('%d,\n' % ca[k])
             if k < M:
                 if Nca < 10:
-                    f.write('                    ')
+                    f.write(' ' * 20)
                 else:
-                    f.write('                     ')
+                    f.write(' ' * 21)
                 kk = 0
         else:
             f.write('%d' % ca[k])

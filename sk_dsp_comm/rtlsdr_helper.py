@@ -33,13 +33,16 @@ try:
     from rtlsdr import RtlSdr
 except ImportError:
     warnings.warn("Please install the helpers extras for full functionality", ImportWarning)
-from . import sigsys as ss
-from . import digitalcom as dc
+#from . import sigsys as ss
+#from . import digitalcom as dc
+from sk_dsp_comm import sigsys as ss
+from sk_dsp_comm import digitalcom as decimate
 import numpy as np
 import scipy.signal as signal
 import asyncio
 import colorama
-from . import pyaudio_helper as pah
+#from . import pyaudio_helper as pah
+from sk_dsp_comm import pyaudio_helper as pah
 from threading import Thread
 import matplotlib.pyplot as plt
 from IPython.display import display, Math
@@ -57,7 +60,7 @@ from matplotlib.mlab import psd
 # from bokeh.io import push_notebook, show, output_notebook
 # from bokeh.models import HoverTool
 # import bokeh.plotting.figure as bfigure
-#from bokeh.models.annotations import Title as bTitle
+# from bokeh.models.annotations import Title as bTitle
 
 class RTLSDR_stream(object):
     """
@@ -175,7 +178,7 @@ class RTLSDR_stream(object):
         >>>     while keep_collecting:
         >>>         data_out = await sdr_stream.get_data_out_async()
         >>>         print(data_out)
-        >>>     sdr_stream.reset_data_out_queueue()
+        >>>     sdr_stream.reset_data_out_queue()
         >>>     print('Done')
 
         >>> sdr_stream.run_user_stream(no_audio_callback,1,1,audio_sink=False,user_var=1)
@@ -406,7 +409,7 @@ class RTLSDR_stream(object):
 
     async def _get_rx_data_user(self):  
         '''
-        Used by run_user_stream() method. Asyncronously reads in samples from
+        Used by run_user_stream() method. Asynchronously reads in samples from
         RTLSDR and implements the stage 1 decimator. The stage 1 decimator
         can be defined by the user in run_user_stream() or a default decimator
         can be used. This is a private method that is only used internally. 
@@ -457,7 +460,7 @@ class RTLSDR_stream(object):
             
             ##############################################
             # Process Downconverted Data in user callback
-            z_bb,self.user_var = callback(samples,self.fs,self.user_var)
+            z_bb,self.user_var = callback(samples,self.fs/self.M1,self.user_var)
             ##############################################
             
             if(self.audio_sink):
@@ -663,7 +666,7 @@ class RTLSDR_stream(object):
         self.keep_streaming = True
         self.M1 = M1
         self.M2 = M2
-        if(user_var):
+        if(user_var is not None):
             self.user_var = user_var
         if(int(self.fs/self.M1/self.M2) != int(self.audio_fs) and audio_sink):
             print(colorama.Fore.RED + 'Stage 2 Decimated rate does not match audio sample rate')
@@ -691,7 +694,7 @@ class RTLSDR_stream(object):
             )
 
 
-    def run_user_stream(self,callback,M1,M2,b=False,stage1_ic=False,a=False,bb=False,stage2_ic=False,aa=False,audio_sink=True,user_var=False): 
+    def run_user_stream(self,callback,M1,M2,b=False,stage1_ic=False,a=False,bb=False,stage2_ic=False,aa=False,audio_sink=True,user_var=None): 
         '''
         Starts a user stream. A user stream follows the flow diagram in the 
         class description. When audio_sink is True, the audio_sink blocks will 
@@ -717,7 +720,7 @@ class RTLSDR_stream(object):
         audio_sink: When True, the audio sink path is used. When false, the 
             data_sink path is used. (see class definition)
         user_var: Initialization of a user-defined variable that can be used 
-            within the user-defined callback. The state of ther user-defined 
+            within the user-defined callback. The state of the user-defined 
             variable is maintained within the class
 
         callback example:
@@ -748,7 +751,7 @@ class RTLSDR_stream(object):
         This method asynchronously returns data from the data_sink buffer when
         it is full. This is used in the data_sink mode (audio_sink=False).
 
-        The following example shows how to continously stream data and handle 
+        The following example shows how to continuously stream data and handle 
         the buffer when it is full. The buffer will automatically get rewritten 
         whenever it runs out of space, so the returned buffer must be handled 
         whenever it is filled.
@@ -779,7 +782,7 @@ class RTLSDR_stream(object):
         >>>     while keep_collecting:
         >>>         data_out = await sdr_stream.get_data_out_async()
         >>>         print(data_out)
-        >>>     sdr_stream.reset_data_out_queueue()
+        >>>     sdr_stream.reset_data_out_queue()
         >>>     print('Done')
 
         start a user stream as well as our async data handler coroutine. Should 
@@ -1036,7 +1039,7 @@ class RTLSDR_stream(object):
         plot from updating. Only one spectrum analyzer instance my be running at
         once. This only works when using %pylab widget or %pylab notebook
 
-        paramters:
+        parameters:
         ----------
         NFFT: fftsize used in plotting
         refresh_rate: defines how often the spectrum analyzer updates (in Hz)
@@ -1165,7 +1168,7 @@ class RTLSDR_stream(object):
         plot from updating. Only one spectrum analyzer instance my be running at
         once. This only works when using %pylab widget or %pylab notebook
 
-        paramters:
+        parameters:
         ----------
         NFFT: fftsize used in plotting
         refresh_rate: defines how often the spectrum analyzer updates (in Hz)
@@ -1294,7 +1297,7 @@ class RTLSDR_stream(object):
         plot from updating. Only one spectrum analyzer instance my be running at
         once. This only works when using %pylab widget or %pylab notebook
 
-        paramters:
+        parameters:
         ----------
         NFFT: fftsize used in plotting
         refresh_rate: defines how often the spectrum analyzer updates (in Hz)
@@ -1422,7 +1425,7 @@ class RTLSDR_stream(object):
         plot from updating. Only one spectrum analyzer instance my be running at
         once. This only works when using %pylab widget or %pylab notebook
 
-        paramters:
+        parameters:
         ----------
         NFFT: fftsize used in plotting
         refresh_rate: defines how often the spectrum analyzer updates (in Hz)
@@ -1586,7 +1589,7 @@ class RTLSDR_stream(object):
         Sets the circular buffer size used by the audio_sink and the data_sink.
         When the audio_sink is used, this should be set to a fairly high number
         (around 2^15). When the data_sink is used, the buffer size can be changed
-        to accomodate the scenario.
+        to accommodate the scenario.
         '''
         self.rtl_buffer_size = rtl_buffer_size
     
@@ -1714,7 +1717,7 @@ class RTLSDR_stream(object):
 
         Example:
         >>> sdr_stream = RTLSDR_stream()
-        >>> sdr_stream.run_user_stream(callaback,10,5)
+        >>> sdr_stream.run_user_stream(callback,10,5)
         >>> stage1_data_frame = await sdr_stream.get_stage1_frame()
         '''
         self.store_stage1 = True
@@ -1727,7 +1730,7 @@ class RTLSDR_stream(object):
 
         Example:
         >>> sdr_stream = RTLSDR_stream()
-        >>> sdr_stream.run_user_stream(callaback,10,5)
+        >>> sdr_stream.run_user_stream(callback,10,5)
         >>> rf_data_frame = await sdr_stream.get_stage1_frame()
         '''
         self.store_rf = True
@@ -1741,7 +1744,7 @@ class RTLSDR_stream(object):
 
         Example:
         >>> sdr_stream = RTLSDR_stream()
-        >>> sdr_stream.run_user_stream(callaback,10,5)
+        >>> sdr_stream.run_user_stream(callback,10,5)
         >>> callback_data_frame = await sdr_stream.get_stage1_frame()
         '''
         self.store_processed_stage1 = True
@@ -1755,7 +1758,7 @@ class RTLSDR_stream(object):
 
         Example:
         >>> sdr_stream = RTLSDR_stream()
-        >>> sdr_stream.run_user_stream(callaback,10,5)
+        >>> sdr_stream.run_user_stream(callback,10,5)
         >>> stage2_data_frame = await sdr_stream.get_stage2_frame()
         '''
         self.store_stage2 = True

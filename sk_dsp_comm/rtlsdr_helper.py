@@ -33,19 +33,21 @@ try:
     from rtlsdr import RtlSdr
 except ImportError:
     warnings.warn("Please install the helpers extras for full functionality", ImportWarning)
-#from . import sigsys as ss
-#from . import digitalcom as dc
-from sk_dsp_comm import sigsys as ss
-from sk_dsp_comm import digitalcom as decimate
+from . import sigsys as ss
+from . import digitalcom as dc
 import numpy as np
 import scipy.signal as signal
 import asyncio
-import colorama
-#from . import pyaudio_helper as pah
-from sk_dsp_comm import pyaudio_helper as pah
-from threading import Thread
+try:
+    import colorama
+except ImportError:
+    warnings.warn("Please install colorama for full functionality", ImportWarning)
+from . import pyaudio_helper as pah
 import matplotlib.pyplot as plt
-from IPython.display import display, Math
+try:
+    from IPython.display import display, Math
+except ImportError:
+    warnings.warn("Please install IPython for full functionality", ImportWarning)
 try:
     from ipywidgets import interactive
     from ipywidgets import ToggleButtons

@@ -38,6 +38,6 @@ setup(name='scikit-dsp-comm',
       test_suite='nose.collector',
       tests_require=['nose','numpy', 'tox'],
       extras_require={
-            'helpers': ['pyaudio', 'pyrtlsdr', 'ipywidgets']
+            'helpers': ['colorama', 'pyaudio', 'pyrtlsdr', 'ipywidgets']
       }
      )

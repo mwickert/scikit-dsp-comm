@@ -106,7 +106,7 @@ This will update you local repo and automatically update the Python install with
 
 ------
 
-## Feature: Added Software Defined Radio Streaming to pyaudio_helper
+## Feature: Added Software Defined Radio Streaming to `rtlsdr_helper` with Interface to `pyaudio_helper`
 A recent push to the master branch now allows real-time SDR streaming from the RTL-SDR to `pyaudio_helper`. In this first release of the API, the system block diagram takes the from shown in the figure below:
 
 ![Block diagram for RTL-SDR streaming](rtlsdr_helper_streaming_block.png)

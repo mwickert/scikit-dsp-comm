@@ -111,7 +111,7 @@ A recent push to the master branch now allows real-time SDR streaming from the R
 
 ![Block diagram for RTL-SDR streaming](rtlsdr_helper_streaming_block.png)
 
-To make this possible via the new `aynch` and `await` capabilities of Python 3.7. For the details as to how this works you have to dig into the details found in the module `rtlsdr_helper.py` and the examples found in the notebook `rtlsdr_helper_streaming_sample.ipynb`. A screenshot from the sample Jupyter notebook, that implements a broadcast FM receiver, is shown below:
+This capability is made possible via the new `aynch` and `await` capabilities of Python 3.7. For the details as to how this works you have to dig into the details found in the module `rtlsdr_helper.py` and the examples found in the notebook `rtlsdr_helper_streaming_sample.ipynb`. A screenshot from the sample Jupyter notebook, that implements a broadcast FM receiver, is shown below:
 
  ![Code snippet for an FM radio receiver.](rtlsdr_helper_streaming_FM_receiver.png)
 

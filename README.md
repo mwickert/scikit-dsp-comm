@@ -15,12 +15,9 @@
 This package is a collection of functions and classes to support signal processing and communications theory teaching and research. The foundation for this package is `scipy.signal`. The code in particular currently runs under Python `2.7x` and `3.6x`.
 
 
-We are striving for improved documentation, with examples. Minor bugs are being fixed. New features are planned, in particular a `GPS_helper` module and additions to the `synchronization` module. There is also a desire to improve the `fec_conv` to move develop rate 1/3 codes and the use of compiled code to improve performance
-
-
 The real-time audio DSP capabilities of `pyaudio_helper` allow for two channel algorithm development with real-time user control enabled by the `ipywidgets` when running in the Jupyter notebook.
 
-Finally, there is a strong desire to utilize the real-time DSP capabilities of `pyaudio_helper` to allow real-time streaming of complex baseband (IQ) signals from `rtlsdr_helper` through demodulation algorithms and out through the Pyaudio interface.
+Finally, we now can utilize the real-time DSP capabilities of `pyaudio_helper` to work in combination with streaming of I/Q samples using new functions `rtlsdr_helper`. This allows in particular demodulation of radio signals and downsampling to baseband analog signals for streaming playback of say an FM broadcast station. This new capability is featured as a short *article* at the end of this readme file.
 
 
 **There are presently ten modules that make up scikit-dsp-comm:**
@@ -31,7 +28,7 @@ Finally, there is a strong desire to utilize the real-time DSP capabilities of `
 
 3. `synchronization.py` which contains phase-locked loop simulation functions and functions for carrier and phase synchronization of digital communications waveforms.
 
-4. `fec_conv.py` for the generation rate one-half convolutional codes and soft decision Viterbi algorithm decoding, including trellis and trellis-traceback display functions.
+4. `fec_conv.py` for the generation rate one-half and one-third convolutional codes and soft decision Viterbi algorithm decoding, including soft and hard decisions, trellis and trellis-traceback display functions, and puncturing.
 
 5. `fir_design_helper.py` which for easy design of lowpass, highpass, bandpass, and bandstop filters using the Kaiser window and equal-ripple designs, also includes a list plotting function for easily comparing magnitude, phase, and group delay frequency responses.
 
@@ -53,7 +50,7 @@ Installation is described in greater detail below.
 
 1. `pyaudio_helper.py` wraps a class around the code required in `PyAudio` (wraps the C++ library `PortAudio`) to set up a non-blocking audio input/output stream. The user only has to write the callback function to implement real-time DSP processing using any of the input/output devices available on the platform. This resulting object also contains a capture buffer for use in post processing and a timing markers for assessing the processing time utilized by the callback function. When developing apps in the Jupyter Notebook there is support for the `IPywidgets` along with threading. 
 
-2. `rtlsdr_helper.py` interfaces with `pyrtldsr` to provide a simple captures means for complex baseband software defined radio (SDR) samples from the low-cost (~$20) RTL-SDR USB hardware dongle. The remaining functions in this module support the implementation of demodulators for FM modulation and examples of complete receivers for FM mono, FM stereo, and tools for FSK demodulation, including bit synchronization.
+2. `rtlsdr_helper.py` interfaces with `pyrtldsr` to provide a simple captures means for complex baseband software defined radio (SDR) samples from the low-cost (~$20) RTL-SDR USB hardware dongle. The remaining functions in this module support the implementation of demodulators for FM modulation and examples of complete receivers for FM mono, FM stereo, and tools for FSK demodulation, including bit synchronization. Real-time streaming is a new capability included.
 
 
 ## Documentation
@@ -67,7 +64,17 @@ The best way to use this package is to clone this repository and then install it
 git clone https://github.com/mwickert/scikit-dsp-comm.git
 ```
 
-There are package dependencies for some modules that you may want to avoid. Specifically these are whenever hardware interfacing is involved. Specific hardware and software configuration details are discussed in [wiki pages](https://github.com/mwickert/SP-Comm-Tutorial-using-scikit-dsp-comm/wiki). For Windows users `pip` install takes care of almost everything. I assume below you have Python on your path, so for example with [Anaconda](https://www.anaconda.com/download/#macos), I suggest letting the installer set these paths up for you.
+There are package dependencies for some modules that you may want to avoid. Specifically these are whenever hardware interfacing is involved. Specific hardware and software configuration details are discussed in [wiki pages](https://github.com/mwickert/SP-Comm-Tutorial-using-scikit-dsp-comm/wiki).
+
+For Windows users `pip` install takes care of almost everything. I assume below you have Python on your path, so for example with [Anaconda](https://www.anaconda.com/download/#macos), I suggest letting the installer set these paths up for you.
+
+### Dependencies for `pyaudio`
+
+Across the three popular platforms, Windows, macOS, and Linux, `pyaudio`, is 
+the underlying framework that `pyaudio_helper` relies upon. Getting `PyAudio` configured is  different for all three OS's. Conda and CondaForge have support for installing `pyaudio` 
+on both Linux and Windows. Under Python 3.6 and below PyAudio will install when `pip` installing the scikit-dsp-comm package, as described below. For Python 3.7+ `PyAudio` **first** needs to be installed using `conda install pyaudio` to obtain binary (`whl`) files.
+
+All the capability of the package is available less `PyAudio` and the RTL-SDR radio, without doing any special installations. See the [wiki pages](https://github.com/mwickert/SP-Comm-Tutorial-using-scikit-dsp-comm/wiki) for more information. Just keep in mind that now a Python 3.7+ install on windows must include the installation `PyAudio` as described above.
 
 ### Editable Install with Dependencies
 
@@ -85,8 +92,6 @@ To install without the PyAudio and RTL-SDR dependency, and hence not be able to 
 pip install -e .
 ```
 
-On Windows the binaries needed for `pyaudio` should install, but on other platforms you will have to do some more work (Conda Forge install pending at the close of Scipy 2017 sprints). All the capability of the package is available less `pyaudio` and the RTL-SDR radio with doing any special installations. See the [wiki pages](https://github.com/mwickert/SP-Comm-Tutorial-using-scikit-dsp-comm/wiki) for more information.
-
 ### Why an Editable Install?
 
 The advantage of the editable `pip` install is that it is very easy to keep `scikit-dsp-comm ` up to date. If you know that updates have been pushed to the master branch, you simply go to your local repo folder and
@@ -99,74 +104,15 @@ This will update you local repo and automatically update the Python install with
 
 ------
 
-## Feature: Real-Time DSP with `pyaudio_helper`
-A real-time DSP experience is possible right in the Jupyter notebook. Fall 1017 updates to `pyaudio_helper` make it possible to do two channel audio (stereo) and include interactivity using the `ipywidgets`. The `callback` function for a simple *loop-through* is given below. Note: Not all of the code is shown here, but is available [here](https://mwickert.github.io/scikit-dsp-comm/)
+## Feature: Software Defined Radio Streaming to PyAudio
+A recent push to the master branch now allows real-time SDR streaming from the RTL-SDR to `pyaudio_helper. In this first release of the API, the system block diagram takes the from shown in the figure below:
 
-#### Finding the Indices of the Available Audio Devices
-```python
-import sk_dsp_comm.pyaudio_helper as pah
+![Block diagram for RTL-SDR streaming](rtlsdr_helper_streaming_block.png)
 
-# Check system audio devices available
-pah.available_devices()
-```
-```bash
-Index 0 device name = Built-in Microphone, inputs = 2, outputs = 0
-Index 1 device name = Built-in Output, inputs = 0, outputs = 2
-Index 2 device name = iMic USB audio system, inputs = 2, outputs = 2
-```
-You can think of the device index as a jack number on an audio patch panel.
+ Python 3.7 is required to make this possible via the new `aynch` and `await` capabilities. For the details as to how this works you have to dig into the details found in the module `rtlsdr_helper` and the examples found in the notebook `rtlsdr_helper_streaming_sample.ipynb`. A screenshot from the sample Jupyter notebook, that implements a broadcast FM receiver is shown below:
 
-#### Write a Simple Callback
-Here each frame is processed using `ndarrays` and gain scaling is applied at the frame level. In general processing must be done sample-by-sample. Python `globals` can be used to maintain the state of a given DSP algorithm, e.g., an FIR or IIR filter.
+ ![Code snippet for an FM radio receiver.](rtlsdr_helper_streaming_FM_receiver.png)
 
-```python
-# Scale right and left channels independently
-def callback(in_data, frame_count, time_info, status):  
-    DSP_IO.DSP_callback_tic()
-    # convert byte data to ndarray
-    in_data_nda = np.fromstring(in_data, dtype=np.int16)
-    # separate left and right data
-    x_left,x_right = DSP_IO.get_LR(in_data_nda.astype(float32))
-    #***********************************************
-    # DSP operations here
-    
-    y_left = volume_scale_left.value*x_left
-    y_right = volume_scale_right.value*x_right
-    
-    #***********************************************
-    # Pack left and right data together
-    y = DSP_IO.pack_LR(y_left,y_right)
-    # Typically more DSP code here     
-    #***********************************************
-    # Save data for later analysis
-    # accumulate a new frame of samples
-    DSP_IO.DSP_capture_add_samples_stereo(y_left,y_right)
-    #***********************************************
-    # Convert from float back to int16
-    y = y.astype(int16)
-    DSP_IO.DSP_callback_toc()
-    # Convert ndarray back to bytes
-    #return (in_data_nda.tobytes(), pyaudio.paContinue)
-    return y.tobytes(), pah.pyaudio.paContinue
-```
-#### `DSP_IO` Object Creation and Streaming
-With the callback in place we are now ready to create a `DSP_IO` object and start streaming.
+This is just the beginning making a complete SDR receiver possible in a Jupyter notebook. Not only is the receiver a reality, the algorithms that implement the receiver in pure Python can be coded by the user.
 
-```python
-N_FRAME = 512
-# Create streaming object: use Built-in mic (idx = 0) and output (idx = 1)
-DSP_IO = pah.DSP_io_stream(callback,in_idx=0,out_idx=1,fs=44100,
-                           frame_length = N_FRAME,Tcapture = 10) 
-
-# use thread stream so widget can be used; Tsec = 0 <==> infinite stream
-DSP_IO.interactive_stream(Tsec = 20, numChan = 2) # 20 Second stereo stream
-
-# display volume control widgets
-widgets.HBox([volume_dB_left,volume_dB_right])
-```
-![Juypter notebook cell output](two_channel_stream.png)
-
-#### A Portion of the Capture Buffer from MacBook Mic Input
-![Mic input captured with speakers down to avoid feedback](Capture_Buffer.png)
-
-------
+To help develop demodulator algorithms a streaming code block interface standard, of sorts, is being developed this summer. The idea is to provide examples of is needed to write simple Python class that will manage states in the DSP code that is inside the *Callback Process* block of the block diagram.

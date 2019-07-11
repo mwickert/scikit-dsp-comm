@@ -5,6 +5,8 @@
 [![pypi](https://img.shields.io/pypi/v/scikit-dsp-comm.svg)](https://pypi.python.org/pypi/scikit-dsp-comm)
 [![Docs](https://readthedocs.org/projects/scikit-dsp-comm/badge/?version=latest)](http://scikit-dsp-comm.readthedocs.io/en/latest/?badge=latest)
 
+### New RTL-SDR streaming added!
+Feature story at the end of the readme.
 
 ## Background
 
@@ -104,15 +106,15 @@ This will update you local repo and automatically update the Python install with
 
 ------
 
-## Feature: Software Defined Radio Streaming to PyAudio
-A recent push to the master branch now allows real-time SDR streaming from the RTL-SDR to `pyaudio_helper. In this first release of the API, the system block diagram takes the from shown in the figure below:
+## Feature: Added Software Defined Radio Streaming to pyaudio_helper
+A recent push to the master branch now allows real-time SDR streaming from the RTL-SDR to `pyaudio_helper`. In this first release of the API, the system block diagram takes the from shown in the figure below:
 
 ![Block diagram for RTL-SDR streaming](rtlsdr_helper_streaming_block.png)
 
- Python 3.7 is required to make this possible via the new `aynch` and `await` capabilities. For the details as to how this works you have to dig into the details found in the module `rtlsdr_helper` and the examples found in the notebook `rtlsdr_helper_streaming_sample.ipynb`. A screenshot from the sample Jupyter notebook, that implements a broadcast FM receiver is shown below:
+To make this possible via the new `aynch` and `await` capabilities of Python 3.7. For the details as to how this works you have to dig into the details found in the module `rtlsdr_helper.py` and the examples found in the notebook `rtlsdr_helper_streaming_sample.ipynb`. A screenshot from the sample Jupyter notebook, that implements a broadcast FM receiver, is shown below:
 
  ![Code snippet for an FM radio receiver.](rtlsdr_helper_streaming_FM_receiver.png)
 
-This is just the beginning making a complete SDR receiver possible in a Jupyter notebook. Not only is the receiver a reality, the algorithms that implement the receiver in pure Python can be coded by the user.
+This is just the beginning of making a complete SDR receiver possible in a Jupyter notebook. Not only is the receiver a reality, the algorithms that implement the receiver, in Python, can easily be coded by the user.
 
-To help develop demodulator algorithms a streaming code block interface standard, of sorts, is being developed this summer. The idea is to provide examples of is needed to write simple Python class that will manage states in the DSP code that is inside the *Callback Process* block of the block diagram.
+To help develop demodulator algorithms a streaming code block interface standard, of sorts, is being developed this summer. The idea is to provide examples of how to write a simple Python class that will manage states in the DSP code that is inside the *Callback Process* block of the block diagram. More details by the end of the summer is expected, along with another sample notebook.

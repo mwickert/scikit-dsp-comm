@@ -22,6 +22,11 @@ Jupyter Notebook Examples
    ../nb_examples/Real-Time-DSP_Using_pyaudio_helper_and_ipywidgets
 
 .. toctree::
+   :caption: RTL-SDR Helper Streaming Sample
+
+   ../nb_examples/rtlsdr_helper_streaming_sample
+
+.. toctree::
    :caption: Convolutional Codes
 
    ../nb_examples/Convolutional_Codes

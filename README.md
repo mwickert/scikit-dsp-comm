@@ -6,7 +6,7 @@
 [![Docs](https://readthedocs.org/projects/scikit-dsp-comm/badge/?version=latest)](http://scikit-dsp-comm.readthedocs.io/en/latest/?badge=latest)
 
 ### New RTL-SDR streaming added!
-Feature story at the end of the readme.
+Feature story at the end of the readme. The docs have been failing to build since mid July as result of trying to include a Jupyter notebook example of an RTLSDR streaming example. Hopefully this will be resolved very soon. 
 
 ## Background
 

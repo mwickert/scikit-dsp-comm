@@ -14,7 +14,7 @@ Feature story at the end of the readme. The docs have been failing to build sinc
 
 ## Package High Level Overview
 
-This package is a collection of functions and classes to support signal processing and communications theory teaching and research. The foundation for this package is `scipy.signal`. The code in particular currently runs under Python `2.7x` and `3.6x`.
+This package is a collection of functions and classes to support signal processing and communications theory teaching and research. The foundation for this package is `scipy.signal`. The code in particular currently requires Python `>=3.5x`.
 
 
 The real-time audio DSP capabilities of `pyaudio_helper` allow for two channel algorithm development with real-time user control enabled by the `ipywidgets` when running in the Jupyter notebook.

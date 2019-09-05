@@ -6,7 +6,7 @@
 [![Docs](https://readthedocs.org/projects/scikit-dsp-comm/badge/?version=latest)](http://scikit-dsp-comm.readthedocs.io/en/latest/?badge=latest)
 
 ### New RTL-SDR streaming added!
-A feature story at the end of this readme. Readthedocs also contains a nice collection of Jupyter notebook examples, including RTL-SDR streaming, among the module documentation. The actual notebook files (`.ipynb`) are in the docs folder at  <a href="/docs/source/nb_examples/">nb_examples</a>. This folder is in the master branch once you have cloned the repo.
+A feature story at the end of this readme. Readthedocs also contains a nice collection of Jupyter notebook examples, including RTL-SDR streaming, among the module documentation. The actual notebook files (`.ipynb`) are in the docs folder at  <a href="/docs/source/nb_examples/">nb_examples</a>. This folder is in the master branch once you have cloned the repo. Click the *docs* badge above to be taken to the documentation.
 
 ## Background
 

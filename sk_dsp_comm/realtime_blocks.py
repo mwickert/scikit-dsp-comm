@@ -72,7 +72,7 @@ class ThreadedSequence(object):
         for queue in queues:
             self.output_queues.append(queue)
 
-    async def process(self):
+    async def process_async(self):
         """
         Just keep processing data until told to stop
         """
@@ -83,11 +83,15 @@ class ThreadedSequence(object):
             if data is None:
                 self.run = False
                 break
-            for block in self.sequence:
-                data = block.process(data)
+            data = self.process(data)
             for queue in self.output_queues:
                 await queue.put(data)
         print(self.name + " stopped running")
+
+    def process(self, data):
+        for block in self.sequence:
+            data = block.process(data)
+        return data
 
     def stop(self):
         """
@@ -121,7 +125,7 @@ class DataGenerator(object):
         for queue in queues:
             self.output_queues.append(queue)
 
-    async def process(self):
+    async def process_async(self):
         """
         generate data -- TODO just alternating 1/0 now... include PN later
         """

@@ -178,7 +178,66 @@ def interpolate(data_in, m, I_ord = 3):
         print('Error: I_ord must 1, 2, or 3')
         return 0
 
-class NdaPll:
+
+class NdaCarrierSync(object):
+    def __init__(self, fs, fc, BnTs, Ns=1, M=2, det_type=0):
+        Kp = np.sqrt(2.)  # for type 0
+
+        self.M = M
+        self.type = det_type
+
+        # Tracking loop constants
+        zeta = .707
+        K0 = 1
+        self.K1 = 4 * zeta / (zeta + 1 / (4 * zeta)) * BnTs / Ns / Kp / K0
+        self.K2 = 4 / (zeta + 1 / (4 * zeta)) ** 2 * (BnTs / Ns) ** 2 / Kp / K0
+
+        # Initial condition
+        self.theta_update = 2 * np.pi * fc / fs
+        self.theta_hat = 0
+        self.vi = 0
+
+    def process(self, data):
+        out = np.zeros_like(data)
+
+        for i in range(0, len(data)):
+            # Multiply by the phase estimate exp(-j*theta_hat[n])
+            out[i] = data[i] * np.exp(-1j * self.theta_hat)
+            if self.M == 2:
+                a_hat = np.sign(out[i].real) + 1j * 0
+            elif self.M == 4:
+                a_hat = np.sign(out[i].real) + 1j * np.sign(out[i].imag)
+            elif self.M == 8:
+                a_hat = np.angle(out[i]) / (2 * np.pi / 8.)
+                # round to the nearest integer and fold to nonnegative
+                # integers; detection into M-levels with thresholds at mid points.
+                a_hat = np.mod(round(a_hat), 8)
+                a_hat = np.exp(1j * 2 * np.pi * a_hat / 8)
+            else:
+                raise ValueError('M must be 2, 4, or 8')
+
+            # phase detector
+            if self.type == 0:
+                # Maximum likelihood (ML)
+                e_phi = out[i].imag * a_hat.real - \
+                        out[i].real * a_hat.imag
+            elif self.type == 1:
+                # Heuristic
+                e_phi = np.angle(out[i]) - np.angle(a_hat)
+            else:
+                raise ValueError('Type must be 0 or 1')
+
+            # print(e_phi)
+            # loop filter
+            vp = self.K1 * e_phi  # proportional component of loop filter
+            self.vi = self.vi + self.K2 * e_phi  # integrator component of loop filter
+            v = vp + self.vi  # loop filter output
+
+            self.theta_hat = np.mod(self.theta_hat + self.theta_update + v, 2 * np.pi)
+        return out
+
+
+class NdaSymSync(object):
     def __init__(self, Ns, L, BnTs, I_ord=3):
         # input
         self.BnTs = BnTs
@@ -231,14 +290,14 @@ class NdaPll:
                 for kk in range(self.Ns):
                     z_TED_interp = interpolate(self.z_buf[nn+kk-1:nn+kk+2+1], mu, self.I_ord)
                     c1 = c1 + np.abs(z_TED_interp)**2 * self.phase_lut[kk]
-                #c1 = c1/self.Ns
+                # c1 = c1/self.Ns
                 # Update 2*L+1 length buffer for TED output smoothing
                 self.c1_sum -= self.c1_buf[self.c1_idx]
                 self.c1_sum += c1
                 self.c1_buf[self.c1_idx] = c1
                 self.c1_idx = (self.c1_idx+1) % (len(self.c1_buf))
                 # Form the smoothed TED output
-                #print np.angle(self.c1_sum)
+                # print np.angle(self.c1_sum)
                 self.epsilon = -1/(2*np.pi)*np.angle(self.c1_sum)
                 # Save symbol spaced (decimated to symbol rate) interpolants in zz
                 zz[mm] = z_interp
@@ -263,7 +322,7 @@ class NdaPll:
                 self.underflow = 0
                 self.mu_next = mu
 
-        #clean up state buffer
+        # clean up state buffer
         self.z_buf = self.z_buf[samp_to_process:]
         # Remove zero samples at end -- have to check index due to inconsistent python behavoir!
         if(len(zz)-mm != 0):
@@ -274,7 +333,8 @@ class NdaPll:
         zz /=np.std(zz)
         return zz
 
-class FarrowResampler:
+
+class FarrowResampler(object):
     def __init__(self, fs_in, fs_out, I_ord=3):
         # input
         self.Ns = fs_in / fs_out
@@ -325,3 +385,25 @@ class FarrowResampler:
         if (len(y) - mm != 0):
             y = y[:-(len(y) - mm)]
         return y
+
+
+class DDS(object):
+    def __init__(self, fs, fc, usecomplex=True):
+        self.angle = 0
+        self.omega = 2 * np.pi * fc / fs
+        self.complex = usecomplex
+
+    def process(self, data):
+        if self.complex:
+            out = np.zeros(len(data), dtype=np.complex128)
+        else:
+            out = np.zeros(len(data), dtype=np.float64)
+
+        for i in range(0, len(data)):
+            if self.complex:
+                out[i] = data[i] * np.exp(1j * self.angle)
+            else:
+                out[i] = data[i] * np.cos(self.angle)
+            self.angle = np.mod(self.angle + self.omega, 2 * np.pi)
+        return out
+

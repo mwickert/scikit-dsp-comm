@@ -36,10 +36,11 @@ except ImportError:
 
 import asyncio
 import numpy as np
+import scipy.signal as signal
 
-# TODO -- this design is tentative!
+import sk_dsp_comm.sigsys as ss
+
 # TODO -- does any inheritance make any sense among sources (DataGen), Sinks (PyAudio TBD), and the ThreadedSequence?
-# TODO -- not sure how much of this is "pythonic"
 
 
 class ThreadedSequence(object):
@@ -245,9 +246,9 @@ class NdaSymSync(object):
         self.L = L
         self.I_ord = I_ord
 
-        # precalc loop filter coefficients
+        # pre calculate loop filter coefficients
         zeta = .707
-        K0 = -1.0 # The modulo 1 counter counts down so a sign change in loop
+        K0 = -1.0  # The modulo 1 counter counts down so a sign change in loop
         Kp = 1.0
         self.K1 = 4*zeta/(zeta + 1/(4*zeta))*BnTs/Ns/Kp/K0
         self.K2 = 4/(zeta + 1/(4*zeta))**2*(BnTs/Ns)**2/Kp/K0
@@ -276,8 +277,8 @@ class NdaSymSync(object):
         # print "Length Z Go " + str(len(self.z_buf))
         mm = 0
 
-        samp_to_process = len(self.z_buf)-1-(self.Ns+2) #lookahead is Ns and 2, plus 1 past sample
-        samp_to_process = max(samp_to_process, 0); # enforce positivity
+        samp_to_process = len(self.z_buf)-1-(self.Ns+2)  # lookahead is Ns and 2, plus 1 past sample
+        samp_to_process = max(samp_to_process, 0)  # enforce positivity
         for nn in range(1, samp_to_process+1):
             # Define variables used in linear interpolator control
             CNT = self.CNT_next
@@ -407,3 +408,25 @@ class DDS(object):
             self.angle = np.mod(self.angle + self.omega, 2 * np.pi)
         return out
 
+
+class GenericFilter(object):
+    def __init__(self, b, a):
+        self.b = b
+        self.a = a
+        zi_len = max(len(a), len(b)) - 1
+        self.zi = np.zeros(zi_len)
+
+    def process(self, samples):
+        z, self.zi = signal.lfilter(self.b, self.a, samples, zi=self.zi)
+        return z
+
+
+class MatchedFilter(GenericFilter):
+    def __init__(self, Ns, alpha=0.5, filter_type='sr_rc', M=6):
+        if filter_type == 'rc':
+            self.b = ss.rc_imp(Ns, alpha, M)
+        else:
+            self.b = ss.sqrt_rc_imp(Ns, alpha, M)
+        self.a = [1]
+        zi_len = max(len(self.a), len(self.b)) - 1
+        self.zi = np.zeros(zi_len)

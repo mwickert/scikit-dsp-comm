@@ -210,7 +210,7 @@ class NdaCarrierSync(object):
                 a_hat = np.sign(out[i].real) + 1j * np.sign(out[i].imag)
             elif self.M == 8:
                 a_hat = np.angle(out[i]) / (2 * np.pi / 8.)
-                # round to the nearest integer and fold to nonnegative
+                # round to the nearest integer and fold to non-negative
                 # integers; detection into M-levels with thresholds at mid points.
                 a_hat = np.mod(round(a_hat), 8)
                 a_hat = np.exp(1j * 2 * np.pi * a_hat / 8)
@@ -263,16 +263,16 @@ class NdaSymSync(object):
 
         # other state
         self.vi = 0
+        self.vi_limit = 1/float(self.Ns) * 0.9
         self.CNT_next = 0
         self.mu_next = 0
         self.underflow = 0
         self.epsilon = 0
 
-        self.z_buf = 0 # just load a 0 in as a starting sample
+        self.z_buf = np.zeros(1) # just load a 0 in as a starting sample
 
     def process(self, z_in):
         zz = np.zeros(len(z_in), dtype=np.complex128) # at most, have the same number of symbols out as samples in
-        e_tau = np.zeros(len(z_in))
         self.z_buf = np.hstack((self.z_buf, z_in))
         # print "Length Z Go " + str(len(self.z_buf))
         mm = 0
@@ -300,16 +300,22 @@ class NdaSymSync(object):
                 # Form the smoothed TED output
                 # print np.angle(self.c1_sum)
                 self.epsilon = -1/(2*np.pi)*np.angle(self.c1_sum)
+                # print(np.angle(self.c1_sum))
                 # Save symbol spaced (decimated to symbol rate) interpolants in zz
                 zz[mm] = z_interp
-                e_tau[mm] = self.epsilon # log the error to the output vector e
                 mm += 1
             else:
-                # Simple zezo-order hold interpolation between symbol samples
+                # Simple zero-order hold interpolation between symbol samples
                 # we just coast using the old value
                 pass
             vp = self.K1*self.epsilon                 # proportional component of loop filter
             self.vi = self.vi + self.K2*self.epsilon  # integrator component of loop filter
+            if self.vi > self.vi_limit:
+                print("exceeded positive integrator limit!")
+                self.vi = self.vi_limit
+            if -self.vi < -self.vi_limit:
+                print("exceeded negative integrator limit!")
+                self.vi = - self.vi_limit
             v = vp + self.vi                          # loop filter output
             W = 1/float(self.Ns) + v                  # counter control word
 
@@ -325,11 +331,9 @@ class NdaSymSync(object):
 
         # clean up state buffer
         self.z_buf = self.z_buf[samp_to_process:]
-        # Remove zero samples at end -- have to check index due to inconsistent python behavoir!
+        # Remove zero samples at end
         if(len(zz)-mm != 0):
             zz = zz[:-(len(zz)-mm)]
-        if(len(e_tau)-mm != 0):
-            e_tau = e_tau[:-(len(e_tau)-mm)]
         # Normalize so symbol values have a unity magnitude
         zz /=np.std(zz)
         return zz
@@ -391,7 +395,7 @@ class FarrowResampler(object):
 class DDS(object):
     def __init__(self, fs, fc, usecomplex=True):
         self.angle = 0
-        self.omega = 2 * np.pi * fc / fs
+        self.omega = 2.0 * np.pi * fc / fs
         self.complex = usecomplex
 
     def process(self, data):
@@ -430,3 +434,52 @@ class MatchedFilter(GenericFilter):
         self.a = [1]
         zi_len = max(len(self.a), len(self.b)) - 1
         self.zi = np.zeros(zi_len)
+
+
+class PskSymbolMapper(object):
+
+    def __init__(self, Ns, M=2, mapping=None):
+        self.Ns = Ns
+        self.M = M
+        if mapping is None:
+            mapping = self.get_default_mapping(M)
+
+        if len(mapping) != M:
+            print("Mapping provided is not M="+str(M)+" symbols long")
+            mapping = self.get_default_mapping(M)
+
+        self.bits_per_symbol = int(np.log2(M))
+        self.buffered_bits = 0
+        self.buffer = 0
+
+        self.symbol_lut = {}
+        for kk in range(M):
+            self.symbol_lut[mapping[kk]] = np.exp(-1j*2*np.pi/M*kk)
+            if M == 4:
+                self.symbol_lut[mapping[kk]] += np.exp(-1j*2*np.pi/8)
+
+    @staticmethod
+    def get_default_mapping(M):
+        if M == 2:
+            return [1, 0]
+        elif M == 4:
+            return [0b11, 0b10, 0b00, 0b01]
+        elif M == 8:
+            # use gray code here
+            return [0b000, 0b001, 0b011, 0b010, 0b110, 0b111, 0b101, 0b100]
+        else:
+            print("Bad M value: "+str(M)+". Cannot creating mapping")
+            return [1, 0]
+
+    def process(self, data):
+        data_ret = []
+        for bit in data:
+            self.buffer = (self.buffer << 1) | bit
+            self.buffered_bits += 1
+            if self.buffered_bits == self.bits_per_symbol:
+                data_ret.append(self.symbol_lut[self.buffer])
+                self.buffer = 0
+                self.buffered_bits = 0
+                for i in range(0, self.Ns-1):
+                    data_ret.append(0 +0j)
+        return np.array(data_ret, dtype=np.complex128)

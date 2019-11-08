@@ -334,8 +334,6 @@ class NdaSymSync(object):
         # Remove zero samples at end
         if(len(zz)-mm != 0):
             zz = zz[:-(len(zz)-mm)]
-        # Normalize so symbol values have a unity magnitude
-        zz /=np.std(zz)
         return zz
 
 
@@ -426,11 +424,16 @@ class GenericFilter(object):
 
 
 class MatchedFilter(GenericFilter):
-    def __init__(self, Ns, alpha=0.5, filter_type='sr_rc', M=6):
+    def __init__(self, Ns, filter_type='sr_rc', alpha=0.5, M=6):
         if filter_type == 'rc':
             self.b = ss.rc_imp(Ns, alpha, M)
-        else:
+        elif filter_type == "sr_rc":
             self.b = ss.sqrt_rc_imp(Ns, alpha, M)
+        elif filter_type == "rect":
+            self.b = np.ones(Ns)
+        else:
+            print("Unknown matched filter type "+filter_type)
+            self.b = np.ones(Ns)
         self.a = [1]
         zi_len = max(len(self.a), len(self.b)) - 1
         self.zi = np.zeros(zi_len)
@@ -456,7 +459,7 @@ class PskSymbolMapper(object):
         for kk in range(M):
             self.symbol_lut[mapping[kk]] = np.exp(1j*2*np.pi/M*kk)
             if M == 4:
-                self.symbol_lut[mapping[kk]] += np.exp(1j*2*np.pi/8)
+                self.symbol_lut[mapping[kk]] *= np.exp(1j*2*np.pi/8)
 
     @staticmethod
     def get_default_mapping(M):
@@ -489,7 +492,7 @@ class PskHardDecision(object):
     def __init__(self, M=2, mapping=None):
         self.M = M
         if mapping is None:
-            mapping = PskSymbolMapper .get_default_mapping(M)
+            mapping = PskSymbolMapper.get_default_mapping(M)
 
         if len(mapping) != M:
             print("Mapping provided is not M=" + str(M) + " symbols long")
@@ -501,6 +504,11 @@ class PskHardDecision(object):
         self.buffered_bits = 0
         self.buffer = 0
 
+        self.rotations = []
+        for i in range(0, self.M):
+            self.rotations.append(np.exp(1j*2*np.pi*i/self.M))
+        self.rotation = 0
+
     def process(self, data):
         output = np.zeros([self.bits_per_symbol*data.size], dtype=np.int32)
         idx = 0
@@ -508,6 +516,7 @@ class PskHardDecision(object):
         # we want the samples to be rotated into the middle of the sector
         if self.M != 4:
             data *= np.exp(1j*2*np.pi/(self.M*2))
+        data *= self.rotations[self.rotation]
 
         for iq_sample in data:
             angle = np.angle(iq_sample) + np.pi
@@ -518,3 +527,8 @@ class PskHardDecision(object):
                 output[idx] = (bits >> i) & 0x1
                 idx += 1
         return output
+
+    def rotate(self):
+        # TODO this probably isn't thread safe?
+        self.rotation = np.mod(self.rotation+1, self.M)
+        print(self.rotation)

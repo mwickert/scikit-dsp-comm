@@ -454,9 +454,9 @@ class PskSymbolMapper(object):
 
         self.symbol_lut = {}
         for kk in range(M):
-            self.symbol_lut[mapping[kk]] = np.exp(-1j*2*np.pi/M*kk)
+            self.symbol_lut[mapping[kk]] = np.exp(1j*2*np.pi/M*kk)
             if M == 4:
-                self.symbol_lut[mapping[kk]] += np.exp(-1j*2*np.pi/8)
+                self.symbol_lut[mapping[kk]] += np.exp(1j*2*np.pi/8)
 
     @staticmethod
     def get_default_mapping(M):
@@ -483,3 +483,38 @@ class PskSymbolMapper(object):
                 for i in range(0, self.Ns-1):
                     data_ret.append(0 +0j)
         return np.array(data_ret, dtype=np.complex128)
+
+
+class PskHardDecision(object):
+    def __init__(self, M=2, mapping=None):
+        self.M = M
+        if mapping is None:
+            mapping = PskSymbolMapper .get_default_mapping(M)
+
+        if len(mapping) != M:
+            print("Mapping provided is not M=" + str(M) + " symbols long")
+            mapping = PskSymbolMapper.get_default_mapping(M)
+
+        self.mapping = mapping
+
+        self.bits_per_symbol = int(np.log2(M))
+        self.buffered_bits = 0
+        self.buffer = 0
+
+    def process(self, data):
+        output = np.zeros([self.bits_per_symbol*data.size], dtype=np.int32)
+        idx = 0
+        # QPSK is already rotated into place here
+        # we want the samples to be rotated into the middle of the sector
+        if self.M != 4:
+            data *= np.exp(1j*2*np.pi/(self.M*2))
+
+        for iq_sample in data:
+            angle = np.angle(iq_sample) + np.pi
+            sector = int(np.floor(self.M*angle/(2*np.pi)))
+            bits = self.mapping[sector]
+            # bits need to be unpacked
+            for i in range(self.bits_per_symbol-1, -1, -1):
+                output[idx] = (bits >> i) & 0x1
+                idx += 1
+        return output

@@ -114,11 +114,18 @@ class DataGenerator(object):
     This is a data test generator to help test without an RTLSDR
     The timing stability has not been tested, so it may not work with transmit yet!
     """
-    def __init__(self, bit_rate=100):
+    def __init__(self, bit_rate=100, m=None):
         self.run = False
         self.bit_rate = bit_rate
-        self.next_bit = 0
         self.output_queues = []
+
+        self.idx = 0
+        if m is None:
+            self.cache_len = 2
+            self.cache = [1, 0]
+        else:
+            self.cache_len = 2**m - 1
+            self.cache = ss.PN_gen(self.cache_len, m).astype(np.int)
 
     def add_output_queues(self, queues):
         """
@@ -128,17 +135,16 @@ class DataGenerator(object):
             self.output_queues.append(queue)
 
     async def process_async(self):
-        """
-        generate data -- TODO just alternating 1/0 now... include PN later
-        """
+
         print("Data Gen Started")
         self.run = True
         while self.run:
             await asyncio.sleep(1)
             data = []
             for i in range(0, self.bit_rate):
-                data.append(self.next_bit)
-                self.next_bit = 0 if self.next_bit == 1 else 1
+                data.append(self.cache[self.idx])
+                self.idx += 1
+                self.idx %= self.cache_len
             for queue in self.output_queues:
                 await queue.put(data)
         print("Data Gen Stopped")

@@ -746,3 +746,17 @@ class TestSigsys(SKDSPCommTest):
         f,X0 = ss.ft_approx(x0, t, 4096)
         npt.assert_almost_equal(f[2008:2089], f_check)
         npt.assert_almost_equal(X0[2008:2089], x0_check)
+
+    def test_bin_num_pos(self):
+        """
+        Test that we can convert a positive number into it's two's complement representation.
+        :return:
+        """
+        self.assertEqual('00011011', ss.bin_num(27, 8))
+
+    def test_bin_num_neg(self):
+        """
+        Test that we can convert a negative number into it's two's complement representation.
+        :return:
+        """
+        self.assertEqual('11100101', ss.bin_num(-27, 8))

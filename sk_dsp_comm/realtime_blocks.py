@@ -1,7 +1,7 @@
 """
 Framework for small realtime blocks
 
-Copyright (c) July 2019, Brandon Carlson
+Copyright (c) July 2019, Brandon Carlson & Mark Wickert
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,8 @@ except ImportError:
 import asyncio
 import numpy as np
 import scipy.signal as signal
+from enum import Enum, unique
+from IPython import display
 
 import sk_dsp_comm.sigsys as ss
 
@@ -50,37 +52,56 @@ class ThreadedSequence(object):
     A data frame gets pushed through a series of blocks sequentially
     """
     def __init__(self, name=""):
+        """
+        Created Threaded sequence of SkDspBlocks
+        :param name: Name of Sequence. defaults to SEQUENCEx, where x is an incrementing number
+        """
         self.run = False
         self.sequence = []
         self.name = name
+        self.frames_processed = 0
         self.input_queue = asyncio.Queue()
         self.output_queues = []
+        self.stat_queues = []
         if self.name == "":
             self.name = "SEQUENCE "+str(ThreadedSequence.generic_instance)
             ThreadedSequence.generic_instance += 1
 
     def define_sequence(self, sequence_of_blocks):
         """
-        define the list of blocks to run in order.
-        each block must contain process() call
+        define the list of SkDspBlocks to run in order.
+        :param sequence_of_blocks: list of SkDspBlocks
+        :return:
         """
-        # TODO -- maybe hold callbacks, not entire object?
         self.sequence = sequence_of_blocks
 
     def add_output_queues(self, queues):
         """
-        add output queues to the pre-existing queue list
+        Add output queue to subscribe to processed data
+        :param queues: list of queues to add
+        :return:
         """
         for queue in queues:
             self.output_queues.append(queue)
 
+    def add_stat_queues(self, queues):
+        """
+        add stats queues to the pre-existing queue list
+        :param queues: AsyncIO queues to receive stats dictionary
+        :return:
+        """
+        for queue in queues:
+            self.stat_queues.append(queue)
+
     async def process_async(self):
         """
         Just keep processing data until told to stop
+        :return:
         """
         print(self.name + " started running")
         self.run = True
         while self.run:
+            # process data
             data = await self.input_queue.get()
             if data is None:
                 self.run = False
@@ -88,16 +109,39 @@ class ThreadedSequence(object):
             data = self.process(data)
             for queue in self.output_queues:
                 await queue.put(data)
+
+            # report status and state to listeners
+            stats = self.all_stats()
+            for queue in self.stat_queues:
+                await queue.put(stats)
         print(self.name + " stopped running")
 
     def process(self, data):
+        """
+        Processes data
+        :param data: data to be processed
+        :return: post-processed data
+        """
         for block in self.sequence:
             data = block.process(data)
+        self.frames_processed += 1
         return data
+
+    def all_stats(self):
+        """
+        Get statistics for ThreadedSequence and all SkDspBlocks
+        :return: dictionary of statistics with keys "Name:VariableName"
+        """
+        all_stats = dict()
+        all_stats[self.name+':frames_processed'] = self.frames_processed
+        for block in self.sequence:
+            block.append_stats(all_stats)
+        return all_stats
 
     def stop(self):
         """
-        kill processing
+        Kill a running process_async
+        :return:
         """
         self.run = False
         print(self.name + " commanded to stop running")
@@ -114,7 +158,12 @@ class DataGenerator(object):
     This is a data test generator to help test without an RTLSDR
     The timing stability has not been tested, so it may not work with transmit yet!
     """
-    def __init__(self, bit_rate=100, m=None):
+    def __init__(self, bit_rate=100, m=3):
+        """
+        Rate controlled bit stream generator
+        :param bit_rate: bit rate of stream
+        :param m: PN pattern order. None creates alternating 1/0 pattern
+        """
         self.run = False
         self.bit_rate = bit_rate
         self.output_queues = []
@@ -130,12 +179,17 @@ class DataGenerator(object):
     def add_output_queues(self, queues):
         """
         add output queues to the pre-existing queue list
+        :param queues: AsyncIO queues listening to stream
+        :return:
         """
         for queue in queues:
             self.output_queues.append(queue)
 
     async def process_async(self):
-
+        """
+        Generate data and distribute to subscribers
+        :return:
+        """
         print("Data Gen Started")
         self.run = True
         while self.run:
@@ -151,18 +205,295 @@ class DataGenerator(object):
 
     def stop(self):
         """
-        kill processing
+        kill processing of process_async
+        :return:
         """
         self.run = False
         # wake self up
 
 
+class BasicStatsDisplay(object):
+    generic_instance = 1
+
+    def __init__(self, name=None):
+        """
+        A basic stats subscriber for use in Jupyter notebooks
+        Prints updates to cell output
+        """
+        if name is None:
+            self.name = "BasicStatsDisplay" + str(BasicStatsDisplay.generic_instance)
+            BasicStatsDisplay.generic_instance += 1
+        else:
+            self.name = name
+        self.input_queue = asyncio.Queue()
+        self.cache = {}
+        self.run = False
+
+    async def process_async(self):
+        """
+        Update printed stats list as updates come in on the input queue
+        :return:
+        """
+        print(self.name+" has started")
+        self.run = True
+        while self.run:
+            # feed cache
+            updates = await self.input_queue.get()
+            if updates is None:
+                self.run = False
+                break
+
+            for key in updates.keys():
+                self.cache[key] = updates[key]
+
+            # refresh display
+            display.clear_output()
+            for key in self.cache.keys():
+                print(key+" = "+str(self.cache[key]))
+        print(self.name + " has stopped")
+
+    def stop(self):
+        """
+        kill processing of process_async
+        :return:
+        """
+        self.run = False
+        # wake self up
+
+
+class SkDspBlock(object):
+    """
+    Base class for block algorithm in ThreadedSequence
+    Implements no-op versions of required functions
+    """
+    generic_instance = 1
+
+    def __init__(self):
+        self.name = "SkDspBlock"+str(SkDspBlock.generic_instance)
+        SkDspBlock.generic_instance += 1
+
+    def process(self, data):
+        """
+        Generic data processing function
+        :param data: Generic data. Ussually np.complex128 or np.int32 in derived classes
+        :return: post-processed data
+        """
+        return data
+
+    def append_stats(self, stats_dict):
+        """
+        Add status updates to a dictionary. Key should be 'Name:VariableName' in derived classes
+        :param stats_dict: dictionary to append to. Contains parameters for all block in a ThreadedSequence
+        :return:
+        """
+        pass
+
+    # TODO -- take in actions
+
+
 '''
-DEFINE blocks
+DEFINE pre-built blocks
 '''
 
+
+class BitChecker(SkDspBlock):
+    """
+    Bit error rate checker
+    """
+    @unique
+    class State(Enum):
+        UNLOCKED = 0
+        INVERT_DATA = 1
+        ALIGN = 2
+        CHECK_ALIGNMENT = 3
+        FLYWHEEL = 4
+        LOCKED = 5
+
+    def __init__(self, m=3, bytes_to_lock=16, name='BitChecker'):
+        """
+        SkDspBlock that check the BER of a PN sequence
+        :param m: PN order
+        :param bytes_to_lock: Bytes before declaring Lock
+        :param name: Block Name
+        """
+        self.name = name
+        self.error_bits = 0
+        self.total_bits = 0
+        self.inverted = False
+        self.error_rate = 0.0
+        self.inversion_checks = 0
+        self.longest_burst_error = 0
+
+        self.state = self.State.UNLOCKED
+        self.prev_state = self.State.UNLOCKED
+
+        self.trial_bits = 0
+        self.consecutive_good = 0
+        self.consecutive_errors = 0
+
+        self.lock_losses = 0
+        self.partial_lock_losses = 0
+
+        self.numBitsThresh = bytes_to_lock * 8
+
+        self.idx = 0
+        # create a cache. The virtual length is the pattern period
+        # a little bit of the pattern is repeated to perform a cyclical correlation
+        if m is None:
+            self.cache_len = 2
+            self.cache = [1, 0, 1]
+            self.seed_len = 2
+        else:
+            self.seed_len = m+1
+            self.cache_len = 2**m - 1
+            self.cache = ss.PN_gen(self.cache_len + self.seed_len - 1, m).astype(np.int)
+
+        self.seed_idx = 0
+        self.seed = np.zeros(len(self.cache)).astype(np.int)  # same size as cache to do FTT corr
+
+    def _increment_idx(self):
+        self.idx += 1
+        self.idx = self.idx % self.cache_len
+
+    def _update_consecutive(self, bit_error):
+        if bit_error:
+            self.consecutive_good = 0
+            self.consecutive_errors += 1
+        else:
+            self.consecutive_good += 1
+            self.consecutive_errors = 0
+
+    def get_state_string(self):
+        return self.state.name
+
+    def reset_stats(self):
+        self.total_bits = 0
+        self.error_bits = 0
+        self.longest_burst_error = 0
+        self.error_rate = 0
+
+    def _transition_state(self, bit_value, bit_error):
+        if self.state is self.State.UNLOCKED:
+            self.state = self.State.ALIGN
+            self.reset_stats()
+        elif self.state is self.State.INVERT_DATA:
+            # try inverting
+            self.inversion_checks += 1
+            self.state = self.State.ALIGN
+            self.inverted = not self.inverted
+        elif self.state is self.State.ALIGN:
+            # load some data to try and find the correct location in the pattern
+            self.seed[self.seed_idx] = bit_value * 2.0 - 1.0  # pre-map to +- 1.0 for corr -- non set vals 0
+            self.seed_idx += 1
+
+            if self.seed_idx == self.seed_len:
+                # run a correlation to find code location
+                X1 = np.fft.fft(self.cache * 2.0 - 1.0)
+                X2 = np.fft.fft(self.cache)  # this is pre-mapped
+                corr = np.fft.ifft(X1 * np.conj(X2))
+                peak = np.argmax(corr)
+                # reset seed and set projected idx based on peak
+                self.seed_idx = 0
+                self.idx = peak + self.seed_len
+                self._increment_idx()  # go one ahead for next pass. Handle wrap
+                self.state = self.State.CHECK_ALIGNMENT
+
+        elif self.state is self.State.CHECK_ALIGNMENT:
+            self.trial_bits += 1
+            if bit_error:
+                self._increment_idx()  # bit slip
+            elif self.consecutive_good == self.numBitsThresh:
+                # Move to lock
+                self.trial_bits = 0
+                self.state = self.State.LOCKED
+
+            if self.trial_bits > self.numBitsThresh * 8:
+                # check alignment after some time
+                self.trial_bits = 0
+                self.state = self.State.INVERT_DATA
+
+        elif self.state is self.State.FLYWHEEL:
+            self.total_bits += 1
+
+            # if bit error and not inverted
+            if bit_error:
+                # increment BER check
+                self.error_bits += 1
+                # check if we have seen too many bit errors to stay locked
+                if self.consecutive_errors >= self.numBitsThresh:
+                    self.state = self.State.UNLOCKED
+
+            elif self.consecutive_good >= self.numBitsThresh:
+                self.state = self.State.LOCKED
+
+        elif self.state is self.State.LOCKED:
+            self.total_bits += 1
+            if bit_error:
+                self.error_bits += 1
+
+                # check if we have seen too many bit errors to stay locked
+                if self.consecutive_errors >= self.numBitsThresh:
+                    # move to flywheel state
+                    self.state = self.State.FLYWHEEL
+
+                # use BER metric to force lock loss for long sequences
+                if self.error_rate > 0.1 and self.total_bits > 100:
+                    self.state = self.State.UNLOCKED
+
+    def process(self, data):
+        """
+        Check BER and update Block statistics
+        :param data: 1/0 bit stream as np.int32
+        :return: input data unchanged
+        """
+        for i in range(0, len(data)):
+            bit = data[i]
+            if self.inverted:
+                bit = 0x1 & (~bit)
+            bit_error = bit ^ self.cache[self.idx]
+            self._increment_idx()
+            self._update_consecutive(bit_error)
+
+            self.prev_state = self.state
+            self._transition_state(bit, bit_error)  # set new state
+
+            # Post transition logic
+            if (self.state == self.State.LOCKED or self.state == self.State.FLYWHEEL) \
+                    and (self.consecutive_errors > self.longest_burst_error):
+                # if we're in locked or flywheel, latch burst errors
+                self.longest_burst_error = self.consecutive_errors
+
+            if self.prev_state is self.State.FLYWHEEL and self.state is self.State.UNLOCKED:
+                self.lock_losses += 1
+
+            if self.prev_state is self.State.LOCKED and self.state is self.State.FLYWHEEL:
+                self.partial_lock_losses += 1
+
+            # reset stats on state transition
+            if self.prev_state != self.state:
+                self.consecutive_errors = 0
+                self.consecutive_good = 0
+
+        if self.total_bits > 1:
+            self.error_rate = self.error_bits / self.total_bits
+        #print("STATE: "+self.state.name)
+        return data  # pass through
+
+    def append_stats(self, stats_dict):
+        stats_dict[self.name+':ber'] = self.error_rate
+        stats_dict[self.name+':state'] = self.state.name
+        stats_dict[self.name+':inverted'] = self.inverted
+        stats_dict[self.name+':total_bits'] = self.total_bits
+        stats_dict[self.name+':lock_losses'] = self.lock_losses
 
 def interpolate(data_in, m, I_ord = 3):
+    """
+    Helper function for real-time resampling
+    :param data_in: data to perfrom interpolation on
+    :param m: mu term
+    :param I_ord: interpolation order
+    :return: inerpolated output
+    """
     if I_ord == 1:
         # Decimated interpolator output (piecewise linear)
         return m*data_in[1] + (1 - m)*data_in[0]
@@ -186,8 +517,20 @@ def interpolate(data_in, m, I_ord = 3):
         return 0
 
 
-class NdaCarrierSync(object):
-    def __init__(self, fs, fc, BnTs, Ns=1, M=2, det_type=0):
+class NdaCarrierSync(SkDspBlock):
+    def __init__(self, fs, fc, BnTs, Ns=1, M=2, det_type=0, name="NdaCarrierSync"):
+        """
+        Carrier recovery PLL for PSK
+        :param fs: sample rate
+        :param fc: carrier frequency
+        :param BnTs: BnTs loop bandwidth
+        :param Ns: samples per symbol
+        :param M: Modulation order [2, 4, or 8]
+        :param det_type: phase detector type: 0-Maximum liklihood, 1-Heuristic
+        :param name: SkDspBlock Name
+        """
+        self.name = name
+        
         Kp = np.sqrt(2.)  # for type 0
 
         self.M = M
@@ -205,6 +548,11 @@ class NdaCarrierSync(object):
         self.vi = 0
 
     def process(self, data):
+        """
+        Carrier recovery
+        :param data: IQ symbols as np.complex128
+        :return: IQ symbols post-mix
+        """
         out = np.zeros_like(data)
 
         for i in range(0, len(data)):
@@ -243,9 +591,21 @@ class NdaCarrierSync(object):
             self.theta_hat = np.mod(self.theta_hat + self.theta_update + v, 2 * np.pi)
         return out
 
+    def append_stats(self, stats_dict):
+        stats_dict[self.name+':theta_hat'] = self.theta_hat
 
-class NdaSymSync(object):
-    def __init__(self, Ns, L, BnTs, I_ord=3):
+
+class NdaSymSync(SkDspBlock):
+    def __init__(self, Ns, L, BnTs, I_ord=3, name='SymSync'):
+        """
+        SkDspBlock for Symbol timing recovery of a PSK symbol with carrier present
+        :param Ns: input Samples per symbol
+        :param L: phase detector averaging term.
+        :param BnTs: BnTs Loop bandwidth
+        :param I_ord: Interpolation order for resampling
+        :param name: SkDspBlock name
+        """
+        self.name = name
         # input
         self.BnTs = BnTs
         self.Ns = Ns
@@ -278,6 +638,11 @@ class NdaSymSync(object):
         self.z_buf = np.zeros(1) # just load a 0 in as a starting sample
 
     def process(self, z_in):
+        """
+        Recover timing in an IQ sample stream
+        :param z_in: An IQ sample stream with Ns samples per symbol
+        :return: An IQ stream with 1 sample per symbol
+        """
         zz = np.zeros(len(z_in), dtype=np.complex128) # at most, have the same number of symbols out as samples in
         self.z_buf = np.hstack((self.z_buf, z_in))
         # print "Length Z Go " + str(len(self.z_buf))
@@ -342,9 +707,20 @@ class NdaSymSync(object):
             zz = zz[:-(len(zz)-mm)]
         return zz
 
+    def append_stats(self, stats_dict):
+        stats_dict[self.name+':epsilon'] = self.epsilon
 
-class FarrowResampler(object):
-    def __init__(self, fs_in, fs_out, I_ord=3):
+
+class FarrowResampler(SkDspBlock):
+    def __init__(self, fs_in, fs_out, I_ord=3, name='FarrowResampler'):
+        """
+        Farrow resampler. Can simulate timing uncertainty for channel simulation
+        :param fs_in: sample rate in
+        :param fs_out: sample rate out
+        :param I_ord: interpolation order
+        :param name: SkDspBlock name
+        """
+        self.name = name
         # input
         self.Ns = fs_in / fs_out
         self.I_ord = I_ord
@@ -357,6 +733,11 @@ class FarrowResampler(object):
         self.x_buf = 0  # just load a 0 in as a starting sample
 
     def process(self, x_in):
+        """
+        Resample an IQ stream
+        :param x_in: sample stream
+        :return: sample stream that has been resampled
+        """
         y = np.zeros(len(x_in), dtype=np.complex128)  # at most, have the same number of symbols out as samples in
         self.x_buf = np.hstack((self.x_buf, x_in))
         mm = 0
@@ -396,13 +777,26 @@ class FarrowResampler(object):
         return y
 
 
-class DDS(object):
-    def __init__(self, fs, fc, usecomplex=True):
+class DDS(SkDspBlock):
+    def __init__(self, fs, fc, usecomplex=True, name='DDS'):
+        """
+        Direct Digital Synthesis mixer for modulation
+        :param fs: sample frequency
+        :param fc: carrier frequency
+        :param usecomplex: True indicates that the output should be complex and include Q
+        :param name: SkDspBlock name
+        """
+        self.name = name
         self.angle = 0
         self.omega = 2.0 * np.pi * fc / fs
         self.complex = usecomplex
 
     def process(self, data):
+        """
+        Mix input data with frequency fc
+        :param data: input IQ data
+        :return: mixed output
+        """
         if self.complex:
             out = np.zeros(len(data), dtype=np.complex128)
         else:
@@ -417,20 +811,54 @@ class DDS(object):
         return out
 
 
-class GenericFilter(object):
-    def __init__(self, b, a):
+class GenericFilter(SkDspBlock):
+    generic_instance = 1
+
+    def __init__(self, b, a, name=None):
+        """
+        Generic FIR or IIR filter. a and b arrays work like scipy signal lfilter
+        :param b: numerator coefficient array
+        :param a: denominator coefficient array
+        :param name: SkDspBlock name
+        """
+        if name is None:
+            self.name = 'GenericFilter' + str(GenericFilter.generic_instance)
+            GenericFilter.generic_instance += 1
+        else:
+            self.name = name
         self.b = b
         self.a = a
         zi_len = max(len(a), len(b)) - 1
         self.zi = np.zeros(zi_len)
 
     def process(self, samples):
+        """
+        Filter input data
+        :param samples: input
+        :return: filtered output
+        """
         z, self.zi = signal.lfilter(self.b, self.a, samples, zi=self.zi)
         return z
 
 
-class MatchedFilter(GenericFilter):
-    def __init__(self, Ns, filter_type='sr_rc', alpha=0.5, M=6):
+class MatchedFilter(SkDspBlock):
+    generic_instance = 1
+
+    def __init__(self, Ns, filter_type='sr_rc', alpha=0.5, M=6, name=None):
+        """
+        Implements a matched filter
+        :param Ns: Samples per symbol
+        :param filter_type: rc-raised cosine, sr_rc-squareroot raised cosine, rect-rectangle
+        :param alpha: rc and root rc excess bandwidth factor on (0, 1), e.g., 0.35
+        :param M: equals one-sided symbol truncation factor
+        :param name: SkDspBlock name
+        """
+        if name is None:
+            self.name = 'MatchedFilter' + str(MatchedFilter.generic_instance)
+            MatchedFilter.generic_instance += 1
+        else:
+            self.name = name
+
         if filter_type == 'rc':
             self.b = ss.rc_imp(Ns, alpha, M)
         elif filter_type == "sr_rc":
@@ -445,9 +873,17 @@ class MatchedFilter(GenericFilter):
         self.zi = np.zeros(zi_len)
 
 
-class PskSymbolMapper(object):
+class PskSymbolMapper(SkDspBlock):
 
-    def __init__(self, Ns, M=2, mapping=None):
+    def __init__(self, Ns, M=2, mapping=None, name='PskSymbolMapper'):
+        """
+        SkDspBlock that maps bit stream to IQ symbol stream
+        :param Ns: Samples per symbol. Must be an integer
+        :param M: Modulation order
+        :param mapping: Optional symbol to bits mapping
+        :param name: SkDspBlock name
+        """
+        self.name = name
         self.Ns = Ns
         self.M = M
         if mapping is None:
@@ -469,6 +905,12 @@ class PskSymbolMapper(object):
 
     @staticmethod
     def get_default_mapping(M):
+        """
+        Get default symbol mapping
+        :param M: PSK modulation order, [2, 4, or 8]
+        :return: Array of bit values for each symbol, in counter-clockwise order on the IQ plane,
+        starting from the positive real-axis
+        """
         if M == 2:
             return [1, 0]
         elif M == 4:
@@ -481,6 +923,11 @@ class PskSymbolMapper(object):
             return [1, 0]
 
     def process(self, data):
+        """
+        Map bit stream to IQ upsampled by Ns. Samples are 0 stuffed
+        :param data: input bit stream
+        :return: output IQ stream as np.complex128
+        """
         data_ret = []
         for bit in data:
             self.buffer = (self.buffer << 1) | bit
@@ -494,8 +941,15 @@ class PskSymbolMapper(object):
         return np.array(data_ret, dtype=np.complex128)
 
 
-class PskHardDecision(object):
-    def __init__(self, M=2, mapping=None):
+class PskHardDecision(SkDspBlock):
+    def __init__(self, M=2, mapping=None, name='PskHardDecision'):
+        """
+        SkDspBlock that maps IQ symbols to hard decision bits
+        :param M: Modulation order
+        :param mapping: Optional symbol to bits mapping
+        :param name: SkDspBlock name
+        """
+        self.name = name
         self.M = M
         if mapping is None:
             mapping = PskSymbolMapper.get_default_mapping(M)
@@ -516,6 +970,11 @@ class PskHardDecision(object):
         self.rotation = 0
 
     def process(self, data):
+        """
+        Performs hard decision on incoming IQ symbols
+        :param data: input IQ with 1 sample per symbol
+        :return: hard decision bit stream
+        """
         output = np.zeros([self.bits_per_symbol*data.size], dtype=np.int32)
         idx = 0
         # QPSK is already rotated into place here
@@ -534,7 +993,34 @@ class PskHardDecision(object):
                 idx += 1
         return output
 
+    def append_stats(self, stats_dict):
+        stats_dict[self.name+':rotation'] = self.rotation
+
     def rotate(self):
-        # TODO this probably isn't thread safe?
+        # TODO make private. Access Via SkDspBlock interface
         self.rotation = np.mod(self.rotation+1, self.M)
         print(self.rotation)
+
+
+class AwgnSource(SkDspBlock):
+    def __init__(self, eb_no_db, name='AwgnSource'):
+        """
+        Add white gaussian noise to an IQ stream
+        :param eb_no_db: desired EbN0
+        :param name: SkDspBlock name
+        """
+        self.name = name
+        self.eb_no = eb_no_db
+        self.variance = 10**(-self.eb_no/10)/2
+
+    def process(self, data):
+        """
+        Add white noise to data
+        :param data: Clean IQ stream as np.complex128
+        :return: IQ stream with noise added
+        """
+        noise = np.random.normal(size=np.size(data)).astype(np.complex128)
+        noise += 1j * np.random.normal(size=np.size(data)).astype(np.complex128)
+        noise *= np.sqrt(self.variance)
+        data += noise
+        return data

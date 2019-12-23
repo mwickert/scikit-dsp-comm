@@ -530,7 +530,7 @@ class NdaCarrierSync(SkDspBlock):
         :param name: SkDspBlock Name
         """
         self.name = name
-        
+
         Kp = np.sqrt(2.)  # for type 0
 
         self.M = M
@@ -722,14 +722,11 @@ class FarrowResampler(SkDspBlock):
         """
         self.name = name
         # input
-        self.Ns = fs_in / fs_out
+        self.mu_tick = fs_in / fs_out  # input samples per output samples
         self.I_ord = I_ord
 
-        # other state
-        self.CNT_next = 0
-        self.mu_next = 0
-        self.underflow = 0
-
+        #state
+        self.mu = 0
         self.x_buf = 0  # just load a 0 in as a starting sample
 
     def process(self, x_in):
@@ -738,41 +735,27 @@ class FarrowResampler(SkDspBlock):
         :param x_in: sample stream
         :return: sample stream that has been resampled
         """
-        y = np.zeros(len(x_in), dtype=np.complex128)  # at most, have the same number of symbols out as samples in
+        max_output = int((len(x_in)+1)/self.mu_tick)
+        y = np.zeros(max_output, dtype=np.complex128)
         self.x_buf = np.hstack((self.x_buf, x_in))
         mm = 0
 
-        samp_to_process = len(self.x_buf) - 1 - (2)  # lookahead is 2, plus 1 past sample
+        samp_to_process = len(self.x_buf) - 3  # lookahead is 2, plus 1 past sample
         samp_to_process = max(samp_to_process, 0)  # enforce positivity
         for nn in range(1, samp_to_process + 1):
             # Define variables used in linear interpolator control
-            CNT = self.CNT_next
-            mu = self.mu_next
-            if self.underflow == 1:
-                x_interp = interpolate(self.x_buf[nn - 1:nn + 2 + 1], mu, self.I_ord)
+            while self.mu < 1:
+                x_interp = interpolate(self.x_buf[nn - 1:nn + 2 + 1], self.mu, self.I_ord)
                 y[mm] = x_interp
+                self.mu += self.mu_tick
                 mm += 1
-            else:
-                # Simple zezo-order hold interpolation between symbol samples
-                # we just coast using the old value
-                pass
 
-            W = 1 / float(self.Ns)  # counter control word
-
-            # update registers
-            self.CNT_next = CNT - W  # Update counter value for next cycle
-            if self.CNT_next < 0:  # Test to see if underflow has occured
-                self.CNT_next = 1 + self.CNT_next  # Reduce counter value modulo-1 if underflow
-                self.underflow = 1  # Set the underflow flag
-                self.mu_next = CNT / W  # update mu
-            else:
-                self.underflow = 0
-                self.mu_next = mu
+            self.mu -= 1.0  # advance to next input sample
 
         # clean up state buffer
         self.x_buf = self.x_buf[samp_to_process:]
-        # Remove zero samples at end -- have to check index due to inconsistent python behavoir!
-        if (len(y) - mm != 0):
+        # Remove zero samples at end -- have to check index since -0 doesn't work
+        if len(y) - mm != 0:
             y = y[:-(len(y) - mm)]
         return y
 

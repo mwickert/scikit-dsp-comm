@@ -421,6 +421,10 @@ def splane(b,a,auto_scale=True,size=[-1,1,-1,1]):
     >>> # Here the plot is generated using manual scaling
     >>> splane(b,a,False,[-10,1,-10,10])
     """
+    if (isinstance(a,int) or isinstance(a,float)):
+        a = [a]
+    if (isinstance(b,int) or isinstance(b,float)):
+        b = [b]
     M = len(b) - 1
     N = len(a) - 1
     plt.figure(figsize=(5,5))
@@ -1002,7 +1006,7 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
 
     This function implements averaged periodogram spectral estimation
     estimation similar to the NumPy's psd() function, but more
-    specialized for the the windowing case study of Chapter 16.
+    specialized for the windowing case study of Chapter 16.
 
     Parameters
     ----------
@@ -2748,6 +2752,10 @@ def zplane(b,a,auto_scale=True,size=2,detect_mult=True,tol=0.001):
     >>> # Here the plot is generated using manual scaling
     >>> zplane(b,a,False,1.5)
     """
+    if (isinstance(a,int) or isinstance(a,float)):
+        a = [a]
+    if (isinstance(b,int) or isinstance(b,float)):
+        b = [b]
     M = len(b) - 1
     N = len(a) - 1
     # Plot labels if multiplicity greater than 1

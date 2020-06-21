@@ -1,5 +1,4 @@
 sudo: false
-dist: xenial
 services:
   - xvfb
 language: python

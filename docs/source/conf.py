@@ -14,8 +14,7 @@
 
 import sys
 import os
-import numpydoc
-import matplotlib
+from logging import getLogger
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -23,6 +22,11 @@ import matplotlib
 sys.path.insert(0, os.path.abspath('../sphinxext'))
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.abspath('../../sk_dsp_comm'))
+log = getLogger(__name__)
+try:
+    os.symlink('../../README.md', 'readme.md')
+except FileExistsError as fee:
+    log.debug(fee)
 
 # -- General configuration ------------------------------------------------
 
@@ -43,11 +47,10 @@ extensions = [
     'sphinx.ext.viewcode',
     'numpydoc',
     'sphinx.ext.autosummary',
-    'm2r',
+    'recommonmark',
     'nbsphinx',
 ]
 
-exclude_patterns = ['_build', '**.ipynb_checkpoints']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -87,7 +90,7 @@ release = __version__.__version__
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = []
+exclude_patterns = ['_build', '**.ipynb_checkpoints']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.

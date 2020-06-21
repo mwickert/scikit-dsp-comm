@@ -9,7 +9,8 @@ Welcome to scikit-dsp-comm's documentation!
 Readme
 ------
 
-.. mdinclude:: ../../README.md
+.. toctree::
+   readme.md
 
 Examples
 --------

@@ -15,6 +15,7 @@ MANIFEST
 # Built doc files (cd doc; make html)
 doc/_build/
 doc/sphinx/
+docs/source/readme.md
 
 # Tox files
 .tox/

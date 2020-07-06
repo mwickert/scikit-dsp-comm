@@ -17,11 +17,6 @@ Jupyter Notebook Examples
    ../nb_examples/Multirate_Processing.ipynb
 
 .. toctree::
-   :caption: RTL-SDR Helper Streaming Sample
-
-   ../nb_examples/rtlsdr_helper_streaming_sample
-
-.. toctree::
    :caption: Convolutional Codes
 
    ../nb_examples/Convolutional_Codes

@@ -40,12 +40,6 @@ class TestImports(TestCase):
     def test_multirate_helper_import(self):
         import sk_dsp_comm.multirate_helper
 
-    def test_pyaudio_helper_from(self):
-        from sk_dsp_comm import pyaudio_helper
-
-    def test_pyaudio_helper_import(self):
-        import sk_dsp_comm.pyaudio_helper
-
     def test_rtlsdr_helper_from(self):
         from sk_dsp_comm import rtlsdr_helper
 

@@ -1472,7 +1472,7 @@ def gray2bin(d_word,b_width):
     return from_bin(bits_out)
 
 
-def QAM_gray_encode_bb(N_symb,Ns,M=4,pulse='rect',alpha=0.35,ext_data=None):
+def QAM_gray_encode_bb(N_symb,Ns,M=4,pulse='rect',alpha=0.35,M_span=6,ext_data=None):
     """
     QAM_gray_bb: A gray code mapped QAM complex baseband transmitter 
     x,b,tx_data = QAM_gray_bb(K,Ns,M)
@@ -1556,9 +1556,9 @@ def QAM_gray_encode_bb(N_symb,Ns,M=4,pulse='rect',alpha=0.35,ext_data=None):
         # Design the pulse shaping filter to be of duration 12 
         # symbols and fix the excess bandwidth factor at alpha = 0.35
         if pulse.lower() == 'src':
-            b = sqrt_rc_imp(Ns,alpha,6)
+            b = sqrt_rc_imp(Ns,alpha,M_span)
         elif pulse.lower() == 'rc':
-            b = rc_imp(Ns,alpha,6)    
+            b = rc_imp(Ns,alpha,M_span)    
         elif pulse.lower() == 'rect':
             b = np.ones(int(Ns)) #alt. rect. pulse shape
         else:
@@ -1630,7 +1630,7 @@ def QAM_gray_decode(x_hat,M = 4):
     return data_hat
 
 
-def MPSK_gray_encode_bb(N_symb,Ns,M=4,pulse='rect',alpha=0.35,ext_data=None):
+def MPSK_gray_encode_bb(N_symb,Ns,M=4,pulse='rect',alpha=0.35,M_span=6,ext_data=None):
     """
     MPSK_gray_bb: A gray code mapped MPSK complex baseband transmitter 
     x,b,tx_data = MPSK_gray_bb(K,Ns,M)
@@ -1700,9 +1700,9 @@ def MPSK_gray_encode_bb(N_symb,Ns,M=4,pulse='rect',alpha=0.35,ext_data=None):
         # Design the pulse shaping filter to be of duration 12 
         # symbols and fix the excess bandwidth factor at alpha = 0.35
         if pulse.lower() == 'src':
-            b = sqrt_rc_imp(Ns,alpha,6)
+            b = sqrt_rc_imp(Ns,alpha,M_span)
         elif pulse.lower() == 'rc':
-            b = rc_imp(Ns,alpha,6)    
+            b = rc_imp(Ns,alpha,M_span)    
         elif pulse.lower() == 'rect':
             b = np.ones(int(Ns)) #alt. rect. pulse shape
         else:

@@ -46,6 +46,9 @@ from .sigsys import m_seq
 from .sigsys import cpx_AWGN
 from .sigsys import CIC
 
+from logging import getLogger
+log = getLogger(__name__)
+
 
 def farrow_resample(x, fs_old, fs_new):
     """
@@ -293,7 +296,7 @@ def bit_errors(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     elif kmax == 1:
         lagmax = np.where(R1.real == Rmax)[0] - Ncorr/2
     taumax = lagmax[0]
-    print('kmax =  %d, taumax = %d' % (kmax, taumax))
+    log.info('kmax =  %d, taumax = %d' % (kmax, taumax))
 
     # Count bit and symbol errors over the entire input ndarrays
     # Begin by making tx and rx length equal and apply phase rotation to rx
@@ -455,7 +458,7 @@ def QAM_SEP(tx_data,rx_data,mod_type,Ncorr = 1024,Ntransient = 0,SEP_disp=True):
         lagmax = lags[np.where(R3.real == Rmax)[0]]
     taumax = lagmax[0]
     if SEP_disp:
-        print('Phase ambiquity = (1j)**%d, taumax = %d' % (kmax, taumax))
+        log.info('Phase ambiquity = (1j)**%d, taumax = %d' % (kmax, taumax))
     #Count symbol errors over the entire input ndarrays
     #Begin by making tx and rx length equal and apply 
     #phase rotation to rx_data
@@ -473,7 +476,7 @@ def QAM_SEP(tx_data,rx_data,mod_type,Ncorr = 1024,Ntransient = 0,SEP_disp=True):
     # Could decode bit errors from symbol index difference
     idx = np.nonzero(np.ravel(errors != 0))[0]
     if SEP_disp:
-        print('Symbols = %d, Errors %d, SEP = %1.2e' \
+        log.info('Symbols = %d, Errors %d, SEP = %1.2e' \
                % (len(errors), len(idx), len(idx)/float(len(errors))))
     return  len(errors), len(idx), len(idx)/float(len(errors))
 
@@ -570,11 +573,11 @@ def QPSK_rx(fc,N_symb,Rs,EsN0=100,fs=125,lfsr_len=10,phase=0,pulse='src'):
     This function generates
     """
     Ns = int(np.round(fs/Rs))
-    print('Ns = ', Ns)
-    print('Rs = ', fs/float(Ns))
-    print('EsN0 = ', EsN0, 'dB')
-    print('phase = ', phase, 'degrees')
-    print('pulse = ', pulse)
+    log.info('Ns = ', Ns)
+    log.info('Rs = ', fs/float(Ns))
+    log.info('EsN0 = ', EsN0, 'dB')
+    log.info('phase = ', phase, 'degrees')
+    log.info('pulse = ', pulse)
     x, b, data = QPSK_bb(N_symb,Ns,lfsr_len,pulse)
     # Add AWGN to x
     x = cpx_AWGN(x,EsN0,Ns)
@@ -588,9 +591,9 @@ def QPSK_tx(fc,N_symb,Rs,fs=125,lfsr_len=10,pulse='src'):
 
     """
     Ns = int(np.round(fs/Rs))
-    print('Ns = ', Ns)
-    print('Rs = ', fs/float(Ns))
-    print('pulse = ', pulse)
+    log.info('Ns = ', Ns)
+    log.info('Rs = ', fs/float(Ns))
+    log.info('pulse = ', pulse)
     x, b, data = QPSK_bb(N_symb,Ns,lfsr_len,pulse)
     n = np.arange(len(x))
     xc = x*np.exp(1j*2*np.pi*fc/float(fs)*n)
@@ -661,7 +664,7 @@ def QPSK_BEP(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     elif kmax == 3:
         lagmax = np.where(R3.real == Rmax)[0] - Ncorr/2
     taumax = lagmax[0]
-    print('kmax =  %d, taumax = %d' % (kmax, taumax))
+    log.info('kmax =  %d, taumax = %d' % (kmax, taumax))
     # Count bit and symbol errors over the entire input ndarrays
     # Begin by making tx and rx length equal and apply phase rotation to rx
     if taumax < 0:
@@ -719,7 +722,7 @@ def BPSK_BEP(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     elif kmax == 1:
         lagmax = np.where(R1.real == Rmax)[0] - Ncorr/2
     taumax = int(lagmax[0])
-    print('kmax =  %d, taumax = %d' % (kmax, taumax))
+    log.info('kmax =  %d, taumax = %d' % (kmax, taumax))
     #return R0,R1,R2,R3
     #Count bit and symbol errors over the entire input ndarrays
     #Begin by making tx and rx length equal and apply phase rotation to rx
@@ -938,7 +941,7 @@ def RZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
     elif pulse.lower() == 'src':
         b = sqrt_rc_imp(Ns,alpha,M)
     else:
-        print('pulse type must be rec, rc, or src')
+        log.warning('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     return x,b/float(Ns),data
 
@@ -1004,10 +1007,10 @@ def time_delay(x,D,N=4):
     if type(D) == float or type(D) == int:
         #Make sure D stays with in the tapped delay line bounds
         if int(np.fix(D)) < 1:
-            print('D has integer part less than one')
+            log.info('D has integer part less than one')
             exit(1)
         if int(np.fix(D)) > N-2:
-            print('D has integer part greater than N - 2')
+            log.info('D has integer part greater than N - 2')
             exit(1)
         # Filter 4-tap input with four Farrow FIR filters
         # Since the time delay is a constant, the LTI filter
@@ -1026,10 +1029,10 @@ def time_delay(x,D,N=4):
     else:
         # Make sure D stays with in the tapped delay line bounds
         if np.fix(np.min(D)) < 1:
-            print('D has integer part less than one')
+            log.info('D has integer part less than one')
             exit(1)
         if np.fix(np.max(D)) > N-2:
-            print('D has integer part greater than N - 2')
+            log.info('D has integer part greater than N - 2')
             exit(1)
         y = np.zeros(len(x))
         X = np.zeros(N+1)
@@ -1250,11 +1253,11 @@ def OFDM_tx(IQ_data, Nf, N, Np=0, cp=False, Ncp=0):
     N_OFDM = N_symb // Nf
     IQ_data = IQ_data[:N_OFDM * Nf]
     IQ_s2p = np.reshape(IQ_data, (N_OFDM, Nf))  # carrier symbols by column
-    print(IQ_s2p.shape)
+    log.info(IQ_s2p.shape)
     if Np > 0:
         IQ_s2p = mux_pilot_blocks(IQ_s2p, Np)
         N_OFDM = IQ_s2p.shape[0]
-        print(IQ_s2p.shape)
+        log.info(IQ_s2p.shape)
     if cp:
         x_out = np.zeros(N_OFDM * (N + Ncp), dtype=np.complex128)
     else:

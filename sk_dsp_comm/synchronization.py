@@ -209,9 +209,9 @@ def DD_carrier_sync(z,M,BnTs,zeta=0.707,type=0):
     theta_hat = 0
 
     # Tracking loop constants
-    K0 = 1;
-    K1 = 4*zeta/(zeta + 1/(4*zeta))*BnTs/Ns/Kp/K0;
-    K2 = 4/(zeta + 1/(4*zeta))**2*(BnTs/Ns)**2/Kp/K0;
+    K0 = 1
+    K1 = 4*zeta/(zeta + 1/(4*zeta))*BnTs/Ns/Kp/K0
+    K2 = 4/(zeta + 1/(4*zeta))**2*(BnTs/Ns)**2/Kp/K0
     
     # Initial condition
     vi = 0

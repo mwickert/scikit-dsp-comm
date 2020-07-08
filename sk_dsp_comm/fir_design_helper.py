@@ -56,7 +56,7 @@ def firwin_bpf(N_taps, f1, f2, fs = 1.0, pass_zero=False):
     return signal.firwin(N_taps,2*(f1,f2)/fs,pass_zero=pass_zero)
 
 
-def firwin_kaiser_lpf(f_pass, f_stop, d_stop, fs = 1.0, N_bump=0):
+def firwin_kaiser_lpf(f_pass, f_stop, d_stop, fs = 1.0, N_bump=0, status = True):
     """
     Design an FIR lowpass filter using the sinc() kernel and
     a Kaiser window. The filter order is determined based on 
@@ -80,11 +80,12 @@ def firwin_kaiser_lpf(f_pass, f_stop, d_stop, fs = 1.0, N_bump=0):
     n = np.arange(N_taps)
     b_k = wc/np.pi*np.sinc(wc/np.pi*(n-M/2)) * w_k
     b_k /= np.sum(b_k)
-    print('Kaiser Win filter taps = %d.' % N_taps)
+    if status:
+        print('Kaiser Win filter taps = %d.' % N_taps)
     return b_k
 
 
-def firwin_kaiser_hpf(f_stop, f_pass, d_stop, fs = 1.0, N_bump=0):
+def firwin_kaiser_hpf(f_stop, f_pass, d_stop, fs = 1.0, N_bump=0, status = True):
     """
     Design an FIR highpass filter using the sinc() kernel and
     a Kaiser window. The filter order is determined based on 
@@ -115,12 +116,13 @@ def firwin_kaiser_hpf(f_stop, f_pass, d_stop, fs = 1.0, N_bump=0):
     # Transform LPF equivalent to HPF
     n = np.arange(len(b_k))
     b_k *= (-1)**n
-    print('Kaiser Win filter taps = %d.' % N_taps)
+    if status:
+        print('Kaiser Win filter taps = %d.' % N_taps)
     return b_k
 
 
 def firwin_kaiser_bpf(f_stop1, f_pass1, f_pass2, f_stop2, d_stop, 
-                      fs = 1.0, N_bump=0):
+                      fs = 1.0, N_bump=0, status = True):
     """
     Design an FIR bandpass filter using the sinc() kernel and
     a Kaiser window. The filter order is determined based on 
@@ -157,12 +159,13 @@ def firwin_kaiser_bpf(f_stop1, f_pass1, f_pass2, f_stop2, d_stop,
     w0 = 2*np.pi*f0/fs
     n = np.arange(len(b_k))
     b_k_bp = 2*b_k*np.cos(w0*(n-M/2))
-    print('Kaiser Win filter taps = %d.' % N_taps)
+    if status:
+        print('Kaiser Win filter taps = %d.' % N_taps)
     return b_k_bp
 
 
 def firwin_kaiser_bsf(f_stop1, f_pass1, f_pass2, f_stop2, d_stop, 
-                  fs = 1.0, N_bump=0):
+                  fs = 1.0, N_bump=0, status = True):
     """
     Design an FIR bandstop filter using the sinc() kernel and
     a Kaiser window. The filter order is determined based on 
@@ -206,8 +209,9 @@ def firwin_kaiser_bsf(f_stop1, f_pass1, f_pass2, f_stop2, d_stop,
     b_k_bs = 2*b_k*np.cos(w0*(n-M/2))
     # Transform BPF to BSF via 1 - BPF for odd N_taps
     b_k_bs = -b_k_bs
-    b_k_bs[int(M/2)] += 1 
-    print('Kaiser Win filter taps = %d.' % N_taps)
+    b_k_bs[int(M/2)] += 1
+    if status:
+        print('Kaiser Win filter taps = %d.' % N_taps)
     return b_k_bs
 
 
@@ -305,7 +309,7 @@ def bandstop_order(f_stop1, f_pass1, f_pass2, f_stop2, dpass_dB, dstop_dB, fsamp
     return int(N), ff, aa, wts
 
 
-def fir_remez_lpf(f_pass, f_stop, d_pass, d_stop, fs = 1.0, N_bump=5):
+def fir_remez_lpf(f_pass, f_stop, d_pass, d_stop, fs = 1.0, N_bump=5, status = True):
     """
     Design an FIR lowpass filter using remez with order
     determination. The filter order is determined based on 
@@ -320,11 +324,12 @@ def fir_remez_lpf(f_pass, f_stop, d_pass, d_stop, fs = 1.0, N_bump=5):
     N_taps = n
     N_taps += N_bump
     b = signal.remez(N_taps, ff, aa[0::2], wts,Hz=2)
-    print('Remez filter taps = %d.' % N_taps)
+    if status:
+        print('Remez filter taps = %d.' % N_taps)
     return b
 
 
-def fir_remez_hpf(f_stop, f_pass, d_pass, d_stop, fs = 1.0, N_bump=5):
+def fir_remez_hpf(f_stop, f_pass, d_pass, d_stop, fs = 1.0, N_bump=5, status = True):
     """
     Design an FIR highpass filter using remez with order
     determination. The filter order is determined based on 
@@ -346,12 +351,13 @@ def fir_remez_hpf(f_stop, f_pass, d_pass, d_stop, fs = 1.0, N_bump=5):
     # Transform LPF equivalent to HPF
     n = np.arange(len(b))
     b *= (-1)**n
-    print('Remez filter taps = %d.' % N_taps)
+    if status:
+        print('Remez filter taps = %d.' % N_taps)
     return b
 
 
 def fir_remez_bpf(f_stop1, f_pass1, f_pass2, f_stop2, d_pass, d_stop, 
-                  fs = 1.0, N_bump=5):
+                  fs = 1.0, N_bump=5, status = True):
     """
     Design an FIR bandpass filter using remez with order
     determination. The filter order is determined based on 
@@ -367,11 +373,13 @@ def fir_remez_bpf(f_stop1, f_pass1, f_pass2, f_stop2, d_pass, d_stop,
     N_taps = n
     N_taps += N_bump
     b = signal.remez(N_taps, ff, aa[0::2], wts,Hz=2)
-    print('Remez filter taps = %d.' % N_taps)
+    if status:
+        print('Remez filter taps = %d.' % N_taps)
     return b
 
+
 def fir_remez_bsf(f_pass1, f_stop1, f_stop2, f_pass2, d_pass, d_stop, 
-                  fs = 1.0, N_bump=5):
+                  fs = 1.0, N_bump=5, status = True):
     """
     Design an FIR bandstop filter using remez with order
     determination. The filter order is determined based on 
@@ -391,8 +399,9 @@ def fir_remez_bsf(f_pass1, f_stop1, f_stop2, f_pass2, d_pass, d_stop,
     N_taps += N_bump
     b = signal.remez(N_taps, ff, aa[0::2], wts, Hz=2,
                      maxiter = 25, grid_density = 16)
-    print('N_bump must be odd to maintain odd filter length')
-    print('Remez filter taps = %d.' % N_taps)
+    if status:
+        print('N_bump must be odd to maintain odd filter length')
+        print('Remez filter taps = %d.' % N_taps)
     return b
 
 

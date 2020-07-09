@@ -372,8 +372,10 @@ def cruise_control(wn,zeta,T,vcruise,vmax,tf_mode='H'):
     Kp = T*(2*zeta*wn-1/tau)/vmax
     Ki = T*wn**2./vmax
     K = Kp*vmax/T
-    log.info('wn = ', np.sqrt(K/(Kp/Ki)))
-    log.info('zeta = ', (K + 1/tau)/(2*wn))
+    wn = np.sqrt(K/(Kp/Ki))
+    zeta = (K + 1/tau)/(2*wn)
+    log.info('wn = %s' % (wn))
+    log.info('zeta = %s' % (zeta))
     a = np.array([1, 2*zeta*wn, wn**2])
     if tf_mode == 'H':
         b = np.array([K, wn**2])      

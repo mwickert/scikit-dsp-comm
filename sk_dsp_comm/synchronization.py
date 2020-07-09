@@ -36,6 +36,7 @@ either expressed or implied, of the FreeBSD Project.
 import numpy as np
 from logging import getLogger
 log = getLogger(__name__)
+import warnings
 
 
 def NDA_symb_sync(z,Ns,L,BnTs,zeta=0.707,I_ord=3):
@@ -336,7 +337,7 @@ def PLL1(theta,fs,loop_type,Kv,fn,zeta,non_lin):
         tau1 = K/((2*np.pi*fn)**2)
         tau2 = 2*zeta/(2*np.pi*fn)*(1 - 2*np.pi*fn/K*1/(2*zeta))
     else:
-        log.warning('Loop type must be 1, 2, or 3')
+        warnings.warn('Loop type must be 1, 2, or 3')
 
     # Initialize integration approximation filters
     filt_in_last = 0; filt_out_last = 0;
@@ -434,7 +435,7 @@ def PLL_cbb(x,fs,loop_type,Kv,fn,zeta):
         tau1 = K/((2*np.pi*fn)^2);
         tau2 = 2*zeta/(2*np.pi*fn)*(1 - 2*np.pi*fn/K*1/(2*zeta))
     else:
-        log.warning('Loop type must be 1, 2, or 3')
+        warnings.warn('Loop type must be 1, 2, or 3')
 
     # Initialize integration approximation filters
     filt_in_last = 0; filt_out_last = 0;

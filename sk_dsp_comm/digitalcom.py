@@ -48,6 +48,7 @@ from .sigsys import CIC
 
 from logging import getLogger
 log = getLogger(__name__)
+import warnings
 
 
 def farrow_resample(x, fs_old, fs_new):
@@ -941,7 +942,7 @@ def RZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
     elif pulse.lower() == 'src':
         b = sqrt_rc_imp(Ns,alpha,M)
     else:
-        log.warning('pulse type must be rec, rc, or src')
+        warnings.warn('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
     return x,b/float(Ns),data
 

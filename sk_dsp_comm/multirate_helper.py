@@ -39,6 +39,7 @@ from . import iir_design_helper as iir_d
 
 from logging import getLogger
 log = getLogger(__name__)
+import warnings
 
 
 class rate_change(object):
@@ -63,7 +64,7 @@ class rate_change(object):
             # Set the ripple to 0.05 dB
             self.b, self.a = signal.cheby1(self.N_forder,0.05,2/self.M*self.fc)
         else:
-            log.warning('ftype must be "butter" or "cheby1"')
+            warnings.warn('ftype must be "butter" or "cheby1"')
         
     def up(self,x):
         """
@@ -284,5 +285,5 @@ def freqz_resp(b,a=[1],mode = 'dB',fs=1.0,Npts = 1024,fsize=(6,4)):
     else:
         s1 = 'Error, mode must be "dB", "phase, '
         s2 = '"groupdelay_s", or "groupdelay_t"'
-        log.warning(s1 + s2)
+        warnings.warn(s1 + s2)
 

@@ -56,6 +56,7 @@ from scipy import signal
 from scipy.io import wavfile
 from logging import getLogger
 log = getLogger(__name__)
+import warnings
 
 
 def CIC(M, K):
@@ -1053,7 +1054,7 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
     K = int(Nx/NS)
     log.info('K = ', K)
     if NAVG > K:
-        log.warning('NAVG exceeds number of available subrecords')
+        warnings.warn('NAVG exceeds number of available subrecords')
         return 0,0
     if window.lower() == 'boxcar' or window.lower() == 'rectangle':
         w = signal.boxcar(NS)
@@ -1141,14 +1142,14 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
             elif fk[k] > 0 and sides == 1:
                 plt.plot([fk[k], fk[k]],[0, 2.*np.abs(Xk[k])],linetype, linewidth=lwidth)
             else:
-                log.warning('Invalid sides type')
+                warnings.warn('Invalid sides type')
         plt.grid()
         if sides == 2:
             plt.axis([-1.2*max(fk), 1.2*max(fk), 0, 1.05*max(abs(Xk))])        
         elif sides == 1:
             plt.axis([0, 1.2*max(fk), 0, 1.05*2*max(abs(Xk))])
         else:
-            log.warning('Invalid sides type')
+            warnings.warn('Invalid sides type')
         plt.ylabel('Magnitude')
         plt.xlabel('Frequency (Hz)')
     elif mode == 'magdB':
@@ -1164,7 +1165,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
             elif fk[k] > 0 and sides == 1:
                 plt.plot([fk[k], fk[k]],[floor_dB, Xk_dB[k]+6.02],linetype, linewidth=lwidth)
             else:
-                log.warning('Invalid sides type')
+                warnings.warn('Invalid sides type')
         plt.grid()
         max_dB = np.ceil(max(Xk_dB/10.))*10
         min_dB = max(floor_dB,np.floor(min(Xk_dB/10.))*10)
@@ -1173,7 +1174,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
         elif sides == 1:
             plt.axis([0, 1.2*max(fk), min_dB, max_dB])
         else:
-            log.warning('Invalid sides type')
+            warnings.warn('Invalid sides type')
         plt.ylabel('Magnitude (dB)')
         plt.xlabel('Frequency (Hz)')
     elif mode == 'magdBn':
@@ -1189,7 +1190,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
             elif fk[k] > 0 and sides == 1:
                 plt.plot([fk[k], fk[k]],[floor_dB, Xk_dB[k]+6.02],linetype, linewidth=lwidth)
             else:
-                log.warning('Invalid sides type')
+                warnings.warn('Invalid sides type')
         plt.grid()
         max_dB = np.ceil(max(Xk_dB/10.))*10
         min_dB = max(floor_dB,np.floor(min(Xk_dB/10.))*10)
@@ -1198,7 +1199,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
         elif sides == 1:
             plt.axis([0, 1.2*max(fk), min_dB, max_dB])
         else:
-            log.warning('Invalid sides type')
+            warnings.warn('Invalid sides type')
         plt.ylabel('Normalized Magnitude (dB)')
         plt.xlabel('Frequency (Hz)')    
     elif mode == 'phase':
@@ -1213,7 +1214,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
             elif fk[k] > 0 and sides == 1:
                 plt.plot([fk[k], fk[k]],[0, np.angle(Xk[k])],linetype, linewidth=lwidth)
             else:
-                log.warning('Invalid sides type')
+                warnings.warn('Invalid sides type')
         plt.grid()
         if sides == 2:
             plt.plot([-1.2*max(fk), 1.2*max(fk)], [0, 0],'k')
@@ -1222,11 +1223,11 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
             plt.plot([0, 1.2*max(fk)], [0, 0],'k')
             plt.axis([0, 1.2*max(fk), -1.1*max(np.abs(np.angle(Xk))), 1.1*max(np.abs(np.angle(Xk)))])
         else:
-            log.warning('Invalid sides type')
+            warnings.warn('Invalid sides type')
         plt.ylabel('Phase (rad)')
         plt.xlabel('Frequency (Hz)')
     else:
-        log.warning('Invalid mode type')
+        warnings.warn('Invalid mode type')
 
 
 def fs_coeff(xp,N,f0,one_side=True):

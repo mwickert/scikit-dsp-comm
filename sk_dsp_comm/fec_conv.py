@@ -57,6 +57,7 @@ import warnings
 from .digitalcom import Q_fctn
 from logging import getLogger
 log = getLogger(__name__)
+import warnings
 
 # Data structure support classes
 class trellis_nodes(object):
@@ -195,7 +196,7 @@ class fec_conv(object):
         if(len(G) == 2 or len(G) == 3):
             log.info('Rate %s Object' %(self.rate))
         else:
-            log.warning('Invalid rate. Use Rate 1/2 or 1/3 only')
+            warnings.warn('Invalid rate. Use Rate 1/2 or 1/3 only')
             raise ValueError('Invalid rate. Use Rate 1/2 or 1/3 only')
             pass
 
@@ -488,7 +489,7 @@ class fec_conv(object):
             for k in range(len(bits)):
                 distance += (float(rec_code_bits[k])-float(bits[k]))**2
         else:
-            log.warning('Invalid metric type specified')
+            warnings.warn('Invalid metric type specified')
             raise ValueError('Invalid metric type specified. Use soft, hard, or unquant')
         return distance 
 

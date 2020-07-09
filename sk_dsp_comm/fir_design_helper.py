@@ -32,7 +32,9 @@ either expressed or implied, of the FreeBSD Project.
 import numpy as np
 import scipy.signal as signal
 import matplotlib.pyplot as plt
-from matplotlib import pylab
+from logging import getLogger
+log = getLogger(__name__)
+
 
 def firwin_lpf(N_taps, fc, fs = 1.0):
     """
@@ -81,7 +83,7 @@ def firwin_kaiser_lpf(f_pass, f_stop, d_stop, fs = 1.0, N_bump=0, status = True)
     b_k = wc/np.pi*np.sinc(wc/np.pi*(n-M/2)) * w_k
     b_k /= np.sum(b_k)
     if status:
-        print('Kaiser Win filter taps = %d.' % N_taps)
+        log.info('Kaiser Win filter taps = %d.' % N_taps)
     return b_k
 
 
@@ -117,7 +119,7 @@ def firwin_kaiser_hpf(f_stop, f_pass, d_stop, fs = 1.0, N_bump=0, status = True)
     n = np.arange(len(b_k))
     b_k *= (-1)**n
     if status:
-        print('Kaiser Win filter taps = %d.' % N_taps)
+        log.info('Kaiser Win filter taps = %d.' % N_taps)
     return b_k
 
 
@@ -160,7 +162,7 @@ def firwin_kaiser_bpf(f_stop1, f_pass1, f_pass2, f_stop2, d_stop,
     n = np.arange(len(b_k))
     b_k_bp = 2*b_k*np.cos(w0*(n-M/2))
     if status:
-        print('Kaiser Win filter taps = %d.' % N_taps)
+        log.info('Kaiser Win filter taps = %d.' % N_taps)
     return b_k_bp
 
 
@@ -211,7 +213,7 @@ def firwin_kaiser_bsf(f_stop1, f_pass1, f_pass2, f_stop2, d_stop,
     b_k_bs = -b_k_bs
     b_k_bs[int(M/2)] += 1
     if status:
-        print('Kaiser Win filter taps = %d.' % N_taps)
+        log.info('Kaiser Win filter taps = %d.' % N_taps)
     return b_k_bs
 
 
@@ -325,7 +327,7 @@ def fir_remez_lpf(f_pass, f_stop, d_pass, d_stop, fs = 1.0, N_bump=5, status = T
     N_taps += N_bump
     b = signal.remez(N_taps, ff, aa[0::2], wts,Hz=2)
     if status:
-        print('Remez filter taps = %d.' % N_taps)
+        log.info('Remez filter taps = %d.' % N_taps)
     return b
 
 
@@ -352,7 +354,7 @@ def fir_remez_hpf(f_stop, f_pass, d_pass, d_stop, fs = 1.0, N_bump=5, status = T
     n = np.arange(len(b))
     b *= (-1)**n
     if status:
-        print('Remez filter taps = %d.' % N_taps)
+        log.info('Remez filter taps = %d.' % N_taps)
     return b
 
 
@@ -374,7 +376,7 @@ def fir_remez_bpf(f_stop1, f_pass1, f_pass2, f_stop2, d_pass, d_stop,
     N_taps += N_bump
     b = signal.remez(N_taps, ff, aa[0::2], wts,Hz=2)
     if status:
-        print('Remez filter taps = %d.' % N_taps)
+        log.info('Remez filter taps = %d.' % N_taps)
     return b
 
 
@@ -400,8 +402,8 @@ def fir_remez_bsf(f_pass1, f_stop1, f_stop2, f_pass2, d_pass, d_stop,
     b = signal.remez(N_taps, ff, aa[0::2], wts, Hz=2,
                      maxiter = 25, grid_density = 16)
     if status:
-        print('N_bump must be odd to maintain odd filter length')
-        print('Remez filter taps = %d.' % N_taps)
+        log.info('N_bump must be odd to maintain odd filter length')
+        log.info('Remez filter taps = %d.' % N_taps)
     return b
 
 
@@ -490,4 +492,4 @@ def freqz_resp_list(b,a=np.array([1]),mode = 'dB',fs=1.0,Npts = 1024,fsize=(6,4)
         else:
             s1 = 'Error, mode must be "dB", "phase, '
             s2 = '"groupdelay_s", or "groupdelay_t"'
-            print(s1 + s2)
+            log.info(s1 + s2)

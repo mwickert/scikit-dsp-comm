@@ -2,6 +2,9 @@
 A Digital Communications Synchronization 
 and PLLs Function Module
 
+A collection of useful functions when studying PLLs
+and synchronization and digital comm
+
 Copyright (c) March 2017, Mark Wickert
 All rights reserved.
 
@@ -30,20 +33,9 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 """
 
-"""
-Synchronization and PLLs
-
-A collection of useful functions when studying PLLs
-and synchronization and digital comm
-
-
-Mark Wickert August 2014
-"""
-
 import numpy as np
-import scipy.signal as signal
-from . import digitalcom as dc
-from .digitalcom import MPSK_bb
+from logging import getLogger
+log = getLogger(__name__)
 
 
 def NDA_symb_sync(z,Ns,L,BnTs,zeta=0.707,I_ord=3):
@@ -112,7 +104,7 @@ def NDA_symb_sync(z,Ns,L,BnTs,zeta=0.707,I_ord=3):
                 v0 = z[nn]
                 z_interp = ((mu*v3 + v2)*mu + v1)*mu + v0
             else:
-                print('Error: I_ord must 1, 2, or 3')
+                log.error('I_ord must 1, 2, or 3')
             # Form TED output that is smoothed using 2*L+1 samples
             # We need Ns interpolants for this TED: 0:Ns-1
             c1 = 0
@@ -134,7 +126,7 @@ def NDA_symb_sync(z,Ns,L,BnTs,zeta=0.707,I_ord=3):
                     v0 = z[nn+kk]
                     z_TED_interp = ((mu*v3 + v2)*mu + v1)*mu + v0
                 else:
-                    print('Error: I_ord must 1, 2, or 3')
+                    log.error('Error: I_ord must 1, 2, or 3')
                 c1 = c1 + np.abs(z_TED_interp)**2 * np.exp(-1j*2*np.pi/Ns*kk)
             c1 = c1/Ns
             # Update 2*L+1 length buffer for TED output smoothing
@@ -170,6 +162,7 @@ def NDA_symb_sync(z,Ns,L,BnTs,zeta=0.707,I_ord=3):
     zz /=np.std(zz)
     e_tau = e_tau[:-(len(e_tau)-mm+1)]
     return zz, e_tau
+
 
 def DD_carrier_sync(z,M,BnTs,zeta=0.707,type=0):
     """
@@ -343,7 +336,7 @@ def PLL1(theta,fs,loop_type,Kv,fn,zeta,non_lin):
         tau1 = K/((2*np.pi*fn)**2)
         tau2 = 2*zeta/(2*np.pi*fn)*(1 - 2*np.pi*fn/K*1/(2*zeta))
     else:
-        print('Loop type must be 1, 2, or 3')
+        log.warning('Loop type must be 1, 2, or 3')
 
     # Initialize integration approximation filters
     filt_in_last = 0; filt_out_last = 0;
@@ -441,7 +434,7 @@ def PLL_cbb(x,fs,loop_type,Kv,fn,zeta):
         tau1 = K/((2*np.pi*fn)^2);
         tau2 = 2*zeta/(2*np.pi*fn)*(1 - 2*np.pi*fn/K*1/(2*zeta))
     else:
-        print('Loop type must be 1, 2, or 3')
+        log.warning('Loop type must be 1, 2, or 3')
 
     # Initialize integration approximation filters
     filt_in_last = 0; filt_out_last = 0;

@@ -1,5 +1,3 @@
-
-from __future__ import division #provides float div as x/y and int div as x//y
 """
 Multirate help for building interpolation and decimation systems
 
@@ -32,13 +30,15 @@ either expressed or implied, of the FreeBSD Project.
 """
 
 from matplotlib import pylab
-#from matplotlib import mlab 
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.signal as signal
 from . import sigsys as ssd
 from . import fir_design_helper as fir_d
 from . import iir_design_helper as iir_d
+
+from logging import getLogger
+log = getLogger(__name__)
 
 
 class rate_change(object):
@@ -63,7 +63,7 @@ class rate_change(object):
             # Set the ripple to 0.05 dB
             self.b, self.a = signal.cheby1(self.N_forder,0.05,2/self.M*self.fc)
         else:
-            print('ftype must be "butter" or "cheby1"')
+            log.warning('ftype must be "butter" or "cheby1"')
         
     def up(self,x):
         """
@@ -97,7 +97,7 @@ class multirate_FIR(object):
         """
         self.N_forder = len(b)
         self.b = b
-        print('FIR filter taps = %d' % self.N_forder)
+        log.info('FIR filter taps = %d' % self.N_forder)
     
 
     def filter(self,x):
@@ -162,7 +162,7 @@ class multirate_IIR(object):
         self.N_forder = np.sum(np.sign(np.abs(sos[:,2]))) \
                       + np.sum(np.sign(np.abs(sos[:,1])))
         self.sos = sos
-        print('IIR filter order = %d' % self.N_forder)
+        log.info('IIR filter order = %d' % self.N_forder)
         
 
     def filter(self,x):
@@ -284,5 +284,5 @@ def freqz_resp(b,a=[1],mode = 'dB',fs=1.0,Npts = 1024,fsize=(6,4)):
     else:
         s1 = 'Error, mode must be "dB", "phase, '
         s2 = '"groupdelay_s", or "groupdelay_t"'
-        print(s1 + s2)
+        log.warning(s1 + s2)
 

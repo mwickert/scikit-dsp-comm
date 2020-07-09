@@ -35,6 +35,8 @@ import matplotlib.pyplot as plt
 from matplotlib import pylab
 from numpy import int16, rint, loadtxt
 import os
+from logging import getLogger
+log = getLogger(__name__)
 
 
 def FIR_header(fname_out, h):
@@ -240,7 +242,7 @@ def freqz_resp_list(b, a=np.array([1]), mode='dB', fs=1.0, Npts=1024, fsize=(6, 
         else:
             s1 = 'Error, mode must be "dB", "phase, '
             s2 = '"groupdelay_s", or "groupdelay_t"'
-            print(s1 + s2)
+            log.info(s1 + s2)
 
 
 def CA_code_header(fname_out, Nca):

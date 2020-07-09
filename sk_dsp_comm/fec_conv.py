@@ -27,10 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
-"""
 
 
-"""
 A forward error correcting coding (FEC) class which defines methods 
 for performing convolutional encoding and decoding. Arbitrary 
 polynomials are supported, but the rate is presently limited to r = 1/n,
@@ -55,10 +53,11 @@ import numpy as np
 from math import factorial
 from fractions import Fraction
 import matplotlib.pyplot as plt
-import scipy.special as special
-from sys import exit
 import warnings
 from .digitalcom import Q_fctn
+from logging import getLogger
+log = getLogger(__name__)
+import warnings
 
 # Data structure support classes
 class trellis_nodes(object):
@@ -195,9 +194,9 @@ class fec_conv(object):
         self.rate = Fraction(1,len(G))
         
         if(len(G) == 2 or len(G) == 3):
-            print('Rate %s Object' %(self.rate))
+            log.info('Rate %s Object' %(self.rate))
         else:
-            print('Invalid rate. Use Rate 1/2 or 1/3 only')
+            warnings.warn('Invalid rate. Use Rate 1/2 or 1/3 only')
             raise ValueError('Invalid rate. Use Rate 1/2 or 1/3 only')
             pass
 
@@ -242,8 +241,8 @@ class fec_conv(object):
                 self.branches.input1[m] = 1
                 self.branches.input2[m] = 1
             else:
-                print('branch calculation error')
-                exit(1)
+                log.error('branch calculation error')
+                return
 
     def viterbi_decoder(self,x,metric_type='soft',quant_level=3):
         """
@@ -490,7 +489,7 @@ class fec_conv(object):
             for k in range(len(bits)):
                 distance += (float(rec_code_bits[k])-float(bits[k]))**2
         else:
-            print('Invalid metric type specified')
+            warnings.warn('Invalid metric type specified')
             raise ValueError('Invalid metric type specified. Use soft, hard, or unquant')
         return distance 
 

@@ -32,12 +32,12 @@ either expressed or implied, of the FreeBSD Project.
 import numpy as np
 import scipy.signal as signal
 import matplotlib.pyplot as plt
-from matplotlib import pylab
-from matplotlib import mlab 
+from logging import getLogger
+log = getLogger(__name__)
 
 
 def IIR_lpf(f_pass, f_stop, Ripple_pass, Atten_stop, 
-            fs = 1.00, ftype = 'butter'):
+            fs = 1.00, ftype = 'butter', status = True):
     """
     Design an IIR lowpass filter using scipy.signal.iirdesign. 
     The filter order is determined based on 
@@ -86,12 +86,13 @@ def IIR_lpf(f_pass, f_stop, Ripple_pass, Atten_stop,
                            Ripple_pass, Atten_stop,
                            ftype = ftype, output='sos')
     tag = 'IIR ' + ftype + ' order'
-    print('%s = %d.' % (tag,len(a)-1))
+    if status:
+        log.info('%s = %d.' % (tag,len(a)-1))
     return b, a, sos
 
 
 def IIR_hpf(f_stop, f_pass, Ripple_pass, Atten_stop, 
-            fs = 1.00, ftype = 'butter'):
+            fs = 1.00, ftype = 'butter', status = True):
     """
     Design an IIR highpass filter using scipy.signal.iirdesign. 
     The filter order is determined based on 
@@ -134,12 +135,13 @@ def IIR_hpf(f_stop, f_pass, Ripple_pass, Atten_stop,
                            Ripple_pass, Atten_stop,
                            ftype =ftype, output='sos')
     tag = 'IIR ' + ftype + ' order'
-    print('%s = %d.' % (tag,len(a)-1))
+    if status:
+        log.info('%s = %d.' % (tag,len(a)-1))
     return b, a, sos
 
 
 def IIR_bpf(f_stop1, f_pass1, f_pass2, f_stop2, Ripple_pass, Atten_stop, 
-            fs = 1.00, ftype = 'butter'):
+            fs = 1.00, ftype = 'butter', status = True):
     """
     Design an IIR bandpass filter using scipy.signal.iirdesign. 
     The filter order is determined based on 
@@ -184,11 +186,12 @@ def IIR_bpf(f_stop1, f_pass1, f_pass2, f_stop2, Ripple_pass, Atten_stop,
                            Ripple_pass, Atten_stop,
                            ftype =ftype, output='sos')
     tag = 'IIR ' + ftype + ' order'
-    print('%s = %d.' % (tag,len(a)-1))
+    if status:
+        log.info('%s = %d.' % (tag,len(a)-1))
     return b, a, sos
 
 def IIR_bsf(f_pass1, f_stop1, f_stop2, f_pass2, Ripple_pass, Atten_stop, 
-            fs = 1.00, ftype = 'butter'):
+            fs = 1.00, ftype = 'butter', status = True):
     """
     Design an IIR bandstop filter using scipy.signal.iirdesign. 
     The filter order is determined based on 
@@ -207,7 +210,8 @@ def IIR_bsf(f_pass1, f_stop1, f_stop2, f_pass2, Ripple_pass, Atten_stop,
                            Ripple_pass, Atten_stop,
                            ftype =ftype, output='sos')
     tag = 'IIR ' + ftype + ' order'
-    print('%s = %d.' % (tag,len(a)-1))
+    if status:
+        log.info('%s = %d.' % (tag,len(a)-1))
     return b, a, sos
 
 def freqz_resp_list(b,a=np.array([1]),mode = 'dB',fs=1.0,Npts = 1024,fsize=(6,4)):
@@ -295,7 +299,7 @@ def freqz_resp_list(b,a=np.array([1]),mode = 'dB',fs=1.0,Npts = 1024,fsize=(6,4)
         else:
             s1 = 'Error, mode must be "dB", "phase, '
             s2 = '"groupdelay_s", or "groupdelay_t"'
-            print(s1 + s2)
+            log.info(s1 + s2)
 
 
 def freqz_cas(sos,w):
@@ -397,7 +401,7 @@ def freqz_resp_cas_list(sos,mode = 'dB',fs=1.0,Npts = 1024,fsize=(6,4)):
         else:
             s1 = 'Error, mode must be "dB", "phase, '
             s2 = '"groupdelay_s", or "groupdelay_t"'
-            print(s1 + s2)
+            log.info(s1 + s2)
 
 
 def unique_cpx_roots(rlist,tol = 0.001):

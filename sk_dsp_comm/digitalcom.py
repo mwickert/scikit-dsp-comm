@@ -28,7 +28,7 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 """
-
+import warnings
 from matplotlib import pylab
 from matplotlib import mlab
 import numpy as np
@@ -48,7 +48,6 @@ from .sigsys import CIC
 
 from logging import getLogger
 log = getLogger(__name__)
-import warnings
 
 
 def farrow_resample(x, fs_old, fs_new):
@@ -149,7 +148,7 @@ def farrow_resample(x, fs_old, fs_new):
     return y
 
 
-def eye_plot(x,L,S=0):
+def eye_plot(x, l, s=0):
     """
     Eye pattern plot of a baseband digital communications waveform.
 
@@ -159,8 +158,8 @@ def eye_plot(x,L,S=0):
     Parameters
     ----------
     x : ndarray of the real input data vector/array
-    L : display length in samples (usually two symbols)
-    S : start index
+    l : display length in samples (usually two symbols)
+    s : start index
 
     Returns
     -------
@@ -181,11 +180,11 @@ def eye_plot(x,L,S=0):
     >>> plt.show()
     """
     plt.figure(figsize=(6,4))
-    idx = np.arange(0,L+1)
-    plt.plot(idx,x[S:S+L+1],'b')
-    k_max = int((len(x) - S)/L)-1
+    idx = np.arange(0, l + 1)
+    plt.plot(idx, x[s:s + l + 1], 'b')
+    k_max = int((len(x) - s) / l) - 1
     for k in range(1,k_max):
-         plt.plot(idx,x[S+k*L:S+L+1+k*L],'b')
+         plt.plot(idx, x[s + k * l:s + l + 1 + k * l], 'b')
     plt.grid()
     plt.xlabel('Time Index - n')
     plt.ylabel('Amplitude')
@@ -193,14 +192,14 @@ def eye_plot(x,L,S=0):
     return 0
 
 
-def scatter(x,Ns,start):
+def scatter(x, ns, start):
     """
     Sample a baseband digital communications waveform at the symbol spacing.
 
     Parameters
     ----------
     x : ndarray of the input digital comm signal
-    Ns : number of samples per symbol (bit)
+    ns : number of samples per symbol (bit)
     start : the array index to start the sampling
 
     Returns
@@ -233,12 +232,12 @@ def scatter(x,Ns,start):
     >>> plt.axis('equal')
     >>> plt.show()
     """
-    xI = np.real(x[start::Ns])
-    xQ = np.imag(x[start::Ns])
+    xI = np.real(x[start::ns])
+    xQ = np.imag(x[start::ns])
     return xI, xQ
 
 
-def strips(x,Nx,fig_size=(6,4)):
+def strips(x, nx, fig_size=(6, 4)):
     """
     Plots the contents of real ndarray x as a vertical stacking of
     strips, each of length Nx. The default figure size is (6,4) inches.
@@ -252,36 +251,43 @@ def strips(x,Nx,fig_size=(6,4)):
     plt.figure(figsize=fig_size)
     #ax = fig.add_subplot(111)
     N = len(x)
-    Mx = int(np.ceil(N/float(Nx)))
+    Mx = int(np.ceil(N / float(nx)))
     x_max = np.max(np.abs(x))
     for kk in range(Mx):
-        plt.plot(np.array([0,Nx]),-kk*Nx*np.array([1,1]),'r-.')
-        plt.plot(x[kk*Nx:(kk+1)*Nx]/x_max*0.4*Nx-kk*Nx,'b')
-    plt.axis([0,Nx,-Nx*(Mx-0.5),Nx*0.5])
-    plt.yticks(np.arange(0,-Nx*Mx,-Nx),np.arange(0,Nx*Mx,Nx))
+        plt.plot(np.array([0, nx]), -kk * nx * np.array([1, 1]), 'r-.')
+        plt.plot(x[kk * nx:(kk + 1) * nx] / x_max * 0.4 * nx - kk * nx, 'b')
+    plt.axis([0, nx, -nx * (Mx - 0.5), nx * 0.5])
+    plt.yticks(np.arange(0, -nx * Mx, -nx), np.arange(0, nx * Mx, nx))
     plt.xlabel('Index')
     plt.ylabel('Strip Amplitude and Starting Index')
     return 0
 
 
-def bit_errors(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
+def bit_errors(tx_data, rx_data, n_corr=1024, n_transient=0):
     """
     Count bit errors between a transmitted and received BPSK signal.
     Time delay between streams is detected as well as ambiquity resolution
     due to carrier phase lock offsets of :math:`k*\\pi`, k=0,1.
-    The ndarray tx_data is Tx 0/1 bits as real numbers I.
-    The ndarray rx_data is Rx 0/1 bits as real numbers I.
-    Note: Ncorr needs to be even
+
+    Parameters:
+    -----------
+    tx_data : ndarray of 0/1 bits as real numbers I.
+    rx_data : ndarray of 0/1 bits as real numbers I.
+
+    Notes:
+    ------
+    n_corr needs to be even.
     """
-    
+    if not (n_corr % 2 == 0):
+        warnings.warn("n_corr needs to be even")
     # Remove Ntransient symbols and level shift to {-1,+1}
-    tx_data = 2*tx_data[Ntransient:]-1
-    rx_data = 2*rx_data[Ntransient:]-1
+    tx_data = 2 * tx_data[n_transient:] - 1
+    rx_data = 2 * rx_data[n_transient:] - 1
     # Correlate the first Ncorr symbols at four possible phase rotations
-    R0 = np.fft.ifft(np.fft.fft(rx_data,Ncorr)*
-                     np.conj(np.fft.fft(tx_data,Ncorr)))
-    R1 = np.fft.ifft(np.fft.fft(-1*rx_data,Ncorr)*
-                     np.conj(np.fft.fft(tx_data,Ncorr)))
+    R0 = np.fft.ifft(np.fft.fft(rx_data, n_corr) *
+                     np.conj(np.fft.fft(tx_data, n_corr)))
+    R1 = np.fft.ifft(np.fft.fft(-1 * rx_data, n_corr) *
+                     np.conj(np.fft.fft(tx_data, n_corr)))
     #Place the zero lag value in the center of the array
     R0 = np.fft.fftshift(R0)
     R1 = np.fft.fftshift(R1)
@@ -293,9 +299,9 @@ def bit_errors(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     kmax = kphase_max[0]
     # Correlation lag value is zero at the center of the array
     if kmax == 0:
-        lagmax = np.where(R0.real == Rmax)[0] - Ncorr/2
+        lagmax = np.where(R0.real == Rmax)[0] - n_corr / 2
     elif kmax == 1:
-        lagmax = np.where(R1.real == Rmax)[0] - Ncorr/2
+        lagmax = np.where(R1.real == Rmax)[0] - n_corr / 2
     taumax = lagmax[0]
     log.info('kmax =  %d, taumax = %d' % (kmax, taumax))
 
@@ -317,7 +323,7 @@ def bit_errors(tx_data,rx_data,Ncorr = 1024,Ntransient = 0):
     return Bit_count,np.sum(Bit_errors)
 
 
-def QAM_bb(N_symb,Ns,mod_type='16qam',pulse='rect',alpha=0.35):
+def QAM_bb(n_symb, ns, mod_type='16qam', pulse='rect', alpha=0.35):
     """
     QAM_BB_TX: A complex baseband transmitter 
     x,b,tx_data = QAM_bb(K,Ns,M)
@@ -345,11 +351,11 @@ def QAM_bb(N_symb,Ns,mod_type='16qam',pulse='rect',alpha=0.35):
     # fix the excess bandwidth factor at alpha = 0.35
     # If SRC = 0 use a simple rectangle pulse shape
     if pulse.lower() == 'src':
-        b = sqrt_rc_imp(Ns,alpha,6)
+        b = sqrt_rc_imp(ns, alpha, 6)
     elif pulse.lower() == 'rc':
-        b = rc_imp(Ns,alpha,6)    
+        b = rc_imp(ns, alpha, 6)
     elif pulse.lower() == 'rect':
-        b = np.ones(int(Ns)) #alt. rect. pulse shape
+        b = np.ones(int(ns)) #alt. rect. pulse shape
     else:
         raise ValueError('pulse shape must be src, rc, or rect')
         
@@ -365,16 +371,16 @@ def QAM_bb(N_symb,Ns,mod_type='16qam',pulse='rect',alpha=0.35):
         raise ValueError('Unknown mod_type')
 
     # Create random symbols for the I & Q channels
-    xI = np.random.randint(0,M,N_symb)
+    xI = np.random.randint(0, M, n_symb)
     xI = 2*xI - (M-1)
-    xQ = np.random.randint(0,M,N_symb)
+    xQ = np.random.randint(0, M, n_symb)
     xQ = 2*xQ - (M-1)
     # Employ differential encoding to counter phase ambiquities
     # Create a zero padded (interpolated by Ns) symbol sequence.
     # This prepares the symbol sequence for arbitrary pulse shaping.
-    symbI = np.hstack((xI.reshape(N_symb,1),np.zeros((N_symb,int(Ns)-1))))
+    symbI = np.hstack((xI.reshape(n_symb, 1), np.zeros((n_symb, int(ns) - 1))))
     symbI = symbI.flatten()
-    symbQ = np.hstack((xQ.reshape(N_symb,1),np.zeros((N_symb,int(Ns)-1))))
+    symbQ = np.hstack((xQ.reshape(n_symb, 1), np.zeros((n_symb, int(ns) - 1))))
     symbQ = symbQ.flatten()
     symb = symbI + 1j*symbQ
     if M > 2:

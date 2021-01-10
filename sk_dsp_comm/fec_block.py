@@ -58,7 +58,7 @@ from logging import getLogger
 log = getLogger(__name__)
 
 
-class fec_hamming(object):
+class FecHamming(object):
     """
     Class responsible for creating hamming block codes and then 
     encoding and decoding. Methods provided include hamm_gen,
@@ -234,7 +234,8 @@ class fec_hamming(object):
             decoded_bits[i*self.k:(i+1)*self.k] = np.matmul(self.R,codewords[:,i*self.n:(i+1)*self.n].T).T % 2
         return decoded_bits.astype(int)
 
-class fec_cyclic(object):
+
+class FecCyclic(object):
     """
     Class responsible for creating cyclic block codes and then 
     encoding and decoding. Methods provided include

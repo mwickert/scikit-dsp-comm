@@ -1197,7 +1197,7 @@ def mux_pilot_blocks(IQ_data, Np):
     return IQ_datap
 
 
-def ofdm_tx(iq_data, nf, nc, npb=0, cp=False, Ncp=0):
+def ofdm_tx(iq_data, nf, nc, npb=0, cp=False, ncp=0):
     """
     Parameters
     ----------
@@ -1206,7 +1206,7 @@ def ofdm_tx(iq_data, nf, nc, npb=0, cp=False, Ncp=0):
     nc : total number of carriers; generally a power 2, e.g., 64, 1024, etc
     npb : Period of pilot code blocks; 0 <=> no pilots
     cp : False/True <=> bypass cp insertion entirely if False
-    Ncp : the length of the cyclic prefix
+    ncp : the length of the cyclic prefix
 
     Returns
     -------
@@ -1238,7 +1238,7 @@ def ofdm_tx(iq_data, nf, nc, npb=0, cp=False, Ncp=0):
         N_OFDM = IQ_s2p.shape[0]
         print(IQ_s2p.shape)
     if cp:
-        x_out = np.zeros(N_OFDM * (nc + Ncp), dtype=np.complex128)
+        x_out = np.zeros(N_OFDM * (nc + ncp), dtype=np.complex128)
     else:
         x_out = np.zeros(N_OFDM * nc, dtype=np.complex128)
     for k in range(N_OFDM):
@@ -1253,7 +1253,7 @@ def ofdm_tx(iq_data, nf, nc, npb=0, cp=False, Ncp=0):
         if cp:
             # With cyclic prefix
             x_out_buff = fft.ifft(buff)
-            x_out[k * (nc + Ncp):(k + 1) * (nc + Ncp)] = np.concatenate((x_out_buff[nc - Ncp:],
+            x_out[k * (nc + ncp):(k + 1) * (nc + ncp)] = np.concatenate((x_out_buff[nc - ncp:],
                                                                          x_out_buff))
         else:
             # No cyclic prefix included

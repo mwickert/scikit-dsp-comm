@@ -1159,14 +1159,14 @@ def AWGN_chan(x_bits,EBN0_dB):
     return y_bits
 
 
-def mux_pilot_blocks(IQ_data, Np):
+def mux_pilot_blocks(iq_data, npb):
     """
     Parameters
     ----------
-    IQ_data : a 2D array of input QAM symbols with the columns
+    iq_data : a 2D array of input QAM symbols with the columns
                representing the NF carrier frequencies and each
                row the QAM symbols used to form an OFDM symbol
-    Np : the period of the pilot blocks; e.g., a pilot block is
+    npb : the period of the pilot blocks; e.g., a pilot block is
                inserted every Np OFDM symbols (Np-1 OFDM data symbols
                of width Nf are inserted in between the pilot blocks.
 
@@ -1183,17 +1183,17 @@ def mux_pilot_blocks(IQ_data, Np):
     A helper function called by :func:`OFDM_tx` that inserts pilot block for use
     in channel estimation when a delay spread channel is present.
     """
-    N_OFDM = IQ_data.shape[0]
-    Npb = N_OFDM // (Np - 1)
-    N_OFDM_rem = N_OFDM - Npb * (Np - 1)
-    Nf = IQ_data.shape[1]
+    N_OFDM = iq_data.shape[0]
+    Npb = N_OFDM // (npb - 1)
+    N_OFDM_rem = N_OFDM - Npb * (npb - 1)
+    Nf = iq_data.shape[1]
     IQ_datap = np.zeros((N_OFDM + Npb + 1, Nf), dtype=np.complex128)
     pilots = np.ones(Nf)  # The pilot symbol is simply 1 + j0
     for k in range(Npb):
-        IQ_datap[Np * k:Np * (k + 1), :] = np.vstack((pilots,
-                                                      IQ_data[(Np - 1) * k:(Np - 1) * (k + 1), :]))
-    IQ_datap[Np * Npb:Np * (Npb + N_OFDM_rem), :] = np.vstack((pilots,
-                                                               IQ_data[(Np - 1) * Npb:, :]))
+        IQ_datap[npb * k:npb * (k + 1), :] = np.vstack((pilots,
+                                                        iq_data[(npb - 1) * k:(npb - 1) * (k + 1), :]))
+    IQ_datap[npb * Npb:npb * (Npb + N_OFDM_rem), :] = np.vstack((pilots,
+                                                                 iq_data[(npb - 1) * Npb:, :]))
     return IQ_datap
 
 
@@ -1331,18 +1331,18 @@ def chan_est_equalize(z, Np, alpha, Ht=None):
     return zz_out, H
 
 
-def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
+def ofdm_rx(x, nf, nc, npb=0, cp=False, ncp=0, alpha=0.95, ht=None):
     """
     Parameters
     ----------
     x : Received complex baseband OFDM signal
-    Nf : Number of filled carriers, must be even and Nf < N
-    N : Total number of carriers; generally a power 2, e.g., 64, 1024, etc
-    Np : Period of pilot code blocks; 0 <=> no pilots; -1 <=> use the ht impulse response input to equalize the OFDM symbols; note equalization still requires Ncp > 0 to work on a delay spread channel.
+    nf : Number of filled carriers, must be even and Nf < N
+    nc : Total number of carriers; generally a power 2, e.g., 64, 1024, etc
+    npb : Period of pilot code blocks; 0 <=> no pilots; -1 <=> use the ht impulse response input to equalize the OFDM symbols; note equalization still requires Ncp > 0 to work on a delay spread channel.
     cp : False/True <=> if False assume no CP is present
-    Ncp : The length of the cyclic prefix
+    ncp : The length of the cyclic prefix
     alpha : The filter forgetting factor in the channel estimator. Typically alpha is 0.9 to 0.99.
-    nt : Input the known theoretical channel impulse response
+    ht : Input the known theoretical channel impulse response
 
     Returns
     -------
@@ -1366,7 +1366,7 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
     >>> x_out = dc.ofdm_tx(IQ_data1,32,64,0,True,0)
     >>> c_out = signal.lfilter(hc,1,x_out) # Apply channel distortion
     >>> r_out = dc.cpx_AWGN(c_out,100,64/32) # Es/N0 = 100 dB
-    >>> z_out,H = dc.OFDM_rx(r_out,32,64,-1,True,0,alpha=0.95,ht=hc)
+    >>> z_out,H = dc.ofdm_rx(r_out,32,64,-1,True,0,alpha=0.95,ht=hc)
     >>> plt.plot(z_out[200:].real,z_out[200:].imag,'.')
     >>> plt.xlabel('In-Phase')
     >>> plt.ylabel('Quadrature')
@@ -1379,7 +1379,7 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
     >>> x_out = dc.ofdm_tx(IQ_data1,32,64,100,True,10)
     >>> c_out = signal.lfilter(hc,1,x_out) # Apply channel distortion
     >>> r_out = dc.cpx_AWGN(c_out,25,64/32) # Es/N0 = 25 dB
-    >>> z_out,H = dc.OFDM_rx(r_out,32,64,100,True,10,alpha=0.95,ht=hc);
+    >>> z_out,H = dc.ofdm_rx(r_out,32,64,100,True,10,alpha=0.95,ht=hc);
     >>> plt.figure() # if channel estimation is turned on need this
     >>> plt.plot(z_out[-2000:].real,z_out[-2000:].imag,'.') # allow settling time
     >>> plt.xlabel('In-Phase')
@@ -1388,32 +1388,32 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
     >>> plt.grid()
     >>> plt.show()
     """
-    N_symb = len(x) // (N + Ncp)
-    y_out = np.zeros(N_symb * N, dtype=np.complex128)
+    N_symb = len(x) // (nc + ncp)
+    y_out = np.zeros(N_symb * nc, dtype=np.complex128)
     for k in range(N_symb):
         if cp:
             # Remove the cyclic prefix
-            buff = x[k * (N + Ncp) + Ncp:(k + 1) * (N + Ncp)]
+            buff = x[k * (nc + ncp) + ncp:(k + 1) * (nc + ncp)]
         else:
-            buff = x[k * N:(k + 1) * N]
-        y_out[k * N:(k + 1) * N] = fft.fft(buff)
+            buff = x[k * nc:(k + 1) * nc]
+        y_out[k * nc:(k + 1) * nc] = fft.fft(buff)
     # Demultiplex into Nf parallel streams from N total, including
     # the pilot blocks which contain channel information
-    z_out = np.reshape(y_out, (N_symb, N))
-    z_out = np.hstack((z_out[:, 1:Nf // 2 + 1], z_out[:, N - Nf // 2:N]))
-    if Np > 0:
+    z_out = np.reshape(y_out, (N_symb, nc))
+    z_out = np.hstack((z_out[:, 1:nf // 2 + 1], z_out[:, nc - nf // 2:nc]))
+    if npb > 0:
         if isinstance(type(None), type(ht)):
-            z_out, H = chan_est_equalize(z_out, Np, alpha)
+            z_out, H = chan_est_equalize(z_out, npb, alpha)
         else:
-            Ht = fft.fft(ht, N)
-            Hht = np.hstack((Ht[1:Nf // 2 + 1], Ht[N - Nf // 2:]))
-            z_out, H = chan_est_equalize(z_out, Np, alpha, Hht)
-    elif Np == -1:  # Ideal equalization using hc
-        Ht = fft.fft(ht, N)
-        H = np.hstack((Ht[1:Nf // 2 + 1], Ht[N - Nf // 2:]))
+            Ht = fft.fft(ht, nc)
+            Hht = np.hstack((Ht[1:nf // 2 + 1], Ht[nc - nf // 2:]))
+            z_out, H = chan_est_equalize(z_out, npb, alpha, Hht)
+    elif npb == -1:  # Ideal equalization using hc
+        Ht = fft.fft(ht, nc)
+        H = np.hstack((Ht[1:nf // 2 + 1], Ht[nc - nf // 2:]))
         for k in range(N_symb):
             z_out[k, :] /= H
     else:
-        H = np.ones(Nf)
+        H = np.ones(nf)
     # Multiplex into original serial symbol stream
     return z_out.flatten(), H

@@ -5,6 +5,7 @@ from sk_dsp_comm import digitalcom as dc
 from numpy import testing as npt
 from scipy import signal
 
+
 class TestDigitalcom(SKDSPCommTest):
     _multiprocess_can_split_ = True
 
@@ -312,7 +313,7 @@ class TestDigitalcom(SKDSPCommTest):
         with self.assertRaisesRegexp(ValueError, "pulse type must be rec, rc, or src"):
             x, b, data = dc.MPSK_bb(500, 10, 8, 'error')
 
-    def test_ODFM_tx(self):
+    def test_ofdm_tx(self):
         x_out_test = np.array([ 0.00000000+0.125j,      -0.10185331+0.27369942j, -0.10291586+0.12529202j,
                                -0.05485981-0.1015143j,  -0.02143872-0.09787268j, -0.06906044+0.05231368j,
                                -0.18815224+0.050888j,   -0.26164122-0.15836327j, -0.21940048-0.36048543j,
@@ -334,7 +335,7 @@ class TestDigitalcom(SKDSPCommTest):
         x_out = dc.ofdm_tx(IQ_data1, 32, 64, 0, True, 0)
         npt.assert_almost_equal(x_out[:50], x_out_test)
 
-    def test_OFDM_rx(self):
+    def test_ofdm_rx(self):
         z_out_test, H_test = (np.array([-3.11740028 - 0.90748269j, -3.11628187 - 0.88948888j,
                                         2.88565859 + 1.13255112j, 2.89076997 + 3.16052588j,
                                         2.90396853 + 1.19595053j, 2.93439648 + 1.23703401j,
@@ -366,11 +367,11 @@ class TestDigitalcom(SKDSPCommTest):
         x_out = dc.ofdm_tx(IQ_data1, 32, 64, 0, True, 0)
         c_out = signal.lfilter(hc, 1, x_out)  # Apply channel distortion
         r_out = dc.cpx_AWGN(c_out, 100, 64 / 32)  # Es/N0 = 100 dB
-        z_out, H = dc.OFDM_rx(r_out, 32, 64, -1, True, 0, alpha=0.95, ht=hc);
+        z_out, H = dc.ofdm_rx(r_out, 32, 64, -1, True, 0, alpha=0.95, ht=hc);
         npt.assert_almost_equal(z_out[:20], z_out_test)
         npt.assert_almost_equal(H, H_test)
 
-    def test_OFDM_rx_channel_estimate(self):
+    def test_ofdm_rx_channel_estimate(self):
         z_out_test, H_out_test = (np.array([-2.91356233-0.93854058j, -3.03083561-1.01177886j,
                                              3.10687062+1.09962706j,  2.91679784+2.79392693j,
                                              2.95621370+0.87789714j,  2.93521287+1.12869418j,
@@ -417,6 +418,6 @@ class TestDigitalcom(SKDSPCommTest):
         x_out = dc.ofdm_tx(IQ_data1, 32, 64, 100, True, 10)
         c_out = signal.lfilter(hc, 1, x_out)  # Apply channel distortion
         r_out = dc.cpx_AWGN(c_out, 25, 64 / 32)  # Es/N0 = 25 dB
-        z_out, H = dc.OFDM_rx(r_out, 32, 64, 100, True, 10, alpha=0.95, ht=hc)
+        z_out, H = dc.ofdm_rx(r_out, 32, 64, 100, True, 10, alpha=0.95, ht=hc)
         npt.assert_almost_equal(z_out[:50], z_out_test)
         npt.assert_almost_equal(H[:50], H_out_test)

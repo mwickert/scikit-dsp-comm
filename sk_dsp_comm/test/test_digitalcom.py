@@ -331,7 +331,7 @@ class TestDigitalcom(SKDSPCommTest):
                                 0.09844557-0.009236j,   -0.11589986-0.20597693j, -0.10438721-0.09983656j,
                                 0.15625000+0.09375j,     0.22805837+0.03951473j,])
         x1, b1, IQ_data1 = dc.QAM_bb(50000, 1, '16qam')
-        x_out = dc.OFDM_tx(IQ_data1, 32, 64, 0, True, 0)
+        x_out = dc.ofdm_tx(IQ_data1, 32, 64, 0, True, 0)
         npt.assert_almost_equal(x_out[:50], x_out_test)
 
     def test_OFDM_rx(self):
@@ -363,7 +363,7 @@ class TestDigitalcom(SKDSPCommTest):
                                         1.34580486 + 2.66705232e-01j, 1.42289223 + 1.43696423e-01j]))
         hc = np.array([1.0, 0.1, -0.05, 0.15, 0.2, 0.05])
         x1, b1, IQ_data1 = dc.QAM_bb(50000, 1, '16qam')
-        x_out = dc.OFDM_tx(IQ_data1, 32, 64, 0, True, 0)
+        x_out = dc.ofdm_tx(IQ_data1, 32, 64, 0, True, 0)
         c_out = signal.lfilter(hc, 1, x_out)  # Apply channel distortion
         r_out = dc.cpx_AWGN(c_out, 100, 64 / 32)  # Es/N0 = 100 dB
         z_out, H = dc.OFDM_rx(r_out, 32, 64, -1, True, 0, alpha=0.95, ht=hc);
@@ -414,7 +414,7 @@ class TestDigitalcom(SKDSPCommTest):
                                              1.44594176+0.3296819j ,  1.48817425+0.07577518j]))
         hc = np.array([1.0, 0.1, -0.05, 0.15, 0.2, 0.05])
         x1, b1, IQ_data1 = dc.QAM_bb(50000, 1, '16qam')
-        x_out = dc.OFDM_tx(IQ_data1, 32, 64, 100, True, 10)
+        x_out = dc.ofdm_tx(IQ_data1, 32, 64, 100, True, 10)
         c_out = signal.lfilter(hc, 1, x_out)  # Apply channel distortion
         r_out = dc.cpx_AWGN(c_out, 25, 64 / 32)  # Es/N0 = 25 dB
         z_out, H = dc.OFDM_rx(r_out, 32, 64, 100, True, 10, alpha=0.95, ht=hc)

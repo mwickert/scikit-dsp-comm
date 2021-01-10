@@ -1197,14 +1197,14 @@ def mux_pilot_blocks(IQ_data, Np):
     return IQ_datap
 
 
-def OFDM_tx(IQ_data, Nf, N, Np=0, cp=False, Ncp=0):
+def ofdm_tx(iq_data, nf, nc, npb=0, cp=False, Ncp=0):
     """
     Parameters
     ----------
-    IQ_data : +/-1, +/-3, etc complex QAM symbol sample inputs
-    Nf : number of filled carriers, must be even and Nf < N
-    N : total number of carriers; generally a power 2, e.g., 64, 1024, etc
-    Np : Period of pilot code blocks; 0 <=> no pilots
+    iq_data : +/-1, +/-3, etc complex QAM symbol sample inputs
+    nf : number of filled carriers, must be even and Nf < N
+    nc : total number of carriers; generally a power 2, e.g., 64, 1024, etc
+    npb : Period of pilot code blocks; 0 <=> no pilots
     cp : False/True <=> bypass cp insertion entirely if False
     Ncp : the length of the cyclic prefix
 
@@ -1221,43 +1221,43 @@ def OFDM_tx(IQ_data, Nf, N, Np=0, cp=False, Ncp=0):
     >>> import matplotlib.pyplot as plt
     >>> from sk_dsp_comm import digitalcom as dc
     >>> x1,b1,IQ_data1 = dc.QAM_bb(50000,1,'16qam')
-    >>> x_out = dc.OFDM_tx(IQ_data1,32,64)
+    >>> x_out = dc.ofdm_tx(IQ_data1,32,64)
     >>> plt.psd(x_out,2**10,1);
     >>> plt.xlabel(r'Normalized Frequency ($\omega/(2\pi)=f/f_s$)')
     >>> plt.ylim([-40,0])
     >>> plt.xlim([-.5,.5])
     >>> plt.show()
     """
-    N_symb = len(IQ_data)
-    N_OFDM = N_symb // Nf
-    IQ_data = IQ_data[:N_OFDM * Nf]
-    IQ_s2p = np.reshape(IQ_data, (N_OFDM, Nf))  # carrier symbols by column
+    N_symb = len(iq_data)
+    N_OFDM = N_symb // nf
+    iq_data = iq_data[:N_OFDM * nf]
+    IQ_s2p = np.reshape(iq_data, (N_OFDM, nf))  # carrier symbols by column
     print(IQ_s2p.shape)
-    if Np > 0:
-        IQ_s2p = mux_pilot_blocks(IQ_s2p, Np)
+    if npb > 0:
+        IQ_s2p = mux_pilot_blocks(IQ_s2p, npb)
         N_OFDM = IQ_s2p.shape[0]
         print(IQ_s2p.shape)
     if cp:
-        x_out = np.zeros(N_OFDM * (N + Ncp), dtype=np.complex128)
+        x_out = np.zeros(N_OFDM * (nc + Ncp), dtype=np.complex128)
     else:
-        x_out = np.zeros(N_OFDM * N, dtype=np.complex128)
+        x_out = np.zeros(N_OFDM * nc, dtype=np.complex128)
     for k in range(N_OFDM):
-        buff = np.zeros(N, dtype=np.complex128)
-        for n in range(-Nf // 2, Nf // 2 + 1):
-            if n == 0:  # Modulate carrier f = 0
+        buff = np.zeros(nc, dtype=np.complex128)
+        for n_freq in range(-nf // 2, nf // 2 + 1):
+            if n_freq == 0:  # Modulate carrier f = 0
                 buff[0] = 0  # This can be a pilot carrier
-            elif n > 0:  # Modulate carriers f = 1:Nf/2
-                buff[n] = IQ_s2p[k, n - 1]
+            elif n_freq > 0:  # Modulate carriers f = 1:Nf/2
+                buff[n_freq] = IQ_s2p[k, n_freq - 1]
             else:  # Modulate carriers f = -Nf/2:-1
-                buff[N + n] = IQ_s2p[k, Nf + n]
+                buff[nc + n_freq] = IQ_s2p[k, nf + n_freq]
         if cp:
             # With cyclic prefix
             x_out_buff = fft.ifft(buff)
-            x_out[k * (N + Ncp):(k + 1) * (N + Ncp)] = np.concatenate((x_out_buff[N - Ncp:],
-                                                                       x_out_buff))
+            x_out[k * (nc + Ncp):(k + 1) * (nc + Ncp)] = np.concatenate((x_out_buff[nc - Ncp:],
+                                                                         x_out_buff))
         else:
             # No cyclic prefix included
-            x_out[k * N:(k + 1) * N] = fft.ifft(buff)
+            x_out[k * nc:(k + 1) * nc] = fft.ifft(buff)
     return x_out
 
 
@@ -1363,7 +1363,7 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
     >>> hc = array([1.0, 0.1, -0.05, 0.15, 0.2, 0.05]) # impulse response spanning five symbols
     >>> # Quick example using the above channel with no cyclic prefix
     >>> x1,b1,IQ_data1 = dc.QAM_bb(50000,1,'16qam')
-    >>> x_out = dc.OFDM_tx(IQ_data1,32,64,0,True,0)
+    >>> x_out = dc.ofdm_tx(IQ_data1,32,64,0,True,0)
     >>> c_out = signal.lfilter(hc,1,x_out) # Apply channel distortion
     >>> r_out = dc.cpx_AWGN(c_out,100,64/32) # Es/N0 = 100 dB
     >>> z_out,H = dc.OFDM_rx(r_out,32,64,-1,True,0,alpha=0.95,ht=hc)
@@ -1376,7 +1376,7 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
 
     Another example with noise using a 10 symbol cyclic prefix and channel estimation:
 
-    >>> x_out = dc.OFDM_tx(IQ_data1,32,64,100,True,10)
+    >>> x_out = dc.ofdm_tx(IQ_data1,32,64,100,True,10)
     >>> c_out = signal.lfilter(hc,1,x_out) # Apply channel distortion
     >>> r_out = dc.cpx_AWGN(c_out,25,64/32) # Es/N0 = 25 dB
     >>> z_out,H = dc.OFDM_rx(r_out,32,64,100,True,10,alpha=0.95,ht=hc);

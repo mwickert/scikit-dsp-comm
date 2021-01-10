@@ -2,6 +2,9 @@
 A Digital Communications Synchronization 
 and PLLs Function Module
 
+A collection of useful functions when studying PLLs
+and synchronization and digital comm
+
 Copyright (c) March 2017, Mark Wickert
 All rights reserved.
 
@@ -30,20 +33,10 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 """
 
-"""
-Synchronization and PLLs
-
-A collection of useful functions when studying PLLs
-and synchronization and digital comm
-
-
-Mark Wickert August 2014
-"""
-
 import numpy as np
-import scipy.signal as signal
-from . import digitalcom as dc
-from .digitalcom import MPSK_bb
+from logging import getLogger
+log = getLogger(__name__)
+import warnings
 
 
 def NDA_symb_sync(z,Ns,L,BnTs,zeta=0.707,I_ord=3):
@@ -112,7 +105,7 @@ def NDA_symb_sync(z,Ns,L,BnTs,zeta=0.707,I_ord=3):
                 v0 = z[nn]
                 z_interp = ((mu*v3 + v2)*mu + v1)*mu + v0
             else:
-                print('Error: I_ord must 1, 2, or 3')
+                log.error('I_ord must 1, 2, or 3')
             # Form TED output that is smoothed using 2*L+1 samples
             # We need Ns interpolants for this TED: 0:Ns-1
             c1 = 0
@@ -134,7 +127,7 @@ def NDA_symb_sync(z,Ns,L,BnTs,zeta=0.707,I_ord=3):
                     v0 = z[nn+kk]
                     z_TED_interp = ((mu*v3 + v2)*mu + v1)*mu + v0
                 else:
-                    print('Error: I_ord must 1, 2, or 3')
+                    log.error('Error: I_ord must 1, 2, or 3')
                 c1 = c1 + np.abs(z_TED_interp)**2 * np.exp(-1j*2*np.pi/Ns*kk)
             c1 = c1/Ns
             # Update 2*L+1 length buffer for TED output smoothing
@@ -171,7 +164,8 @@ def NDA_symb_sync(z,Ns,L,BnTs,zeta=0.707,I_ord=3):
     e_tau = e_tau[:-(len(e_tau)-mm+1)]
     return zz, e_tau
 
-def DD_carrier_sync(z,M,BnTs,zeta=0.707,type=0):
+
+def DD_carrier_sync(z, M, BnTs, zeta=0.707, mod_type = 'MPSK', type = 0, open_loop = False):
     """
     z_prime,a_hat,e_phi = DD_carrier_sync(z,M,BnTs,zeta=0.707,type=0)
     Decision directed carrier phase tracking
@@ -196,12 +190,13 @@ def DD_carrier_sync(z,M,BnTs,zeta=0.707,type=0):
                so Kp = sqrt(2).
     
     Mark Wickert July 2014
+    Updated for improved MPSK performance April 2020
+    Added experimental MQAM capability April 2020
 
     Motivated by code found in M. Rice, Digital Communications A Discrete-Time 
     Approach, Prentice Hall, New Jersey, 2009. (ISBN 978-0-13-030497-1).
     """
     Ns = 1
-    Kp = np.sqrt(2.) # for type 0
     z_prime = np.zeros_like(z)
     a_hat = np.zeros_like(z)
     e_phi = np.zeros(len(z))
@@ -209,46 +204,73 @@ def DD_carrier_sync(z,M,BnTs,zeta=0.707,type=0):
     theta_hat = 0
 
     # Tracking loop constants
-    K0 = 1;
+    Kp = 1 # What is it for the different schemes and modes?
+    K0 = 1 
     K1 = 4*zeta/(zeta + 1/(4*zeta))*BnTs/Ns/Kp/K0;
     K2 = 4/(zeta + 1/(4*zeta))**2*(BnTs/Ns)**2/Kp/K0;
     
     # Initial condition
     vi = 0
+    # Scaling for MQAM using signal power
+    # and known relationship for QAM.
+    if mod_type == 'MQAM':
+        z_scale = np.std(z) * np.sqrt(3/(2*(M-1)))
+        z = z/z_scale
     for nn in range(len(z)):
         # Multiply by the phase estimate exp(-j*theta_hat[n])
         z_prime[nn] = z[nn]*np.exp(-1j*theta_hat)
-        if M == 2:
-            a_hat[nn] = np.sign(z_prime[nn].real) + 1j*0
-        elif M == 4:
-            a_hat[nn] = np.sign(z_prime[nn].real) + 1j*np.sign(z_prime[nn].imag)
-        elif M == 8:
-            a_hat[nn] = np.angle(z_prime[nn])/(2*np.pi/8.)
-            # round to the nearest integer and fold to nonnegative
-            # integers; detection into M-levels with thresholds at mid points.
-            a_hat[nn] = np.mod(round(a_hat[nn]),8)
-            a_hat[nn] = np.exp(1j*2*np.pi*a_hat[nn]/8)
-        else:
-           raise ValueError('M must be 2, 4, or 8')
+        if mod_type == 'MPSK':
+            if M == 2:
+                a_hat[nn] = np.sign(z_prime[nn].real) + 1j*0
+            elif M == 4:
+                a_hat[nn] = (np.sign(z_prime[nn].real) + \
+                             1j*np.sign(z_prime[nn].imag))/sqrt(2)
+            elif M > 4:
+                # round to the nearest integer and fold to nonnegative
+                # integers; detection into M-levels with thresholds at mid points.
+                a_hat[nn] = np.mod((np.rint(np.angle(z_prime[nn])*M/2/np.pi)).astype(np.int),M)
+                a_hat[nn] = np.exp(1j*2*np.pi*a_hat[nn]/M)
+            else:
+                print('M must be 2, 4, 8, etc.')
+        elif mod_type == 'MQAM':
+            # Scale adaptively assuming var(x_hat) is proportional to 
+            if M ==2 or M == 4 or M == 16 or M == 64 or M == 256:
+                x_m = np.sqrt(M)-1
+                if M == 2: x_m = 1
+                # Shift to quadrant one for hard decisions 
+                a_hat_shift = (z_prime[nn] + x_m*(1+1j))/2
+                # Soft IQ symbol values are converted to hard symbol decisions
+                a_hat_shiftI = np.int16(np.clip(np.rint(a_hat_shift.real),0,x_m))
+                a_hat_shiftQ = np.int16(np.clip(np.rint(a_hat_shift.imag),0,x_m))
+                # Shift back to antipodal QAM
+                a_hat[nn] = 2*(a_hat_shiftI + 1j*a_hat_shiftQ) - x_m*(1+1j)
+            else:
+                print('M must be 2, 4, 16, 64, or 256');
         if type == 0:
-            # Maximum likelihood (ML)
+            # Maximum likelihood (ML) Rice
             e_phi[nn] = z_prime[nn].imag * a_hat[nn].real - \
-                    z_prime[nn].real * a_hat[nn].imag
+                        z_prime[nn].real * a_hat[nn].imag
         elif type == 1:
-            # Heuristic
+            # Heuristic Rice
             e_phi[nn] = np.angle(z_prime[nn]) - np.angle(a_hat[nn])
+            # Wrap the phase to [-pi,pi]  
+            e_phi[nn] = np.angle(np.exp(1j*e_phi[nn]))
+        elif type == 2:
+            # Ouyang and Wang 2002 MQAM paper
+            e_phi[nn] = imag(z_prime[nn]/a_hat[nn])
         else:
-            raise ValueError('Type must be 0 or 1')
+            print('Type must be 0 or 1')
         vp = K1*e_phi[nn]      # proportional component of loop filter
         vi = vi + K2*e_phi[nn] # integrator component of loop filter
         v = vp + vi        # loop filter output
         theta_hat = np.mod(theta_hat + v,2*np.pi)
         theta_h[nn] = theta_hat # phase track output array
-        #theta_hat = 0 # for open-loop testing
+        if open_loop:
+            theta_hat = 0 # for open-loop testing
     
-    # Normalize outputs to have QPSK points at (+/-)1 + j(+/-)1
-    #if M == 4:
-    #    z_prime = z_prime*np.sqrt(2)
+    # Normalize MQAM outputs
+    if mod_type == 'MQAM': 
+        z_prime *= z_scale
     return z_prime, a_hat, e_phi, theta_h
 
 
@@ -343,7 +365,7 @@ def PLL1(theta,fs,loop_type,Kv,fn,zeta,non_lin):
         tau1 = K/((2*np.pi*fn)**2)
         tau2 = 2*zeta/(2*np.pi*fn)*(1 - 2*np.pi*fn/K*1/(2*zeta))
     else:
-        print('Loop type must be 1, 2, or 3')
+        warnings.warn('Loop type must be 1, 2, or 3')
 
     # Initialize integration approximation filters
     filt_in_last = 0; filt_out_last = 0;
@@ -441,7 +463,7 @@ def PLL_cbb(x,fs,loop_type,Kv,fn,zeta):
         tau1 = K/((2*np.pi*fn)^2);
         tau2 = 2*zeta/(2*np.pi*fn)*(1 - 2*np.pi*fn/K*1/(2*zeta))
     else:
-        print('Loop type must be 1, 2, or 3')
+        warnings.warn('Loop type must be 1, 2, or 3')
 
     # Initialize integration approximation filters
     filt_in_last = 0; filt_out_last = 0;

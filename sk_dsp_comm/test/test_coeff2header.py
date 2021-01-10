@@ -4,6 +4,8 @@ from sk_dsp_comm import coeff2header as c2head
 import tempfile
 import os
 import numpy as np
+from logging import getLogger
+log = getLogger(__name__)
 
 dir_path = os.path.dirname(os.path.realpath(__file__)) + '/'
 
@@ -19,8 +21,9 @@ class TestCoeff2header(SKDSPCommTest):
         for filename in cls.tmpFiles:
             try:
                 os.unlink(filename)
-            except OSError:
-                print("File %s not found" % filename)
+            except OSError as ose:
+                log.error(ose)
+                log.error("File %s not found" % filename)
 
     def test_fir_header(self):
         """

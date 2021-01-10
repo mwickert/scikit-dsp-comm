@@ -27,9 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
-"""
 
-"""
+
 Notes
 -----
 The primary purpose of this function library is to support the book Signals and Systems for Dummies. Beyond that it should be useful to anyone who wants to use Pylab for general signals and systems modeling and simulation. There is a good collection of digital communication simulation primitives included in the library. More enhancements are planned over time.
@@ -39,23 +38,25 @@ alphabetical listing of the library functions. In all of the example code given 
 
 Examples
 --------
->>> import ssd
+>>> import sk_dsp_comm.sigsys as ssd
 >>> # Commands then need to be prefixed with ssd., i.e.,
 >>> ssd.tri(t,tau)
 >>> # A full import of the module, to avoid the the need to prefix with ssd, is:
->>> from ssd import *
+>>> from sk_dsp_comm.sigsys import *
 
 Function Catalog
 ----------------
 """
 
 from matplotlib import pylab
-from matplotlib import mlab 
 import numpy as np
 from numpy import fft
 import matplotlib.pyplot as plt
 from scipy import signal
 from scipy.io import wavfile
+from logging import getLogger
+log = getLogger(__name__)
+import warnings
 
 
 def CIC(M, K):
@@ -338,7 +339,7 @@ def cruise_control(wn,zeta,T,vcruise,vmax,tf_mode='H'):
     the supplementary article. The plant model is obtained by the
     linearizing the equations of motion and the controller contains a
     proportional and integral gain term set via the closed-loop parameters
-    natuarl frequency wn (rad/s) and damping zeta.
+    natural frequency wn (rad/s) and damping zeta.
 
     Parameters
     ----------
@@ -371,8 +372,10 @@ def cruise_control(wn,zeta,T,vcruise,vmax,tf_mode='H'):
     Kp = T*(2*zeta*wn-1/tau)/vmax
     Ki = T*wn**2./vmax
     K = Kp*vmax/T
-    print('wn = ', np.sqrt(K/(Kp/Ki)))
-    print('zeta = ', (K + 1/tau)/(2*wn))
+    wn = np.sqrt(K/(Kp/Ki))
+    zeta = (K + 1/tau)/(2*wn)
+    log.info('wn = %s' % (wn))
+    log.info('zeta = %s' % (zeta))
     a = np.array([1, 2*zeta*wn, wn**2])
     if tf_mode == 'H':
         b = np.array([K, wn**2])      
@@ -421,6 +424,10 @@ def splane(b,a,auto_scale=True,size=[-1,1,-1,1]):
     >>> # Here the plot is generated using manual scaling
     >>> splane(b,a,False,[-10,1,-10,10])
     """
+    if (isinstance(a,int) or isinstance(a,float)):
+        a = [a]
+    if (isinstance(b,int) or isinstance(b,float)):
+        b = [b]
     M = len(b) - 1
     N = len(a) - 1
     plt.figure(figsize=(5,5))
@@ -1002,7 +1009,7 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
 
     This function implements averaged periodogram spectral estimation
     estimation similar to the NumPy's psd() function, but more
-    specialized for the the windowing case study of Chapter 16.
+    specialized for the windowing case study of Chapter 16.
 
     Parameters
     ----------
@@ -1047,9 +1054,9 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
     """
     Nx = len(x)
     K = int(Nx/NS)
-    print('K = ', K)
+    log.info('K = ', K)
     if NAVG > K:
-        print('NAVG exceeds number of available subrecords')
+        warnings.warn('NAVG exceeds number of available subrecords')
         return 0,0
     if window.lower() == 'boxcar' or window.lower() == 'rectangle':
         w = signal.boxcar(NS)
@@ -1137,14 +1144,14 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
             elif fk[k] > 0 and sides == 1:
                 plt.plot([fk[k], fk[k]],[0, 2.*np.abs(Xk[k])],linetype, linewidth=lwidth)
             else:
-                print('Invalid sides type')
+                warnings.warn('Invalid sides type')
         plt.grid()
         if sides == 2:
             plt.axis([-1.2*max(fk), 1.2*max(fk), 0, 1.05*max(abs(Xk))])        
         elif sides == 1:
             plt.axis([0, 1.2*max(fk), 0, 1.05*2*max(abs(Xk))])
         else:
-            print('Invalid sides type')
+            warnings.warn('Invalid sides type')
         plt.ylabel('Magnitude')
         plt.xlabel('Frequency (Hz)')
     elif mode == 'magdB':
@@ -1160,7 +1167,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
             elif fk[k] > 0 and sides == 1:
                 plt.plot([fk[k], fk[k]],[floor_dB, Xk_dB[k]+6.02],linetype, linewidth=lwidth)
             else:
-                print('Invalid sides type')
+                warnings.warn('Invalid sides type')
         plt.grid()
         max_dB = np.ceil(max(Xk_dB/10.))*10
         min_dB = max(floor_dB,np.floor(min(Xk_dB/10.))*10)
@@ -1169,7 +1176,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
         elif sides == 1:
             plt.axis([0, 1.2*max(fk), min_dB, max_dB])
         else:
-            print('Invalid sides type')
+            warnings.warn('Invalid sides type')
         plt.ylabel('Magnitude (dB)')
         plt.xlabel('Frequency (Hz)')
     elif mode == 'magdBn':
@@ -1185,7 +1192,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
             elif fk[k] > 0 and sides == 1:
                 plt.plot([fk[k], fk[k]],[floor_dB, Xk_dB[k]+6.02],linetype, linewidth=lwidth)
             else:
-                print('Invalid sides type')
+                warnings.warn('Invalid sides type')
         plt.grid()
         max_dB = np.ceil(max(Xk_dB/10.))*10
         min_dB = max(floor_dB,np.floor(min(Xk_dB/10.))*10)
@@ -1194,7 +1201,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
         elif sides == 1:
             plt.axis([0, 1.2*max(fk), min_dB, max_dB])
         else:
-            print('Invalid sides type')
+            warnings.warn('Invalid sides type')
         plt.ylabel('Normalized Magnitude (dB)')
         plt.xlabel('Frequency (Hz)')    
     elif mode == 'phase':
@@ -1209,7 +1216,7 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
             elif fk[k] > 0 and sides == 1:
                 plt.plot([fk[k], fk[k]],[0, np.angle(Xk[k])],linetype, linewidth=lwidth)
             else:
-                print('Invalid sides type')
+                warnings.warn('Invalid sides type')
         plt.grid()
         if sides == 2:
             plt.plot([-1.2*max(fk), 1.2*max(fk)], [0, 0],'k')
@@ -1218,11 +1225,11 @@ def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6
             plt.plot([0, 1.2*max(fk)], [0, 0],'k')
             plt.axis([0, 1.2*max(fk), -1.1*max(np.abs(np.angle(Xk))), 1.1*max(np.abs(np.angle(Xk)))])
         else:
-            print('Invalid sides type')
+            warnings.warn('Invalid sides type')
         plt.ylabel('Phase (rad)')
         plt.xlabel('Frequency (Hz)')
     else:
-        print('Invalid mode type')
+        warnings.warn('Invalid mode type')
 
 
 def fs_coeff(xp,N,f0,one_side=True):
@@ -1486,7 +1493,7 @@ def conv_sum(x1,nx1,x2,nx2,extent=('f','f')):
         raise ValueError('Invalid x1 x2 extents specified or valid extent not found!')
     # Finally convolve the sequences
     y = signal.convolve(x1, x2)
-    print('Output support: (%+d, %+d)' % (ny[0],ny[-1]))
+    log.info('Output support: (%+d, %+d)' % (ny[0],ny[-1]))
     return y[nny], ny
 
 
@@ -1570,7 +1577,7 @@ def conv_integral(x1,tx1,x2,tx2,extent=('f','f')):
         raise ValueError('Invalid x1 x2 extents specified or valid extent not found!')
     # Finally convolve the sampled sequences and scale by dt
     y = signal.convolve(x1, x2)*dt
-    print('Output support: (%+2.2f, %+2.2f)' % (ty[0],ty[-1]))
+    log.info('Output support: (%+2.2f, %+2.2f)' % (ty[0],ty[-1]))
     return y[ny], ty
 
 
@@ -2748,6 +2755,10 @@ def zplane(b,a,auto_scale=True,size=2,detect_mult=True,tol=0.001):
     >>> # Here the plot is generated using manual scaling
     >>> zplane(b,a,False,1.5)
     """
+    if (isinstance(a,int) or isinstance(a,float)):
+        a = [a]
+    if (isinstance(b,int) or isinstance(b,float)):
+        b = [b]
     M = len(b) - 1
     N = len(a) - 1
     # Plot labels if multiplicity greater than 1

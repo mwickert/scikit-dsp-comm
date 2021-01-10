@@ -27,11 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
-"""
 
 
-"""
-A forward error correcting coding (FEC) class which defines methods 
+A forward error correcting coding (FEC) class which defines methods
 for performing convolutional encoding and decoding. Arbitrary 
 polynomials are supported, but the rate is presently limited to r = 1/n,
 where n = 2. Punctured (perforated) convolutional codes are also supported. 
@@ -53,10 +51,12 @@ Mark Wickert and Andrew Smit: October 2018.
 """
 
 import numpy as np
-import warnings
 import scipy.special as special
 from .digitalcom import Q_fctn
 from .fec_conv import binary
+from logging import getLogger
+log = getLogger(__name__)
+
 
 class fec_hamming(object):
     """
@@ -81,8 +81,8 @@ class fec_hamming(object):
     def __init__(self,j):
         self.j = j
         self.G, self.H, self.R, self.n, self.k = self.hamm_gen(self.j)
-        print('(%d,%d) hamming code object' %(self.n,self.k))
-        
+        log.info('(%d,%d) hamming code object' %(self.n,self.k))
+
     def hamm_gen(self,j):
         """
         Generates parity check matrix (H) and generator
@@ -285,7 +285,7 @@ class fec_cyclic(object):
         self.G = G
         if(G[0] == '0' or G[len(G)-1] == '0'):
             raise ValueError('Error: Invalid generator polynomial')
-        print('(%d,%d) cyclic code object' %(self.n,self.k))
+        log.info('(%d,%d) cyclic code object' %(self.n,self.k))
     
     
     def cyclic_encoder(self,x,G='1011'):

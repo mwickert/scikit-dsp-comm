@@ -292,7 +292,7 @@ class FecConv(object):
         >>>     x = randint(0,2,N_bits_per_frame)
         >>>     y,state = cc1.conv_encoder(x,state)
         >>>     # Add channel noise to bits, include antipodal level shift to [-1,1]
-        >>>     yn_soft = dc.cpx_AWGN(2*y-1,EbN0-3,1) # Channel SNR is 3 dB less for rate 1/2
+        >>>     yn_soft = dc.cpx_awgn(2*y-1,EbN0-3,1) # Channel SNR is 3 dB less for rate 1/2
         >>>     yn_hard = ((np.sign(yn_soft.real)+1)/2).astype(int)
         >>>     z = cc1.viterbi_decoder(yn_hard,'hard')
         >>>     # Count bit errors
@@ -367,7 +367,7 @@ class FecConv(object):
         >>>     x = randint(0,2,N_bits_per_frame)
         >>>     y,state = cc2.conv_encoder(x,state)
         >>>     # Add channel noise to bits, include antipodal level shift to [-1,1]
-        >>>     yn_soft = dc.cpx_AWGN(2*y-1,EbN0-10*np.log10(3),1) # Channel SNR is 10*log10(3) dB less
+        >>>     yn_soft = dc.cpx_awgn(2*y-1,EbN0-10*np.log10(3),1) # Channel SNR is 10*log10(3) dB less
         >>>     yn_hard = ((np.sign(yn_soft.real)+1)/2).astype(int)
         >>>     z = cc2.viterbi_decoder(yn_hard.real,'hard')
         >>>     # Count bit errors
@@ -771,7 +771,7 @@ class FecConv(object):
         >>> state = '00'
         >>> y,state = cc.conv_encoder(x,state)
         >>> # Add channel noise to bits translated to +1/-1
-        >>> yn = dc.cpx_AWGN(2*y-1,5,1) # SNR = 5 dB
+        >>> yn = dc.cpx_awgn(2*y-1,5,1) # SNR = 5 dB
         >>> # Translate noisy +1/-1 bits to soft values on [0,7]
         >>> yn = (yn.real+1)/2*7
         >>> z = cc.viterbi_decoder(yn)

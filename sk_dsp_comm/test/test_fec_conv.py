@@ -29,7 +29,7 @@ class TestFecConv12(SKDSPCommTest):
         state = '00'
         y, state = cc1.conv_encoder(x, state)
         z_test = [ 0.,  0.,  1.,  1.,  1.,  1.,  0.,  0.,  0.,  0.,  0.]
-        yn = dc.cpx_AWGN(2 * y - 1, 5, 1)
+        yn = dc.cpx_awgn(2 * y - 1, 5, 1)
         yn = (yn.real + 1) / 2 * 7
         z = cc1.viterbi_decoder(yn)
         npt.assert_almost_equal(z_test, z)
@@ -57,7 +57,7 @@ class TestFecConv12(SKDSPCommTest):
         state = '00'
         y, state = cc1.conv_encoder(x, state)
         yp = cc1.puncture(y, ('110', '101'))
-        ypn = dc.cpx_AWGN(2 * yp - 1, 8, 1)
+        ypn = dc.cpx_awgn(2 * yp - 1, 8, 1)
         ypn = (ypn.real + 1) / 2 * 7
         zdpn = cc1.depuncture(ypn, ('110', '101'), 3.5)  # set erase threshold to 7/2
         npt.assert_almost_equal(zdpn_test, zdpn)

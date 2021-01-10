@@ -393,7 +393,7 @@ class TestSigsys(SKDSPCommTest):
         npt.assert_almost_equal(b, b_check)
 
     def test_PN_gen(self):
-        PN = ss.PN_gen(50, 4)
+        PN = ss.pn_gen(50, 4)
         PN_check = np.array([ 1.,  1.,  1.,  1.,  0.,  1.,  0.,  1.,  1.,  0.,  0.,  1.,  0.,
         0.,  0.,  1.,  1.,  1.,  1.,  0.,  1.,  0.,  1.,  1.,  0.,  0.,
         1.,  0.,  0.,  0.,  1.,  1.,  1.,  1.,  0.,  1.,  0.,  1.,  1.,
@@ -543,7 +543,7 @@ class TestSigsys(SKDSPCommTest):
             ss.m_seq(-1)
 
     def test_BPSK_tx(self):
-        x,b,data0 = ss.BPSK_tx(1000, 10,pulse='src')
+        x,b,data0 = ss.bpsk_tx(1000, 10, pulse='src')
         bit_vals = [0, 1]
         for bit in data0:
             val_check = bit in bit_vals
@@ -551,10 +551,10 @@ class TestSigsys(SKDSPCommTest):
 
     def test_BPSK_tx_value_error(self):
         with self.assertRaisesRegexp(ValueError, 'Pulse shape must be \'rect\' or \'src\'''') as bpsk_err:
-            ss.BPSK_tx(1000, 10, pulse='rc')
+            ss.bpsk_tx(1000, 10, pulse='rc')
 
     def test_NRZ_bits(self):
-        x, b, data = ss.NRZ_bits(25, 8)
+        x, b, data = ss.nrz_bits(25, 8)
         b_check = np.array([ 0.125,  0.125,  0.125,  0.125,  0.125,  0.125,  0.125,  0.125])
         x_vals = [-1, 1]
         data_vals = [0, 1]
@@ -568,14 +568,14 @@ class TestSigsys(SKDSPCommTest):
 
     def test_NRZ_bits_3(self):
         Tspan = 10  # Time span in seconds
-        PN, b, data = ss.NRZ_bits(1000 * Tspan, 8000 / 1000)
+        PN, b, data = ss.nrz_bits(1000 * Tspan, 8000 / 1000)
 
     def test_NRZ_bits_value_error(self):
         with self.assertRaisesRegexp(ValueError, 'pulse type must be rec, rc, or src') as NRZ_err:
-            x,b,data = ss.NRZ_bits(100, 10, pulse='value')
+            x,b,data = ss.nrz_bits(100, 10, pulse='value')
 
     def test_NRZ_bits2(self):
-        x,b = ss.NRZ_bits2(ss.m_seq(3), 10)
+        x,b = ss.nrz_bits2(ss.m_seq(3), 10)
         x_check = np.array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
         1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
         1.,  1.,  1.,  1., -1., -1., -1., -1., -1., -1., -1., -1., -1.,
@@ -591,11 +591,11 @@ class TestSigsys(SKDSPCommTest):
 
     def test_NRZ_bits2_value_error(self):
         with self.assertRaisesRegexp(ValueError, 'pulse type must be rec, rc, or src') as NRZ_err:
-            x,b = ss.NRZ_bits2(ss.m_seq(5), 10, pulse='val')
+            x,b = ss.nrz_bits2(ss.m_seq(5), 10, pulse='val')
 
     def test_bit_errors(self):
-        x, b, data = ss.NRZ_bits(1000000, 10)
-        y = ss.cpx_AWGN(x, 12, 10)
+        x, b, data = ss.nrz_bits(1000000, 10)
+        y = ss.cpx_awgn(x, 12, 10)
         z = signal.lfilter(b, 1, y)
         Pe_hat = ss.bit_errors(z, data, 10, 10)
         npt.assert_almost_equal(Pe_hat, 3.0000030000030001e-06, decimal=5)
@@ -690,12 +690,12 @@ class TestSigsys(SKDSPCommTest):
         x = np.cos(2 * np.pi * 0.211 * n)
         test_q = [0.99951172, 0.24267578, -0.88232422, -0.67089844, 0.55664062, 0.94091797, -0.10058594, -0.98974609,
                   -0.37988281, 0.80517578]
-        q = ss.simpleQuant(x, 12, 1, 'sat')
+        q = ss.simple_quant(x, 12, 1, 'sat')
         npt.assert_almost_equal(q, test_q)
 
     def test_simpleQuant_value_err(self):
         with self.assertRaisesRegexp(ValueError, "limit must be the string over, sat, or none") as sQ_err:
-            ss.simpleQuant(np.ones(12), 12, 12, 'under')
+            ss.simple_quant(np.ones(12), 12, 12, 'under')
 
     def test_ft_approx(self):
         f_check = [-0.9765625,  -0.95214844, -0.92773438, -0.90332031, -0.87890625, -0.85449219,

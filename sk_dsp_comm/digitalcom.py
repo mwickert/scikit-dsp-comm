@@ -39,11 +39,11 @@ from scipy.special import erfc
 from sys import exit
 from .sigsys import upsample
 from .sigsys import downsample
-from .sigsys import NRZ_bits
-from .sigsys import NRZ_bits2
-from .sigsys import PN_gen
+from .sigsys import nrz_bits
+from .sigsys import nrz_bits2
+from .sigsys import pn_gen
 from .sigsys import m_seq
-from .sigsys import cpx_AWGN
+from .sigsys import cpx_awgn
 from .sigsys import CIC
 
 from logging import getLogger
@@ -175,7 +175,7 @@ def eye_plot(x, l, s=0):
 
     >>> import matplotlib.pyplot as plt
     >>> from sk_dsp_comm import digitalcom as dc
-    >>> x,b, data = dc.NRZ_bits(1000,10,'rc')
+    >>> x,b, data = dc.nrz_bits(1000,10,'rc')
     >>> dc.eye_plot(x,20,60)
     >>> plt.show()
     """
@@ -219,11 +219,11 @@ def scatter(x, ns, start):
     --------
     >>> import matplotlib.pyplot as plt
     >>> from sk_dsp_comm import digitalcom as dc
-    >>> x,b, data = dc.NRZ_bits(1000,10,'rc')
+    >>> x,b, data = dc.nrz_bits(1000,10,'rc')
 
     Add some noise so points are now scattered about +/-1.
 
-    >>> y = dc.cpx_AWGN(x,20,10)
+    >>> y = dc.cpx_awgn(x,20,10)
     >>> yI,yQ = dc.scatter(y,10,60)
     >>> plt.plot(yI,yQ,'.')
     >>> plt.grid()
@@ -502,7 +502,7 @@ def GMSK_bb(N_bits, Ns, MSK = 0,BT = 0.35):
 
     Mark Wickert Python version November 2014
     """
-    x, b, data = NRZ_bits(N_bits,Ns)
+    x, b, data = nrz_bits(N_bits, Ns)
     # pulse length 2*M*Ns
     M = 4
     n = np.arange(-M*Ns,M*Ns+1)
@@ -587,7 +587,7 @@ def QPSK_rx(fc,N_symb,Rs,EsN0=100,fs=125,lfsr_len=10,phase=0,pulse='src'):
     log.info('pulse = ', pulse)
     x, b, data = QPSK_bb(N_symb,Ns,lfsr_len,pulse)
     # Add AWGN to x
-    x = cpx_AWGN(x,EsN0,Ns)
+    x = cpx_awgn(x, EsN0, Ns)
     n = np.arange(len(x))
     xc = x*np.exp(1j*2*np.pi*fc/float(fs)*n) * np.exp(1j*phase)
     return xc, b, data
@@ -612,15 +612,15 @@ def QPSK_bb(N_symb,Ns,lfsr_len=5,pulse='src',alpha=0.25,M=6):
     
     """
     if lfsr_len > 0:  # LFSR data
-        data = PN_gen(2*N_symb,lfsr_len)
+        data = pn_gen(2 * N_symb, lfsr_len)
         dataI = data[0::2]
         dataQ = data[1::2]
-        xI, b = NRZ_bits2(dataI,Ns,pulse,alpha,M)
-        xQ, b = NRZ_bits2(dataQ,Ns,pulse,alpha,M)
+        xI, b = nrz_bits2(dataI, Ns, pulse, alpha, M)
+        xQ, b = nrz_bits2(dataQ, Ns, pulse, alpha, M)
     else:             # Random data
         data = np.zeros(2*N_symb)
-        xI, b, data[0::2] = NRZ_bits(N_symb,Ns,pulse,alpha,M)
-        xQ, b, data[1::2] = NRZ_bits(N_symb,Ns,pulse,alpha,M)        
+        xI, b, data[0::2] = nrz_bits(N_symb, Ns, pulse, alpha, M)
+        xQ, b, data[1::2] = nrz_bits(N_symb, Ns, pulse, alpha, M)
     #print('P_I: ',np.var(xI), 'P_Q: ',np.var(xQ))
     x = (xI + 1j*xQ)/np.sqrt(2.)
     return x, b, data
@@ -785,9 +785,9 @@ def BPSK_tx(N_bits,Ns,ach_fc=2.0,ach_lvl_dB=-100,pulse='rect',alpha = 0.25,M=6):
     --------
     >>> x,b,data0 = BPSK_tx(1000,10,'src')
     """
-    x0,b,data0 = NRZ_bits(N_bits,Ns,pulse,alpha,M)
-    x1p,b,data1p = NRZ_bits(N_bits,Ns,pulse,alpha,M)
-    x1m,b,data1m = NRZ_bits(N_bits,Ns,pulse,alpha,M)
+    x0,b,data0 = nrz_bits(N_bits, Ns, pulse, alpha, M)
+    x1p,b,data1p = nrz_bits(N_bits, Ns, pulse, alpha, M)
+    x1m,b,data1m = nrz_bits(N_bits, Ns, pulse, alpha, M)
     n = np.arange(len(x0))
     x1p = x1p*np.exp(1j*2*np.pi*ach_fc/float(Ns)*n)
     x1m = x1m*np.exp(-1j*2*np.pi*ach_fc/float(Ns)*n)
@@ -982,7 +982,7 @@ def my_psd(x,NFFT=2**10,Fs=1):
     >>> import matplotlib.pyplot as plt
     >>> from sk_dsp_comm import digitalcom as dc
     >>> from numpy import log10
-    >>> x,b, data = dc.NRZ_bits(10000,10)
+    >>> x,b, data = dc.nrz_bits(10000,10)
     >>> Px,f = dc.my_psd(x,2**10,10)
     >>> plt.plot(f, 10*log10(Px))
     >>> plt.show()
@@ -1393,7 +1393,7 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
     >>> x1,b1,IQ_data1 = dc.QAM_bb(50000,1,'16qam')
     >>> x_out = dc.OFDM_tx(IQ_data1,32,64,0,True,0)
     >>> c_out = signal.lfilter(hc,1,x_out) # Apply channel distortion
-    >>> r_out = dc.cpx_AWGN(c_out,100,64/32) # Es/N0 = 100 dB
+    >>> r_out = dc.cpx_awgn(c_out,100,64/32) # Es/N0 = 100 dB
     >>> z_out,H = dc.OFDM_rx(r_out,32,64,-1,True,0,alpha=0.95,ht=hc)
     >>> plt.plot(z_out[200:].real,z_out[200:].imag,'.')
     >>> plt.xlabel('In-Phase')
@@ -1406,7 +1406,7 @@ def OFDM_rx(x, Nf, N, Np=0, cp=False, Ncp=0, alpha=0.95, ht=None):
 
     >>> x_out = dc.OFDM_tx(IQ_data1,32,64,100,True,10)
     >>> c_out = signal.lfilter(hc,1,x_out) # Apply channel distortion
-    >>> r_out = dc.cpx_AWGN(c_out,25,64/32) # Es/N0 = 25 dB
+    >>> r_out = dc.cpx_awgn(c_out,25,64/32) # Es/N0 = 25 dB
     >>> z_out,H = dc.OFDM_rx(r_out,32,64,100,True,10,alpha=0.95,ht=hc);
     >>> plt.figure() # if channel estimation is turned on need this
     >>> plt.plot(z_out[-2000:].real,z_out[-2000:].imag,'.') # allow settling time

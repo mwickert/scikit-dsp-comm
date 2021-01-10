@@ -201,7 +201,7 @@ class TestDigitalcom(SKDSPCommTest):
     def test_QAM_SEP_16qam_no_error(self):
         Nsymb_test, Nerr_test, SEP_test = (4986, 0, 0.0)
         x, b, tx_data = dc.QAM_bb(5000, 10, '16qam', 'src')
-        x = dc.cpx_AWGN(x, 20, 10)
+        x = dc.cpx_awgn(x, 20, 10)
         y = signal.lfilter(b, 1, x)
         Nsymb, Nerr, SEP = dc.QAM_SEP(tx_data, y[10 + 10 * 12::10], '16qam', Ntransient=0)
         self.assertEqual(Nsymb, Nsymb_test)
@@ -211,7 +211,7 @@ class TestDigitalcom(SKDSPCommTest):
     def test_QAM_SEP_16qam_error(self):
         Nsymb_test, Nerr_test, SEP_test = (9976, 172, 0.017241379310344827)
         x, b, tx_data = dc.QAM_bb(10000, 1, '16qam', 'rect')
-        x = dc.cpx_AWGN(x, 15, 1)
+        x = dc.cpx_awgn(x, 15, 1)
         y = signal.lfilter(b, 1, x)
         Nsymb, Nerr, SEP = dc.QAM_SEP(tx_data, y[1 * 12::1], '16qam', Ntransient=0)
         self.assertEqual(Nsymb, Nsymb_test)
@@ -221,7 +221,7 @@ class TestDigitalcom(SKDSPCommTest):
     def test_QAM_SEP_qpsk(self):
         Nsymb_test, Nerr_test, SEP_test = (4986, 0, 0.0)
         x,b,tx_data = dc.QAM_bb(5000,10,'qpsk','src')
-        x = dc.cpx_AWGN(x,20,10)
+        x = dc.cpx_awgn(x, 20, 10)
         y = signal.lfilter(b,1,x)
         Nsymb,Nerr,SEP = dc.QAM_SEP(tx_data,y[10+10*12::10],'qpsk',Ntransient=0)
         self.assertEqual(Nsymb, Nsymb_test)
@@ -231,7 +231,7 @@ class TestDigitalcom(SKDSPCommTest):
     def test_QAM_SEP_64qam(self):
         Nsymb_test, Nerr_test, SEP_test = (4986, 245, 0.04913758523866827)
         x, b, tx_data = dc.QAM_bb(5000, 10, '64qam', 'src')
-        x = dc.cpx_AWGN(x, 20, 10)
+        x = dc.cpx_awgn(x, 20, 10)
         y = signal.lfilter(b, 1, x)
         Nsymb, Nerr, SEP = dc.QAM_SEP(tx_data, y[10 + 10 * 12::10], '64qam', Ntransient=0)
         self.assertEqual(Nsymb, Nsymb_test)
@@ -241,7 +241,7 @@ class TestDigitalcom(SKDSPCommTest):
     def test_QAM_SEP_256qam(self):
         Nsymb_test, Nerr_test, SEP_test = (4986, 2190, 0.43922984356197353)
         x, b, tx_data = dc.QAM_bb(5000, 10, '256qam', 'src')
-        x = dc.cpx_AWGN(x, 20, 10)
+        x = dc.cpx_awgn(x, 20, 10)
         y = signal.lfilter(b, 1, x)
         Nsymb, Nerr, SEP = dc.QAM_SEP(tx_data, y[10 + 10 * 12::10], '256qam', Ntransient=0)
         self.assertEqual(Nsymb, Nsymb_test)
@@ -365,7 +365,7 @@ class TestDigitalcom(SKDSPCommTest):
         x1, b1, IQ_data1 = dc.QAM_bb(50000, 1, '16qam')
         x_out = dc.OFDM_tx(IQ_data1, 32, 64, 0, True, 0)
         c_out = signal.lfilter(hc, 1, x_out)  # Apply channel distortion
-        r_out = dc.cpx_AWGN(c_out, 100, 64 / 32)  # Es/N0 = 100 dB
+        r_out = dc.cpx_awgn(c_out, 100, 64 / 32)  # Es/N0 = 100 dB
         z_out, H = dc.OFDM_rx(r_out, 32, 64, -1, True, 0, alpha=0.95, ht=hc);
         npt.assert_almost_equal(z_out[:20], z_out_test)
         npt.assert_almost_equal(H, H_test)
@@ -416,7 +416,7 @@ class TestDigitalcom(SKDSPCommTest):
         x1, b1, IQ_data1 = dc.QAM_bb(50000, 1, '16qam')
         x_out = dc.OFDM_tx(IQ_data1, 32, 64, 100, True, 10)
         c_out = signal.lfilter(hc, 1, x_out)  # Apply channel distortion
-        r_out = dc.cpx_AWGN(c_out, 25, 64 / 32)  # Es/N0 = 25 dB
+        r_out = dc.cpx_awgn(c_out, 25, 64 / 32)  # Es/N0 = 25 dB
         z_out, H = dc.OFDM_rx(r_out, 32, 64, 100, True, 10, alpha=0.95, ht=hc)
         npt.assert_almost_equal(z_out[:50], z_out_test)
         npt.assert_almost_equal(H[:50], H_out_test)

@@ -527,7 +527,7 @@ def mpsk_bb(n_symb, ns, mod, pulse='rect', alpha=0.25, m=6):
     mod : MPSK modulation order, e.g., 4, 8, 16, ...
     pulse : 'rect' , 'rc', 'src' (default 'rect')
     alpha : excess bandwidth factor(default 0.25)
-    m : single sided pulse duration (default = 6) 
+    m : single sided pulse duration (default = 6)
 
     Returns
     -------
@@ -1125,7 +1125,7 @@ def to_bin(data, width):
 
 def from_bin(bin_array):
     """
-    Convert binary array back a nonnegative integer. The array length is 
+    Convert binary array back a nonnegative integer. The array length is
     the bit width. The first input index holds the MSB and the last holds the LSB.
     """
     width = len(bin_array)
@@ -1186,14 +1186,14 @@ def awgn_channel(x_bits, eb_n0_dB):
     return y_bits
 
 
-def mux_pilot_blocks(iq_data, np):
+def mux_pilot_blocks(iq_data, npb):
     """
     Parameters
     ----------
     iq_data : a 2D array of input QAM symbols with the columns
                representing the NF carrier frequencies and each
                row the QAM symbols used to form an OFDM symbol
-    np : the period of the pilot blocks; e.g., a pilot block is
+    npb : the period of the pilot blocks; e.g., a pilot block is
                inserted every Np OFDM symbols (Np-1 OFDM data symbols
                of width Nf are inserted in between the pilot blocks.
 
@@ -1211,27 +1211,27 @@ def mux_pilot_blocks(iq_data, np):
     in channel estimation when a delay spread channel is present.
     """
     N_OFDM = iq_data.shape[0]
-    Npb = N_OFDM // (np - 1)
-    N_OFDM_rem = N_OFDM - Npb * (np - 1)
+    Npb = N_OFDM // (npb - 1)
+    N_OFDM_rem = N_OFDM - Npb * (npb - 1)
     Nf = iq_data.shape[1]
     IQ_datap = np.zeros((N_OFDM + Npb + 1, Nf), dtype=np.complex128)
     pilots = np.ones(Nf)  # The pilot symbol is simply 1 + j0
     for k in range(Npb):
-        IQ_datap[np * k:np * (k + 1), :] = np.vstack((pilots,
-                                                      iq_data[(np - 1) * k:(np - 1) * (k + 1), :]))
-    IQ_datap[np * Npb:np * (Npb + N_OFDM_rem), :] = np.vstack((pilots,
-                                                               iq_data[(np - 1) * Npb:, :]))
+        IQ_datap[npb * k:npb * (k + 1), :] = np.vstack((pilots,
+                                                        iq_data[(npb - 1) * k:(npb - 1) * (k + 1), :]))
+    IQ_datap[npb * Npb:npb * (Npb + N_OFDM_rem), :] = np.vstack((pilots,
+                                                                 iq_data[(npb - 1) * Npb:, :]))
     return IQ_datap
 
 
-def ofdm_tx(iq_data, nf, n, np=0, cp=False, ncp=0):
+def ofdm_tx(iq_data, nf, nc, npb=0, cp=False, ncp=0):
     """
     Parameters
     ----------
     iq_data : +/-1, +/-3, etc complex QAM symbol sample inputs
     nf : number of filled carriers, must be even and Nf < N
-    n : total number of carriers; generally a power 2, e.g., 64, 1024, etc
-    np : Period of pilot code blocks; 0 <=> no pilots
+    nc : total number of carriers; generally a power 2, e.g., 64, 1024, etc
+    npb : Period of pilot code blocks; 0 <=> no pilots
     cp : False/True <=> bypass cp insertion entirely if False
     ncp : the length of the cyclic prefix
 
@@ -1247,6 +1247,8 @@ def ofdm_tx(iq_data, nf, n, np=0, cp=False, ncp=0):
     --------
     >>> import matplotlib.pyplot as plt
     >>> from sk_dsp_comm import digitalcom as dc
+    >>> x1,b1,IQ_data1 = dc.QAM_bb(50000,1,'16qam')
+    >>> x_out = dc.ofdm_tx(IQ_data1,32,64)
     >>> x1,b1,IQ_data1 = dc.qam_bb(50000,1,'16qam')
     >>> x_out = dc.ofdm_tx(IQ_data1,32,64)
     >>> plt.psd(x_out,2**10,1);
@@ -1260,32 +1262,32 @@ def ofdm_tx(iq_data, nf, n, np=0, cp=False, ncp=0):
     N_OFDM = N_symb // nf
     iq_data = iq_data[:N_OFDM * nf]
     IQ_s2p = np.reshape(iq_data, (N_OFDM, nf))  # carrier symbols by column
-    log.info(IQ_s2p.shape)
-    if np > 0:
-        IQ_s2p = mux_pilot_blocks(IQ_s2p, np)
+    print(IQ_s2p.shape)
+    if npb > 0:
+        IQ_s2p = mux_pilot_blocks(IQ_s2p, npb)
         N_OFDM = IQ_s2p.shape[0]
         log.info(IQ_s2p.shape)
     if cp:
-        x_out = np.zeros(N_OFDM * (n + ncp), dtype=np.complex128)
+        x_out = np.zeros(N_OFDM * (nc + ncp), dtype=np.complex128)
     else:
-        x_out = np.zeros(N_OFDM * n, dtype=np.complex128)
+        x_out = np.zeros(N_OFDM * nc, dtype=np.complex128)
     for k in range(N_OFDM):
-        buff = np.zeros(n, dtype=np.complex128)
-        for n in range(-nf // 2, nf // 2 + 1):
-            if n == 0:  # Modulate carrier f = 0
+        buff = np.zeros(nc, dtype=np.complex128)
+        for n_freq in range(-nf // 2, nf // 2 + 1):
+            if n_freq == 0:  # Modulate carrier f = 0
                 buff[0] = 0  # This can be a pilot carrier
-            elif n > 0:  # Modulate carriers f = 1:Nf/2
-                buff[n] = IQ_s2p[k, n - 1]
+            elif n_freq > 0:  # Modulate carriers f = 1:Nf/2
+                buff[n_freq] = IQ_s2p[k, n_freq - 1]
             else:  # Modulate carriers f = -Nf/2:-1
-                buff[n + n] = IQ_s2p[k, nf + n]
+                buff[nc + n_freq] = IQ_s2p[k, nf + n_freq]
         if cp:
             # With cyclic prefix
             x_out_buff = fft.ifft(buff)
-            x_out[k * (n + ncp):(k + 1) * (n + ncp)] = np.concatenate((x_out_buff[n - ncp:],
-                                                                       x_out_buff))
+            x_out[k * (nc + ncp):(k + 1) * (nc + ncp)] = np.concatenate((x_out_buff[nc - ncp:],
+                                                                         x_out_buff))
         else:
             # No cyclic prefix included
-            x_out[k * n:(k + 1) * n] = fft.ifft(buff)
+            x_out[k * nc:(k + 1) * nc] = fft.ifft(buff)
     return x_out
 
 
@@ -1359,14 +1361,14 @@ def chan_est_equalize(z, np, alpha, Ht=None):
     return zz_out, H
 
 
-def ofdm_rx(x, nf, n, np=0, cp=False, ncp=0, alpha=0.95, ht=None):
+def ofdm_rx(x, nf, nc, npb=0, cp=False, ncp=0, alpha=0.95, ht=None):
     """
     Parameters
     ----------
     x : Received complex baseband OFDM signal
     nf : Number of filled carriers, must be even and Nf < N
-    n : Total number of carriers; generally a power 2, e.g., 64, 1024, etc
-    np : Period of pilot code blocks; 0 <=> no pilots; -1 <=> use the ht impulse response input to equalize the OFDM symbols; note equalization still requires Ncp > 0 to work on a delay spread channel.
+    nc : Total number of carriers; generally a power 2, e.g., 64, 1024, etc
+    npb : Period of pilot code blocks; 0 <=> no pilots; -1 <=> use the ht impulse response input to equalize the OFDM symbols; note equalization still requires Ncp > 0 to work on a delay spread channel.
     cp : False/True <=> if False assume no CP is present
     ncp : The length of the cyclic prefix
     alpha : The filter forgetting factor in the channel estimator. Typically alpha is 0.9 to 0.99.
@@ -1390,6 +1392,8 @@ def ofdm_rx(x, nf, n, np=0, cp=False, ncp=0, alpha=0.95, ht=None):
     >>> from numpy import array
     >>> hc = array([1.0, 0.1, -0.05, 0.15, 0.2, 0.05]) # impulse response spanning five symbols
     >>> # Quick example using the above channel with no cyclic prefix
+    >>> x1,b1,IQ_data1 = dc.QAM_bb(50000,1,'16qam')
+    >>> x_out = dc.ofdm_tx(IQ_data1,32,64,0,True,0)
     >>> x1,b1,IQ_data1 = dc.qam_bb(50000,1,'16qam')
     >>> x_out = dc.ofdm_tx(IQ_data1,32,64,0,True,0)
     >>> c_out = signal.lfilter(hc,1,x_out) # Apply channel distortion
@@ -1417,29 +1421,29 @@ def ofdm_rx(x, nf, n, np=0, cp=False, ncp=0, alpha=0.95, ht=None):
     >>> plt.show()
 
     """
-    N_symb = len(x) // (n + ncp)
-    y_out = np.zeros(N_symb * n, dtype=np.complex128)
+    N_symb = len(x) // (nc + ncp)
+    y_out = np.zeros(N_symb * nc, dtype=np.complex128)
     for k in range(N_symb):
         if cp:
             # Remove the cyclic prefix
-            buff = x[k * (n + ncp) + ncp:(k + 1) * (n + ncp)]
+            buff = x[k * (nc + ncp) + ncp:(k + 1) * (nc + ncp)]
         else:
-            buff = x[k * n:(k + 1) * n]
-        y_out[k * n:(k + 1) * n] = fft.fft(buff)
+            buff = x[k * nc:(k + 1) * nc]
+        y_out[k * nc:(k + 1) * nc] = fft.fft(buff)
     # Demultiplex into Nf parallel streams from N total, including
     # the pilot blocks which contain channel information
-    z_out = np.reshape(y_out, (N_symb, n))
-    z_out = np.hstack((z_out[:, 1:nf // 2 + 1], z_out[:, n - nf // 2:n]))
-    if np > 0:
+    z_out = np.reshape(y_out, (N_symb, nc))
+    z_out = np.hstack((z_out[:, 1:nf // 2 + 1], z_out[:, nc - nf // 2:nc]))
+    if npb > 0:
         if isinstance(type(None), type(ht)):
-            z_out, H = chan_est_equalize(z_out, np, alpha)
+            z_out, H = chan_est_equalize(z_out, npb, alpha)
         else:
-            Ht = fft.fft(ht, n)
-            Hht = np.hstack((Ht[1:nf // 2 + 1], Ht[n - nf // 2:]))
-            z_out, H = chan_est_equalize(z_out, np, alpha, Hht)
-    elif np == -1:  # Ideal equalization using hc
-        Ht = fft.fft(ht, n)
-        H = np.hstack((Ht[1:nf // 2 + 1], Ht[n - nf // 2:]))
+            Ht = fft.fft(ht, nc)
+            Hht = np.hstack((Ht[1:nf // 2 + 1], Ht[nc - nf // 2:]))
+            z_out, H = chan_est_equalize(z_out, npb, alpha, Hht)
+    elif npb == -1:  # Ideal equalization using hc
+        Ht = fft.fft(ht, nc)
+        H = np.hstack((Ht[1:nf // 2 + 1], Ht[nc - nf // 2:]))
         for k in range(N_symb):
             z_out[k, :] /= H
     else:
@@ -1452,7 +1456,7 @@ def bin2gray(d_word,b_width):
     """
     Convert integer bit words to gray encoded binary words via
     Gray coding starting from the MSB to the LSB
-    
+
     Mark Wickert November 2018
     """
     bits_in = to_bin(d_word,b_width)
@@ -1469,7 +1473,7 @@ def gray2bin(d_word,b_width):
     """
     Convert gray encoded binary words to integer bit words via
     Gray decoding starting from the MSB to the LSB
-    
+
     Mark Wickert November 2018
     """
     bits_in = to_bin(d_word,b_width)
@@ -1484,9 +1488,9 @@ def gray2bin(d_word,b_width):
 
 def qam_gray_encode_bb(n_symb, ns, mod=4, pulse='rect', alpha=0.35, m_span=6, ext_data=None):
     """
-    QAM_gray_bb: A gray code mapped QAM complex baseband transmitter 
+    QAM_gray_bb: A gray code mapped QAM complex baseband transmitter
     x,b,tx_data = QAM_gray_bb(K,Ns,M)
-    
+
     Parameters
     ----------
     n_symb : The number of symbols to process
@@ -1508,16 +1512,16 @@ def qam_gray_encode_bb(n_symb, ns, mod=4, pulse='rect', alpha=0.35, m_span=6, ex
 
     Examples
     --------
-    
-    
-    
-    """ 
+
+
+
+    """
     # Create a random bit stream then encode using gray code mapping
     # Gray code LUTs for 4, 16, 64, and 256 QAM
-    # which employs M = 2, 4, 6, and 8 bits per symbol  
+    # which employs M = 2, 4, 6, and 8 bits per symbol
     bin2gray1 = [0,1]
     bin2gray2 = [0,1,3,2]
-    bin2gray3 = [0,1,3,2,7,6,4,5] # arange(8) 
+    bin2gray3 = [0,1,3,2,7,6,4,5] # arange(8)
     bin2gray4 = [0,1,3,2,7,6,4,5,15,14,12,13,8,9,11,10]
     x_m = np.sqrt(mod) - 1
     # Create the serial bit stream [Ibits,Qbits,Ibits,Qbits,...], msb to lsb
@@ -1560,10 +1564,10 @@ def qam_gray_encode_bb(n_symb, ns, mod=4, pulse='rect', alpha=0.35, m_span=6, ex
             x_IQ[k] = (2*bin2gray4[np.dot(wordI,w)] - x_m) + \
                    1j*(2*bin2gray4[np.dot(wordQ,w)] - x_m)
     else:
-        raise ValueError('M must be 2, 4, 16, 64, 256')        
-    
+        raise ValueError('M must be 2, 4, 16, 64, 256')
+
     if ns > 1:
-        # Design the pulse shaping filter to be of duration 12 
+        # Design the pulse shaping filter to be of duration 12
         # symbols and fix the excess bandwidth factor at alpha = 0.35
         if pulse.lower() == 'src':
             b = sqrt_rc_imp(ns, alpha, m_span)
@@ -1586,29 +1590,29 @@ def qam_gray_decode(x_hat, mod=4):
     """
     Decode MQAM IQ symbols to a serial bit stream using
     gray2bin decoding
-    
+
     x_hat = symbol spaced samples of the QAM waveform taken at the maximum
             eye opening. Normally this is following the matched filter
-    
+
     Mark Wickert April 2018
     """
     # Inverse Gray code LUTs for 4, 16, 64, and 256 QAM
     # which employs M = 2, 4, 6, and 8 bits per symbol
     gray2bin1 = [0,1]
     gray2bin2 = [0,1,3,2]
-    gray2bin3 = [0,1,3,2,6,7,5,4] # arange(8) 
+    gray2bin3 = [0,1,3,2,6,7,5,4] # arange(8)
     gray2bin4 = [0,1,3,2,6,7,5,4,12,13,15,14,10,11,9,8]
     x_m = np.sqrt(mod) - 1
     if mod == 2: x_m = 1
     N_symb = len(x_hat)
     N_word = int(np.log2(mod) / 2)
-    
+
     # Scale input up by x_m
     #x_hat = x_hat*x_m
-    # Scale adaptively assuming var(x_hat) is proportional to 
+    # Scale adaptively assuming var(x_hat) is proportional to
     # signal power using a known relationship for QAM.
     x_hat = x_hat/(np.std(x_hat) * np.sqrt(3 / (2 * (mod - 1))))
-    
+
     k_hat_gray = (x_hat + x_m*(1+1j))/2
     # Soft IQ symbol values are converted to hard symbol decisions
     k_hat_grayI = np.int16(np.clip(np.rint(k_hat_gray.real),0,x_m))
@@ -1625,24 +1629,24 @@ def qam_gray_decode(x_hat, mod=4):
         elif mod == 16:
             data_hat[2*k*N_word:2*(k+1)*N_word] \
               = np.hstack((to_bin(gray2bin2[k_hat_grayI[k]],N_word),
-                        to_bin(gray2bin2[k_hat_grayQ[k]],N_word)))            
+                        to_bin(gray2bin2[k_hat_grayQ[k]],N_word)))
         elif mod == 64:
             data_hat[2*k*N_word:2*(k+1)*N_word] \
               = np.hstack((to_bin(gray2bin3[k_hat_grayI[k]],N_word),
-                        to_bin(gray2bin3[k_hat_grayQ[k]],N_word)))            
+                        to_bin(gray2bin3[k_hat_grayQ[k]],N_word)))
         elif mod == 256:
             data_hat[2*k*N_word:2*(k+1)*N_word] \
               = np.hstack((to_bin(gray2bin4[k_hat_grayI[k]],N_word),
                         to_bin(gray2bin4[k_hat_grayQ[k]],N_word)))
         else:
-            raise ValueError('M must be 2, 4, 16, 64, 256')  
-            
+            raise ValueError('M must be 2, 4, 16, 64, 256')
+
     return data_hat
 
 
 def mpsk_gray_encode_bb(n_symb, ns, mod=4, pulse='rect', alpha=0.35, m_span=6, ext_data=None):
     """
-    MPSK_gray_bb: A gray code mapped MPSK complex baseband transmitter 
+    MPSK_gray_bb: A gray code mapped MPSK complex baseband transmitter
     x,b,tx_data = MPSK_gray_bb(K,Ns,M)
 
     Parameters
@@ -1660,13 +1664,13 @@ def mpsk_gray_encode_bb(n_symb, ns, mod=4, pulse='rect', alpha=0.35, m_span=6, e
     tx_data : xI+1j*xQ = inphase symbol sequence + 1j*quadrature symbol sequence
 
     Mark Wickert November 2018
-    """ 
+    """
     # Create a random bit stream then encode using gray code mapping
     # Gray code LUTs for 2, 4, 8, 16, and 32 MPSK
-    # which employs M = 1, 2, 3, 4, and 5  bits per symbol  
+    # which employs M = 1, 2, 3, 4, and 5  bits per symbol
     bin2gray1 = [0,1]
     bin2gray2 = [0,1,3,2]
-    bin2gray3 = [0,1,3,2,7,6,4,5] 
+    bin2gray3 = [0,1,3,2,7,6,4,5]
     bin2gray4 = [0,1,3,2,7,6,4,5,15,14,12,13,8,9,11,10]
     bin2gray5 = [0,1,3,2,7,6,4,5,15,14,12,13,8,9,11,10,31,30,
                  28,29,24,25,27,26,16,17,19,18,23,22,20,21]
@@ -1705,10 +1709,10 @@ def mpsk_gray_encode_bb(n_symb, ns, mod=4, pulse='rect', alpha=0.35, m_span=6, e
             x_phase = 2 * np.pi * bin2gray5[np.dot(word_phase,bin_wgts)] / mod
             x_IQ[k] = np.exp(1j*x_phase)
     else:
-        raise ValueError('M must be 2, 4, 8, 16, or 32')        
-    
+        raise ValueError('M must be 2, 4, 8, 16, or 32')
+
     if ns > 1:
-        # Design the pulse shaping filter to be of duration 12 
+        # Design the pulse shaping filter to be of duration 12
         # symbols and fix the excess bandwidth factor at alpha = 0.35
         if pulse.lower() == 'src':
             b = sqrt_rc_imp(ns, alpha, m_span)
@@ -1731,28 +1735,28 @@ def mpsk_gray_decode(x_hat, mod=4):
     """
     Decode MPSK IQ symbols to a serial bit stream using
     gray2bin decoding
-    
+
     Parameters
     ----------
     x_hat : symbol spaced samples of the MPSK waveform taken at the maximum
             eye opening. Normally this is following the matched filter
     mod : Modulation scheme
-    
+
     Mark Wickert November 2018
     """
     # Inverse Gray code LUTs for 2, 4, 8, 16, and 32 MPSK
     # which employs M = 1, 2, 3, 4, and 5  bits per symbol
     gray2bin1 = [0,1]
     gray2bin2 = [0,1,3,2]
-    gray2bin3 = [0,1,3,2,6,7,5,4] 
+    gray2bin3 = [0,1,3,2,6,7,5,4]
     gray2bin4 = [0,1,3,2,6,7,5,4,12,13,15,14,10,11,9,8]
     gray2bin5 = [0,1,3,2,6,7,5,4,12,13,15,14,10,11,9,8,24,25,
                  27,26,30,31,29,28,20,21,23,22,18,19,17,16]
     N_symb = len(x_hat)
     N_word = int(np.log2(mod))
-    
-   
-    # Soft IQ symbol angle values are converted to hard symbol decisions as 
+
+
+    # Soft IQ symbol angle values are converted to hard symbol decisions as
     # decimal angles over the range [0, M-1]
     if mod == 4:
         # For QPSK (M=4) rotate constellation angles to start at zero
@@ -1772,22 +1776,22 @@ def mpsk_gray_decode(x_hat, mod=4):
               = to_bin(gray2bin2[k_hat_gray_theta[k]],N_word)
         elif mod == 8:
             data_hat[k*N_word:(k+1)*N_word] \
-              = to_bin(gray2bin3[k_hat_gray_theta[k]],N_word)            
+              = to_bin(gray2bin3[k_hat_gray_theta[k]],N_word)
         elif mod == 16:
             data_hat[k*N_word:(k+1)*N_word] \
-              = to_bin(gray2bin4[k_hat_gray_theta[k]],N_word)            
+              = to_bin(gray2bin4[k_hat_gray_theta[k]],N_word)
         elif mod == 32:
             data_hat[k*N_word:(k+1)*N_word] \
               = to_bin(gray2bin5[k_hat_gray_theta[k]],N_word)
         else:
-            raise ValueError('M must be 2, 4, 8, 16, or 32')  
+            raise ValueError('M must be 2, 4, 8, 16, or 32')
     return data_hat
 
 
 def mpsk_bep_thy(snr_dB, mod, eb_n0_mode=True):
     """
     Approximate the bit error probability of MPSK assuming Gray encoding
-    
+
     Mark Wickert November 2018
     """
     if eb_n0_mode:
@@ -1800,13 +1804,13 @@ def mpsk_bep_thy(snr_dB, mod, eb_n0_mode=True):
     else:
         SEP = 2 * q_fctn(np.sqrt(2 * 10 ** (EsN0_dB / 10)) * np.sin(np.pi / mod))
         BEP = SEP/Symb2Bits
-    return BEP 
+    return BEP
 
 
 def qam_bep_thy(snr_dB, mod, eb_n0_mode=True):
     """
     Approximate the bit error probability of QAM assuming Gray encoding
-    
+
     Mark Wickert November 2018
     """
     if eb_n0_mode:

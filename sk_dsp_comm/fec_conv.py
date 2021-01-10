@@ -54,7 +54,7 @@ from math import factorial
 from fractions import Fraction
 import matplotlib.pyplot as plt
 import warnings
-from .digitalcom import Q_fctn
+from .digitalcom import q_fctn
 from logging import getLogger
 log = getLogger(__name__)
 import warnings
@@ -844,7 +844,7 @@ def conv_Pb_bound(R,dfree,Ck,SNRdB,hard_soft,M=2):
                 Pb[n] += Ck[k-dfree]*soft_Pk(k,R,SNRn,M)
             else: # Compute Uncoded Pe
                 if M == 2:
-                    Pb[n] = Q_fctn(np.sqrt(2.*SNRn))
+                    Pb[n] = q_fctn(np.sqrt(2. * SNRn))
                 else:
                     Pb[n] = 4./np.log2(M)*(1 - 1/np.sqrt(M))*\
                             np.gaussQ(np.sqrt(3*np.log2(M)/(M-1)*SNRn));
@@ -862,10 +862,10 @@ def hard_Pk(k,R,SNR,M=2):
     k = int(k)
 
     if M == 2:
-        p = Q_fctn(np.sqrt(2.*R*SNR))
+        p = q_fctn(np.sqrt(2. * R * SNR))
     else:
-        p = 4./np.log2(M)*(1 - 1./np.sqrt(M))*\
-            Q_fctn(np.sqrt(3*R*np.log2(M)/float(M-1)*SNR))
+        p = 4. / np.log2(M) * (1 - 1./np.sqrt(M)) * \
+            q_fctn(np.sqrt(3 * R * np.log2(M) / float(M - 1) * SNR))
     Pk = 0
     #if 2*k//2 == k:
     if np.mod(k,2) == 0:
@@ -889,10 +889,10 @@ def soft_Pk(k,R,SNR,M=2):
     Mark Wickert November 2014
     """
     if M == 2:
-        Pk = Q_fctn(np.sqrt(2.*k*R*SNR))
+        Pk = q_fctn(np.sqrt(2. * k * R * SNR))
     else:
-        Pk = 4./np.log2(M)*(1 - 1./np.sqrt(M))*\
-             Q_fctn(np.sqrt(3*k*R*np.log2(M)/float(M-1)*SNR))
+        Pk = 4. / np.log2(M) * (1 - 1./np.sqrt(M)) * \
+             q_fctn(np.sqrt(3 * k * R * np.log2(M) / float(M - 1) * SNR))
     
     return Pk
 

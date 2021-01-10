@@ -79,7 +79,7 @@ class TestDigitalcom(SKDSPCommTest):
         0.00102417, -0.00582846,  0.00376109,  0.00137866, -0.00293625]),
                                   np.array([-1.-1.j, -1.+1.j,  1.-1.j,  1.-1.j,  1.-1.j,  1.-1.j, -1.+1.j,
        -1.-1.j, -1.-1.j, -1.+1.j]))
-        x, b, t = dc.QAM_bb(10, 2, mod_type='qpsk', pulse='src')
+        x, b, t = dc.qam_bb(10, 2, mod='qpsk', pulse='src')
         npt.assert_almost_equal(x, x_test)
         npt.assert_almost_equal(b, b_test)
         npt.assert_almost_equal(t, t_test)
@@ -114,7 +114,7 @@ class TestDigitalcom(SKDSPCommTest):
         -9.23891131e-04,  -1.22314501e-18,   2.03243583e-03,
          1.11223990e-18]), np.array([-1.-1.j, -1.+1.j,  1.-1.j,  1.-1.j,  1.-1.j,  1.-1.j, -1.+1.j,
         -1.-1.j, -1.-1.j, -1.+1.j]))
-        x, b, t = dc.QAM_bb(10, 2, mod_type='qpsk', pulse='rc')
+        x, b, t = dc.qam_bb(10, 2, mod='qpsk', pulse='rc')
         npt.assert_almost_equal(x, x_test)
         npt.assert_almost_equal(b, b_test)
         npt.assert_almost_equal(t, t_test)
@@ -125,14 +125,14 @@ class TestDigitalcom(SKDSPCommTest):
        -1.-1.j, -1.-1.j, -1.-1.j, -1.-1.j, -1.+1.j, -1.+1.j]), np.array([ 0.5,  0.5]),
                                   np.array([-1.-1.j, -1.+1.j,  1.-1.j,  1.-1.j,  1.-1.j,  1.-1.j, -1.+1.j,
        -1.-1.j, -1.-1.j, -1.+1.j]))
-        x, b, t = dc.QAM_bb(10, 2, mod_type='qpsk', pulse='rect')
+        x, b, t = dc.qam_bb(10, 2, mod='qpsk', pulse='rect')
         npt.assert_almost_equal(x, x_test)
         npt.assert_almost_equal(b, b_test)
         npt.assert_almost_equal(t, t_test)
 
     def test_QAM_bb_pulse_error(self):
         with self.assertRaisesRegexp(ValueError, 'pulse shape must be src, rc, or rect'):
-            dc.QAM_bb(10, 2, pulse='value')
+            dc.qam_bb(10, 2, pulse='value')
 
     def test_QAM_bb_16qam_rect(self):
         x_test, b_test, t_test = (np.array([-1.00000000+0.33333333j, -1.00000000+0.33333333j,
@@ -147,7 +147,7 @@ class TestDigitalcom(SKDSPCommTest):
        -1.00000000+1.j        , -1.00000000+1.j        ]), np.array([ 0.5,  0.5]),
                                   np.array([-3.+1.j, -3.-1.j,  3.+1.j,  3.+1.j,  3.+1.j,  3.+1.j, -3.-1.j,
         1.-3.j,  1.-3.j, -3.+3.j]))
-        x, b, t = dc.QAM_bb(10, 2, mod_type='16qam', pulse='rect')
+        x, b, t = dc.qam_bb(10, 2, mod='16qam', pulse='rect')
         npt.assert_almost_equal(x, x_test)
         npt.assert_almost_equal(b, b_test)
         npt.assert_almost_equal(t, t_test)
@@ -165,7 +165,7 @@ class TestDigitalcom(SKDSPCommTest):
         0.14285714+1.j        ,  0.14285714+1.j        ]), np.array([ 0.5,  0.5]),
                                   np.array([-7.-3.j, -7.+3.j, -1.-3.j,  7.-3.j,  7.+5.j,  7.-3.j, -7.-5.j,
        -3.-7.j,  5.-7.j,  1.+7.j]))
-        x, b, t = dc.QAM_bb(10, 2, mod_type='64qam', pulse='rect')
+        x, b, t = dc.qam_bb(10, 2, mod='64qam', pulse='rect')
         npt.assert_almost_equal(x, x_test)
         npt.assert_almost_equal(b, b_test)
         npt.assert_almost_equal(t, t_test)
@@ -183,67 +183,67 @@ class TestDigitalcom(SKDSPCommTest):
        -0.46666667+1.j        , -0.46666667+1.j        ]), np.array([ 0.5,  0.5]),
                                   np.array([  1.-11.j,   1. -5.j,  -9.-11.j,  -1.-11.j,  -1.+13.j,  15.-11.j,
        -15.-13.j,   5.-15.j,  13. +1.j,  -7.+15.j]))
-        x, b, t = dc.QAM_bb(10, 2, mod_type='256qam', pulse='rect')
+        x, b, t = dc.qam_bb(10, 2, mod='256qam', pulse='rect')
         npt.assert_almost_equal(x, x_test)
         npt.assert_almost_equal(b, b_test)
         npt.assert_almost_equal(t, t_test)
 
     def test_QAM_bb_mod_error(self):
         with self.assertRaisesRegexp(ValueError, 'Unknown mod_type'):
-            x, b, t = dc.QAM_bb(10, 2, mod_type='unknown')
+            x, b, t = dc.qam_bb(10, 2, mod='unknown')
 
     def test_QAM_SEP_mod_error(self):
         tx = np.ones(10)
         rx = np.ones(10)
         with self.assertRaisesRegexp(ValueError, 'Unknown mod_type'):
-            dc.QAM_SEP(tx, rx, 'unknown')
+            dc.qam_sep(tx, rx, 'unknown')
 
     def test_QAM_SEP_16qam_no_error(self):
         Nsymb_test, Nerr_test, SEP_test = (4986, 0, 0.0)
-        x, b, tx_data = dc.QAM_bb(5000, 10, '16qam', 'src')
+        x, b, tx_data = dc.qam_bb(5000, 10, '16qam', 'src')
         x = dc.cpx_awgn(x, 20, 10)
         y = signal.lfilter(b, 1, x)
-        Nsymb, Nerr, SEP = dc.QAM_SEP(tx_data, y[10 + 10 * 12::10], '16qam', Ntransient=0)
+        Nsymb, Nerr, SEP = dc.qam_sep(tx_data, y[10 + 10 * 12::10], '16qam', n_transient=0)
         self.assertEqual(Nsymb, Nsymb_test)
         self.assertEqual(Nerr, Nerr_test)
         self.assertEqual(SEP, SEP_test)
 
     def test_QAM_SEP_16qam_error(self):
         Nsymb_test, Nerr_test, SEP_test = (9976, 172, 0.017241379310344827)
-        x, b, tx_data = dc.QAM_bb(10000, 1, '16qam', 'rect')
+        x, b, tx_data = dc.qam_bb(10000, 1, '16qam', 'rect')
         x = dc.cpx_awgn(x, 15, 1)
         y = signal.lfilter(b, 1, x)
-        Nsymb, Nerr, SEP = dc.QAM_SEP(tx_data, y[1 * 12::1], '16qam', Ntransient=0)
+        Nsymb, Nerr, SEP = dc.qam_sep(tx_data, y[1 * 12::1], '16qam', n_transient=0)
         self.assertEqual(Nsymb, Nsymb_test)
         self.assertEqual(Nerr, Nerr_test)
         self.assertEqual(SEP, SEP_test)
 
     def test_QAM_SEP_qpsk(self):
         Nsymb_test, Nerr_test, SEP_test = (4986, 0, 0.0)
-        x,b,tx_data = dc.QAM_bb(5000,10,'qpsk','src')
+        x,b,tx_data = dc.qam_bb(5000, 10, 'qpsk', 'src')
         x = dc.cpx_awgn(x, 20, 10)
         y = signal.lfilter(b,1,x)
-        Nsymb,Nerr,SEP = dc.QAM_SEP(tx_data,y[10+10*12::10],'qpsk',Ntransient=0)
+        Nsymb,Nerr,SEP = dc.qam_sep(tx_data, y[10 + 10 * 12::10], 'qpsk', n_transient=0)
         self.assertEqual(Nsymb, Nsymb_test)
         self.assertEqual(Nerr, Nerr_test)
         self.assertEqual(SEP, SEP_test)
 
     def test_QAM_SEP_64qam(self):
         Nsymb_test, Nerr_test, SEP_test = (4986, 245, 0.04913758523866827)
-        x, b, tx_data = dc.QAM_bb(5000, 10, '64qam', 'src')
+        x, b, tx_data = dc.qam_bb(5000, 10, '64qam', 'src')
         x = dc.cpx_awgn(x, 20, 10)
         y = signal.lfilter(b, 1, x)
-        Nsymb, Nerr, SEP = dc.QAM_SEP(tx_data, y[10 + 10 * 12::10], '64qam', Ntransient=0)
+        Nsymb, Nerr, SEP = dc.qam_sep(tx_data, y[10 + 10 * 12::10], '64qam', n_transient=0)
         self.assertEqual(Nsymb, Nsymb_test)
         self.assertEqual(Nerr, Nerr_test)
         self.assertEqual(SEP, SEP_test)
 
     def test_QAM_SEP_256qam(self):
         Nsymb_test, Nerr_test, SEP_test = (4986, 2190, 0.43922984356197353)
-        x, b, tx_data = dc.QAM_bb(5000, 10, '256qam', 'src')
+        x, b, tx_data = dc.qam_bb(5000, 10, '256qam', 'src')
         x = dc.cpx_awgn(x, 20, 10)
         y = signal.lfilter(b, 1, x)
-        Nsymb, Nerr, SEP = dc.QAM_SEP(tx_data, y[10 + 10 * 12::10], '256qam', Ntransient=0)
+        Nsymb, Nerr, SEP = dc.qam_sep(tx_data, y[10 + 10 * 12::10], '256qam', n_transient=0)
         self.assertEqual(Nsymb, Nsymb_test)
         self.assertEqual(Nerr, Nerr_test)
         self.assertEqual(SEP, SEP_test)
@@ -270,7 +270,7 @@ class TestDigitalcom(SKDSPCommTest):
         -7.07106781e-01 -7.07106781e-01j,
         -1.00000000e+00 -1.22464680e-16j]),
         np.array([0, 0, 1, 1, 1, 1, 0, 0, 0, 0]))
-        y, data = dc.GMSK_bb(10, 2)
+        y, data = dc.gmsk_bb(10, 2)
         npt.assert_almost_equal(y, y_test)
         npt.assert_equal(data, data_test)
 
@@ -278,7 +278,7 @@ class TestDigitalcom(SKDSPCommTest):
         x_test, b_test, data_test = (np.array([ 1.+0.j,  1.+0.j,  1.+0.j,  1.+0.j,  1.+0.j,  1.+0.j,  1.+0.j,
         1.+0.j,  1.+0.j,  1.+0.j]), np.array([ 0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1]),
                                     np.array([0, 0, 3, 7, 7, 7, 0, 2, 6, 4]))
-        x, b, data = dc.MPSK_bb(500, 10, 8, 'rect', 0.35)
+        x, b, data = dc.mpsk_bb(500, 10, 8, 'rect', 0.35)
         npt.assert_equal(x[:10], x_test)
         npt.assert_almost_equal(b[:10], b_test)
         npt.assert_almost_equal(data[:10], data_test)
@@ -291,7 +291,7 @@ class TestDigitalcom(SKDSPCommTest):
          3.02766347e-04,   3.73320945e-04,   4.07129297e-04,
          3.96939751e-04,   3.41846688e-04,   2.48001733e-04,
          1.28158429e-04]), np.array([0, 0, 3, 7, 7, 7, 0, 2, 6, 4]))
-        x, b, data = dc.MPSK_bb(500, 10, 8, 'rc', 0.35)
+        x, b, data = dc.mpsk_bb(500, 10, 8, 'rc', 0.35)
         npt.assert_almost_equal(x[:10], x_test)
         npt.assert_almost_equal(b[:10], b_test)
         npt.assert_almost_equal(data[:10], data_test)
@@ -303,14 +303,14 @@ class TestDigitalcom(SKDSPCommTest):
         -3.37560604e-04,  -5.30419514e-05,   2.75015614e-04,
          5.91323287e-04,   8.38013686e-04,   9.64778341e-04,
          9.38445583e-04]), np.array([0, 0, 3, 7, 7, 7, 0, 2, 6, 4]))
-        x, b, data = dc.MPSK_bb(500, 10, 8, 'src', 0.35)
+        x, b, data = dc.mpsk_bb(500, 10, 8, 'src', 0.35)
         npt.assert_almost_equal(x[:10], x_test)
         npt.assert_almost_equal(b[:10], b_test)
         npt.assert_almost_equal(data[:10], data_test)
 
     def test_MPSK_bb_value_error(self):
         with self.assertRaisesRegexp(ValueError, "pulse type must be rec, rc, or src"):
-            x, b, data = dc.MPSK_bb(500, 10, 8, 'error')
+            x, b, data = dc.mpsk_bb(500, 10, 8, 'error')
 
     def test_ODFM_tx(self):
         x_out_test = np.array([ 0.00000000+0.125j,      -0.10185331+0.27369942j, -0.10291586+0.12529202j,
@@ -330,8 +330,8 @@ class TestDigitalcom(SKDSPCommTest):
                                 0.00806130-0.17969398j, -0.00105255+0.03378639j,  0.15279016+0.16494501j,
                                 0.09844557-0.009236j,   -0.11589986-0.20597693j, -0.10438721-0.09983656j,
                                 0.15625000+0.09375j,     0.22805837+0.03951473j,])
-        x1, b1, IQ_data1 = dc.QAM_bb(50000, 1, '16qam')
-        x_out = dc.OFDM_tx(IQ_data1, 32, 64, 0, True, 0)
+        x1, b1, IQ_data1 = dc.qam_bb(50000, 1, '16qam')
+        x_out = dc.ofdm_tx(IQ_data1, 32, 64, 0, True, 0)
         npt.assert_almost_equal(x_out[:50], x_out_test)
 
     def test_OFDM_rx(self):
@@ -362,11 +362,11 @@ class TestDigitalcom(SKDSPCommTest):
                                         1.09530096 + 3.87688911e-01j, 1.23071709 + 3.51736667e-01j,
                                         1.34580486 + 2.66705232e-01j, 1.42289223 + 1.43696423e-01j]))
         hc = np.array([1.0, 0.1, -0.05, 0.15, 0.2, 0.05])
-        x1, b1, IQ_data1 = dc.QAM_bb(50000, 1, '16qam')
-        x_out = dc.OFDM_tx(IQ_data1, 32, 64, 0, True, 0)
+        x1, b1, IQ_data1 = dc.qam_bb(50000, 1, '16qam')
+        x_out = dc.ofdm_tx(IQ_data1, 32, 64, 0, True, 0)
         c_out = signal.lfilter(hc, 1, x_out)  # Apply channel distortion
         r_out = dc.cpx_awgn(c_out, 100, 64 / 32)  # Es/N0 = 100 dB
-        z_out, H = dc.OFDM_rx(r_out, 32, 64, -1, True, 0, alpha=0.95, ht=hc);
+        z_out, H = dc.ofdm_rx(r_out, 32, 64, -1, True, 0, alpha=0.95, ht=hc);
         npt.assert_almost_equal(z_out[:20], z_out_test)
         npt.assert_almost_equal(H, H_test)
 
@@ -413,10 +413,10 @@ class TestDigitalcom(SKDSPCommTest):
                                              0.98676887+0.4108844j ,  1.26869289+0.35672436j,
                                              1.44594176+0.3296819j ,  1.48817425+0.07577518j]))
         hc = np.array([1.0, 0.1, -0.05, 0.15, 0.2, 0.05])
-        x1, b1, IQ_data1 = dc.QAM_bb(50000, 1, '16qam')
-        x_out = dc.OFDM_tx(IQ_data1, 32, 64, 100, True, 10)
+        x1, b1, IQ_data1 = dc.qam_bb(50000, 1, '16qam')
+        x_out = dc.ofdm_tx(IQ_data1, 32, 64, 100, True, 10)
         c_out = signal.lfilter(hc, 1, x_out)  # Apply channel distortion
         r_out = dc.cpx_awgn(c_out, 25, 64 / 32)  # Es/N0 = 25 dB
-        z_out, H = dc.OFDM_rx(r_out, 32, 64, 100, True, 10, alpha=0.95, ht=hc)
+        z_out, H = dc.ofdm_rx(r_out, 32, 64, 100, True, 10, alpha=0.95, ht=hc)
         npt.assert_almost_equal(z_out[:50], z_out_test)
         npt.assert_almost_equal(H[:50], H_out_test)

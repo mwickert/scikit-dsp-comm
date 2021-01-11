@@ -1283,7 +1283,7 @@ def OFDM_tx(IQ_data, Nf, N, Np=0, cp=False, Ncp=0):
     return x_out
 
 
-def chan_est_equalize(z, Np, alpha, Ht=None):
+def chan_est_equalize(z, npbp, alpha, ht=None):
     """
 
     This is a helper function for :func:`OFDM_rx` to unpack pilot blocks from
@@ -1296,9 +1296,9 @@ def chan_est_equalize(z, Np, alpha, Ht=None):
     Parameters
     ----------
     z : Input N_OFDM x Nf 2D array containing pilot blocks and OFDM data symbols.
-    Np : The pilot block period; if -1 use the known channel impulse response input to ht.
+    npbp : The pilot block period; if -1 use the known channel impulse response input to ht.
     alpha : The forgetting factor used to recursively estimate H_hat
-    Ht : The theoretical channel frquency response to allow ideal equalization provided Ncp is adequate.
+    ht : The theoretical channel frquency response to allow ideal equalization provided Ncp is adequate.
 
     Returns
     -------
@@ -1308,18 +1308,18 @@ def chan_est_equalize(z, Np, alpha, Ht=None):
     Examples
     --------
     >>> from sk_dsp_comm.digitalcom import chan_est_equalize
-    >>> zz_out,H = chan_est_eq(z,Nf,Np,alpha,Ht=None)
+    >>> zz_out,H = chan_est_eq(z,Nf,npbp,alpha,Ht=None)
     """
     N_OFDM = z.shape[0]
     Nf = z.shape[1]
-    Npb = N_OFDM // Np
-    N_part = N_OFDM - Npb * Np - 1
+    Npb = N_OFDM // npbp
+    N_part = N_OFDM - Npb * npbp - 1
     zz_out = np.zeros_like(z)
     Hmatrix = np.zeros((N_OFDM, Nf), dtype=np.complex128)
     k_fill = 0
     k_pilot = 0
     for k in range(N_OFDM):
-        if np.mod(k, Np) == 0:  # Process pilot blocks
+        if np.mod(k, npbp) == 0:  # Process pilot blocks
             if k == 0:
                 H = z[k, :]
             else:
@@ -1327,10 +1327,10 @@ def chan_est_equalize(z, Np, alpha, Ht=None):
             Hmatrix[k_pilot, :] = H
             k_pilot += 1
         else:  # process data blocks
-            if isinstance(type(None), type(Ht)):
+            if isinstance(type(None), type(ht)):
                 zz_out[k_fill, :] = z[k, :] / H  # apply equalizer
             else:
-                zz_out[k_fill, :] = z[k, :] / Ht  # apply ideal equalizer
+                zz_out[k_fill, :] = z[k, :] / ht  # apply ideal equalizer
             k_fill += 1
     zz_out = zz_out[:k_fill, :]  # Trim to # of OFDM data symbols
     Hmatrix = Hmatrix[:k_pilot, :]  # Trim to # of OFDM pilot symbols

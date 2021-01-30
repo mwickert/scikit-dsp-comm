@@ -114,7 +114,7 @@ def binary(num, length=8):
         return format(num, '0{}b'.format(length))
 
 
-class FecConv(object):
+class FECConv(object):
     """
     Class responsible for creating rate 1/2 convolutional code objects, and 
     then encoding and decoding the user code set in polynomials of G. Key
@@ -134,11 +134,11 @@ class FecConv(object):
     --------
     >>> from sk_dsp_comm import fec_conv
     >>> # Rate 1/2
-    >>> cc1 = fec_conv.FecConv(('101', '111'), Depth=10)  # decision depth is 10
+    >>> cc1 = fec_conv.FECConv(('101', '111'), Depth=10)  # decision depth is 10
 
     >>> # Rate 1/3
     >>> from sk_dsp_comm import fec_conv
-    >>> cc2 = fec_conv.FecConv(('101','011','111'), Depth=15)  # decision depth is 15
+    >>> cc2 = fec_conv.FECConv(('101','011','111'), Depth=15)  # decision depth is 15
 
     
     """
@@ -284,7 +284,7 @@ class FecConv(object):
         >>> EbN0 = 4
         >>> total_bit_errors = 0
         >>> total_bit_count = 0
-        >>> cc1 = fec.FecConv(('11101','10011'),25)
+        >>> cc1 = fec.FECConv(('11101','10011'),25)
         >>> # Encode with shift register starting state of '0000'
         >>> state = '0000'
         >>> while total_bit_errors < 100:
@@ -359,7 +359,7 @@ class FecConv(object):
         >>> EbN0 = 3
         >>> total_bit_errors = 0
         >>> total_bit_count = 0
-        >>> cc2 = fec.FecConv(('11111','11011','10101'),25)
+        >>> cc2 = fec.FECConv(('11111','11011','10101'),25)
         >>> # Encode with shift register starting state of '0000'
         >>> state = '0000'
         >>> while total_bit_errors < 100:
@@ -580,8 +580,8 @@ class FecConv(object):
         the  :math:`G_{2}`  polynomial.
 
         >>> import numpy as np
-        >>> from sk_dsp_comm.fec_conv import FecConv
-        >>> cc = FecConv(('101','111'))
+        >>> from sk_dsp_comm.fec_conv import FECConv
+        >>> cc = FECConv(('101','111'))
         >>> x = np.array([0, 0, 1, 1, 1, 0, 0, 0, 0, 0])
         >>> state = '00'
         >>> y, state = cc.conv_encoder(x, state)
@@ -651,8 +651,8 @@ class FecConv(object):
         the  :math:`G_{2}`  polynomial.
 
         >>> import numpy as np
-        >>> from sk_dsp_comm.fec_conv import FecConv
-        >>> cc = FecConv(('101','111'))
+        >>> from sk_dsp_comm.fec_conv import FECConv
+        >>> cc = FECConv(('101','111'))
         >>> x = np.array([0, 0, 1, 1, 1, 0, 0, 0, 0, 0])
         >>> state = '00'
         >>> y, state = cc.conv_encoder(x, state)
@@ -722,8 +722,8 @@ class FecConv(object):
         Examples
         --------
         >>> import matplotlib.pyplot as plt
-        >>> from sk_dsp_comm.fec_conv import FecConv
-        >>> cc = FecConv()
+        >>> from sk_dsp_comm.fec_conv import FECConv
+        >>> cc = FECConv()
         >>> cc.trellis_plot()
         >>> plt.show()
         """
@@ -763,10 +763,10 @@ class FecConv(object):
         Examples
         --------
         >>> import matplotlib.pyplot as plt
-        >>> from sk_dsp_comm.fec_conv import FecConv
+        >>> from sk_dsp_comm.fec_conv import FECConv
         >>> from sk_dsp_comm import digitalcom as dc
         >>> import numpy as np
-        >>> cc = FecConv()
+        >>> cc = FECConv()
         >>> x = np.random.randint(0,2,100)
         >>> state = '00'
         >>> y,state = cc.conv_encoder(x,state)
@@ -910,7 +910,7 @@ if __name__ == '__main__':
          0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1,
          1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1,
          0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1]
-    cc1 = FecConv()
+    cc1 = FECConv()
     output, states = cc1.conv_encoder(x,'00')
     y = cc1.viterbi_decoder(7*output,'three_bit')
     

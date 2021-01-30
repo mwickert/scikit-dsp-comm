@@ -58,7 +58,7 @@ from logging import getLogger
 log = getLogger(__name__)
 
 
-class FecHamming(object):
+class FECHamming(object):
     """
     Class responsible for creating hamming block codes and then 
     encoding and decoding. Methods provided include hamm_gen,
@@ -235,7 +235,7 @@ class FecHamming(object):
         return decoded_bits.astype(int)
 
 
-class FecCyclic(object):
+class FECCyclic(object):
     """
     Class responsible for creating cyclic block codes and then 
     encoding and decoding. Methods provided include

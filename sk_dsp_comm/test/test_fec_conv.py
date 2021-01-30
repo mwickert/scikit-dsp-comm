@@ -10,10 +10,10 @@ class TestFecConv12(SKDSPCommTest):
     _multiprocess_can_split_ = True
 
     def test_fec_conv_inst(self):
-        cc1 = fec_conv.FecConv(('101', '111'), Depth=10)  # decision depth is 10
+        cc1 = fec_conv.FECConv(('101', '111'), Depth=10)  # decision depth is 10
 
     def test_fec_conv_conv_encoder(self):
-        cc1 = fec_conv.FecConv()
+        cc1 = fec_conv.FECConv()
         x = np.random.randint(0, 2, 20)
         state = '00'
         y_test, state_test = (np.array([ 0.,  0.,  0.,  0.,  1.,  1.,  0.,  1.,  1.,  0.,  1.,  0.,  0.,
@@ -24,7 +24,7 @@ class TestFecConv12(SKDSPCommTest):
         self.assertEqual(state_test, state)
 
     def test_fec_conv_viterbi_decoder(self):
-        cc1 = fec_conv.FecConv()
+        cc1 = fec_conv.FECConv()
         x = np.random.randint(0,2,20)
         state = '00'
         y, state = cc1.conv_encoder(x, state)
@@ -37,7 +37,7 @@ class TestFecConv12(SKDSPCommTest):
     def test_fec_conv_puncture(self):
         yp_test = [0., 0.,  0.,  1.,  0.,  1.,  1.,  0.,  0.,  1.,  1.,  0.,  0.,  0.,  0.,  1.,  1.,  0.,
                    1.,  0.,  0.,  0.,  1.,  0.]
-        cc1 = fec_conv.FecConv()
+        cc1 = fec_conv.FECConv()
         x = np.random.randint(0, 2, 20)
         state = '00'
         y, state = cc1.conv_encoder(x, state)
@@ -51,7 +51,7 @@ class TestFecConv12(SKDSPCommTest):
                      1.54447404,  1.47065852, -0.24028734,  3.5,         3.5,         6.19633424,
                      7.1760269,   0.89395647,  7.69735877,  3.5,         3.5,         1.29889556,
                      -0.31122416,  0.05311373,  7.21216449,  3.5,         3.5,        -1.37679829]
-        cc1 = fec_conv.FecConv()
+        cc1 = fec_conv.FECConv()
 
         x = np.random.randint(0, 2, 20)
         state = '00'
@@ -64,7 +64,7 @@ class TestFecConv12(SKDSPCommTest):
 
     def test_fec_conv_Nstates(self):
         G = ('111', '101')
-        cc = fec_conv.FecConv(G)
+        cc = fec_conv.FECConv(G)
         self.assertEqual(4, cc.Nstates)
 
     def test_fec_conv_conv_Pb_bound_2(self):

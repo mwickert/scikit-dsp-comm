@@ -182,6 +182,8 @@ def freqz_resp_list(b, a=np.array([1]), mode='dB', fs=1.0, n_pts=1024, fsize=(6,
     if type(b) == list:
         # We have a list of filters
         N_filt = len(b)
+    else:
+        return None
     f = np.arange(0, n_pts) / (2.0 * n_pts)
     for n in range(N_filt):
         w, H = signal.freqz(b[n], a[n], 2 * np.pi * f)

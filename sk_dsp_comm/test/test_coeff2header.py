@@ -14,11 +14,11 @@ class TestCoeff2header(SKDSPCommTest):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmpFiles = []
+        cls.tmp_files = []
 
     @classmethod
     def tearDownClass(cls):
-        for filename in cls.tmpFiles:
+        for filename in cls.tmp_files:
             try:
                 os.unlink(filename)
             except OSError as ose:
@@ -38,7 +38,7 @@ class TestCoeff2header(SKDSPCommTest):
         n = np.arange(0, 501)
         x = 3 * np.cos(2 * np.pi * f1 / fs * n) + 2 * np.sin(2 * np.pi * f2 / fs * n)
         test_fir = tempfile.NamedTemporaryFile()
-        self.tmpFiles.append(test_fir.name)
+        self.tmp_files.append(test_fir.name)
         c2head.fir_header(test_fir.name, x)
         test_fir_lines = test_fir.readlines()
         for line in range(0, len(f_header_check)):
@@ -52,7 +52,7 @@ class TestCoeff2header(SKDSPCommTest):
         ca_1 = open(dir_path + 'CA_1.h', 'r')
         ca_1 = ca_1.readlines()
         test_1 = tempfile.NamedTemporaryFile()
-        self.tmpFiles.append(test_1.name)
+        self.tmp_files.append(test_1.name)
         c2head.ca_code_header(test_1.name, 1)
         test_1_lines = test_1.readlines()
         for line in range(0, len(ca_1)):
@@ -66,7 +66,7 @@ class TestCoeff2header(SKDSPCommTest):
         ca_1 = open(dir_path + 'CA_12.h', 'r')
         ca_1 = ca_1.readlines()
         test_12 = tempfile.NamedTemporaryFile()
-        self.tmpFiles.append(test_12.name)
+        self.tmp_files.append(test_12.name)
         c2head.ca_code_header(test_12.name, 12)
         test_12_lines = test_12.readlines()
         for line in range(0, len(ca_1)):

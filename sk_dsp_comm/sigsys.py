@@ -693,7 +693,7 @@ def lp_tri(f, fb):
     return x
 
 
-def sinusoid_AWGN(x, SNRdB):
+def sinusoid_awgn(x, SNRdB):
     """
     Add white Gaussian noise to a single real sinusoid.
     
@@ -715,7 +715,7 @@ def sinusoid_AWGN(x, SNRdB):
     >>> # set the SNR to 10 dB
     >>> n = arange(0,10000)
     >>> x = cos(2*pi*0.04*n)
-    >>> y = sinusoid_AWGN(x,10.0)
+    >>> y = sinusoid_awgn(x,10.0)
     """
     # Estimate signal power
     x_pwr = np.var(x)
@@ -756,7 +756,7 @@ def simple_quant(x, b_tot, x_max, limit):
     >>> from sk_dsp_comm import sigsys as ss
     >>> n = np.arange(0,10000)
     >>> x = np.cos(2*np.pi*0.211*n)
-    >>> y = ss.sinusoid_AWGN(x,90)
+    >>> y = ss.sinusoid_awgn(x,90)
     >>> Px, f = psd(y,2**10,Fs=1)
     >>> plt.plot(f, 10*np.log10(Px))
     >>> plt.ylim([-80, 25])

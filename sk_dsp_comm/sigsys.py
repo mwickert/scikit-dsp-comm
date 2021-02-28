@@ -1005,7 +1005,7 @@ def fir_iir_notch(fi,fs,r=0.95):
     return b, a
 
 
-def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
+def simple_sa(x, NS, NFFT, fs, NAVG=1, window='boxcar'):
     """
     Spectral estimation using windowing and averaging.
 
@@ -1039,7 +1039,7 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
     >>> from sk_dsp_comm import sigsys as ss
     >>> n = np.arange(0,2048)
     >>> x = np.cos(2*np.pi*1000/10000*n) + 0.01*np.cos(2*np.pi*3000/10000*n)
-    >>> f, Sx = ss.simple_SA(x,128,512,10000)
+    >>> f, Sx = ss.simple_sa(x,128,512,10000)
     >>> plt.plot(f, 10*np.log10(Sx))
     >>> plt.ylim([-80, 0])
     >>> plt.xlabel("Frequency (Hz)")
@@ -1048,7 +1048,7 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
 
     With a hanning window.
 
-    >>> f, Sx = ss.simple_SA(x,256,1024,10000,window='hanning')
+    >>> f, Sx = ss.simple_sa(x,256,1024,10000,window='hanning')
     >>> plt.plot(f, 10*np.log10(Sx))
     >>> plt.xlabel("Frequency (Hz)")
     >>> plt.ylabel("Power Spectral Density (dB)")
@@ -1087,7 +1087,7 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
 
 def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6,4)):
     """
-    Plot the Fouier series line spectral given the coefficients.
+    Plot the Fourier series line spectral given the coefficients.
 
     This function plots two-sided and one-sided line spectra of a periodic
     signal given the complex exponential Fourier series coefficients and

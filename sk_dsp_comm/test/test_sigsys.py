@@ -685,6 +685,16 @@ class TestSigsys(SKDSPCommTest):
         with self.assertRaisesRegexp(ValueError, 'shape must be tri or line')as lp_s_err:
             ss.lp_samp(10, 25, 50, 10, shape='square')
 
+    def test_os_filter_0(self):
+        y_test = [1.,          1.95105652,  2.76007351,  3.34785876,  3.65687576,  3.65687576, 3.34785876,  2.76007351,
+                  1.95105652,  1.,         -1.,         -2.90211303,  -4.52014702, -5.69571753, -6.31375151,
+                  -6.31375151, -5.69571753, -4.52014702, -2.90211303, -1.]
+        n = np.arange(0, 20)
+        x = np.cos(2 * np.pi * 0.05 * n)
+        b = np.ones(10)
+        y = ss.os_filter(x, b, 2 ** 10)
+        npt.assert_almost_equal(y, y_test)
+
     def test_simple_quant_12_sat(self):
         n = np.arange(0, 10)
         x = np.cos(2 * np.pi * 0.211 * n)

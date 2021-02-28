@@ -479,7 +479,7 @@ def splane(b,a,auto_scale=True,size=[-1,1,-1,1]):
     return M,N
 
 
-def OS_filter(x,h,N,mode=0):
+def os_filter(x, h, N, mode=0):
     """
     Overlap and save transform domain FIR filtering.
     
@@ -504,12 +504,13 @@ def OS_filter(x,h,N,mode=0):
     
     Examples
     --------
+    >>> from numpy import arange, cos, pi, ones
     >>> n = arange(0,100)
     >>> x = cos(2*pi*0.05*n)
     >>> b = ones(10)
-    >>> y = OS_filter(x,h,N)
+    >>> y = os_filter(x,h,N)
     >>> # set mode = 1
-    >>> y, y_mat = OS_filter(x,h,N,1)
+    >>> y, y_mat = os_filter(x,h,N,1)
     """
     
     P = len(h)

@@ -59,7 +59,7 @@ log = getLogger(__name__)
 import warnings
 
 
-def CIC(m, k):
+def cic(m, k):
     """
     A functional form implementation of a cascade of integrator comb (CIC) filters.
 
@@ -91,6 +91,7 @@ def CIC(m, k):
 
     # Make filter have unity gain at DC
     return b / np.sum(b)
+
 
 def ten_band_eq_filt(x,GdB,Q=3.5):
     """
@@ -282,7 +283,7 @@ def ex6_2(n):
     return x
 
 
-def position_CD(Ka,out_type = 'fb_exact'):
+def position_cd(Ka, out_type ='fb_exact'):
     """
     CD sled position control case study of Chapter 18.
 
@@ -311,8 +312,8 @@ def position_CD(Ka,out_type = 'fb_exact'):
 
     Examples
     --------
-    >>> b,a = position_CD(Ka,'fb_approx')
-    >>> b,a = position_CD(Ka,'fb_exact')
+    >>> b,a = position_cd(Ka,'fb_approx')
+    >>> b,a = position_cd(Ka,'fb_exact')
     """
     rs = 10/(2*np.pi)
     # Load b and a ndarrays with the coefficients

@@ -49,7 +49,7 @@ class TestDigitalcom(SKDSPCommTest):
          4.44335938e-02,   2.52075195e-02,   1.23901367e-02,
          5.12695312e-03,   1.70898438e-03,   4.27246094e-04,
          6.10351562e-05])
-        b = dc.CIC(4, 7)
+        b = dc.cic(4, 7)
         npt.assert_almost_equal(b_test, b)
 
     def test_CIC_1(self):
@@ -58,7 +58,7 @@ class TestDigitalcom(SKDSPCommTest):
         :return:
         """
         b_test = np.ones(4) / 4
-        b = dc.CIC(4, 1)
+        b = dc.cic(4, 1)
         npt.assert_almost_equal(b_test, b)
 
     def test_QAM_bb_qpsk_src(self):

@@ -44,7 +44,7 @@ from .sigsys import nrz_bits2
 from .sigsys import pn_gen
 from .sigsys import m_seq
 from .sigsys import cpx_awgn
-from .sigsys import CIC
+from .sigsys import cic
 
 from logging import getLogger
 log = getLogger(__name__)

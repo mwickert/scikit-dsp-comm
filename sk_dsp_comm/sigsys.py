@@ -540,7 +540,7 @@ def os_filter(x, h, N, mode=0):
         return y[P-1:Nx]
 
 
-def OA_filter(x,h,N,mode=0):
+def oa_filter(x, h, N, mode=0):
     """
     Overlap and add transform domain FIR filtering.
     
@@ -566,13 +566,13 @@ def OA_filter(x,h,N,mode=0):
     Examples
     --------
     >>> import numpy as np
-    >>> from sk_dsp_comm.sigsys import OA_filter
+    >>> from sk_dsp_comm.sigsys import oa_filter
     >>> n = np.arange(0,100)
-    >>> x = np.cos(2*pi*0.05*n)
+    >>> x = np.cos(2*np.pi*0.05*n)
     >>> b = np.ones(10)
-    >>> y = OA_filter(x,h,N)
+    >>> y = oa_filter(x,h,N)
     >>> # set mode = 1
-    >>> y, y_mat = OA_filter(x,h,N,1)
+    >>> y, y_mat = oa_filter(x,h,N,1)
     """
     P = len(h)
     L = int(N) - P + 1 # need N >= L + P -1

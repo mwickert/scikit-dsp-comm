@@ -193,13 +193,13 @@ class TestDigitalcom(SKDSPCommTest):
         with self.assertRaisesRegexp(ValueError, 'Unknown mod_type'):
             x, b, t = dc.qam_bb(10, 2, mod='unknown')
 
-    def test_QAM_SEP_mod_error(self):
+    def test_qam_sep_mod_error(self):
         tx = np.ones(10)
         rx = np.ones(10)
         with self.assertRaisesRegexp(ValueError, 'Unknown mod_type'):
             dc.qam_sep(tx, rx, 'unknown')
 
-    def test_QAM_SEP_16qam_no_error(self):
+    def test_qam_sep_16qam_no_error(self):
         Nsymb_test, Nerr_test, SEP_test = (4986, 0, 0.0)
         x, b, tx_data = dc.qam_bb(5000, 10, '16qam', 'src')
         x = dc.cpx_awgn(x, 20, 10)
@@ -209,7 +209,7 @@ class TestDigitalcom(SKDSPCommTest):
         self.assertEqual(Nerr, Nerr_test)
         self.assertEqual(SEP, SEP_test)
 
-    def test_QAM_SEP_16qam_error(self):
+    def test_qam_sep_16qam_error(self):
         Nsymb_test, Nerr_test, SEP_test = (9976, 172, 0.017241379310344827)
         x, b, tx_data = dc.qam_bb(10000, 1, '16qam', 'rect')
         x = dc.cpx_awgn(x, 15, 1)
@@ -219,7 +219,7 @@ class TestDigitalcom(SKDSPCommTest):
         self.assertEqual(Nerr, Nerr_test)
         self.assertEqual(SEP, SEP_test)
 
-    def test_QAM_SEP_qpsk(self):
+    def test_qam_sep_qpsk(self):
         Nsymb_test, Nerr_test, SEP_test = (4986, 0, 0.0)
         x,b,tx_data = dc.qam_bb(5000, 10, 'qpsk', 'src')
         x = dc.cpx_awgn(x, 20, 10)
@@ -229,7 +229,7 @@ class TestDigitalcom(SKDSPCommTest):
         self.assertEqual(Nerr, Nerr_test)
         self.assertEqual(SEP, SEP_test)
 
-    def test_QAM_SEP_64qam(self):
+    def test_qam_sep_64qam(self):
         Nsymb_test, Nerr_test, SEP_test = (4986, 245, 0.04913758523866827)
         x, b, tx_data = dc.qam_bb(5000, 10, '64qam', 'src')
         x = dc.cpx_awgn(x, 20, 10)
@@ -239,7 +239,7 @@ class TestDigitalcom(SKDSPCommTest):
         self.assertEqual(Nerr, Nerr_test)
         self.assertEqual(SEP, SEP_test)
 
-    def test_QAM_SEP_256qam(self):
+    def test_qam_sep_256qam(self):
         Nsymb_test, Nerr_test, SEP_test = (4986, 2190, 0.43922984356197353)
         x, b, tx_data = dc.qam_bb(5000, 10, '256qam', 'src')
         x = dc.cpx_awgn(x, 20, 10)

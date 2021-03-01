@@ -274,6 +274,11 @@ def bit_errors(tx_data, rx_data, n_corr=1024, n_transient=0):
     tx_data : ndarray of 0/1 bits as real numbers I.
     rx_data : ndarray of 0/1 bits as real numbers I.
 
+    Returns:
+    --------
+    bit_count : Number of bits processed
+    bit_errors : Number of bit errors found
+
     Notes:
     ------
     n_corr needs to be even.
@@ -1099,11 +1104,11 @@ def pcm_encode(x, n_bits):
     Parameters
     ----------
     x : signal samples to be PCM encoded
-    N_bits ; bit precision of PCM samples
+    n_bits : bit precision of PCM samples
 
     Returns
     -------
-    x_bits = encoded serial bit stream of 0/1 values. MSB first.
+    x_bits : encoded serial bit stream of 0/1 values. MSB first.
 
     Mark Wickert, Mark 2015
     """

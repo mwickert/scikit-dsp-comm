@@ -184,7 +184,7 @@ def eye_plot(x, l, s=0):
     plt.plot(idx, x[s:s + l + 1], 'b')
     k_max = int((len(x) - s) / l) - 1
     for k in range(1,k_max):
-         plt.plot(idx, x[s + k * l:s + l + 1 + k * l], 'b')
+        plt.plot(idx, x[s + k * l:s + l + 1 + k * l], 'b')
     plt.grid()
     plt.xlabel('Time Index - n')
     plt.ylabel('Amplitude')
@@ -325,21 +325,23 @@ def bit_errors(tx_data, rx_data, n_corr=1024, n_transient=0):
 
 def qam_bb(n_symb, ns, mod='16qam', pulse='rect', alpha=0.35):
     """
-    QAM_BB_TX: A complex baseband transmitter 
-    x,b,tx_data = QAM_bb(K,Ns,M)
+    A complex baseband transmitter
 
-    //////////// Inputs //////////////////////////////////////////////////
-      N_symb = the number of symbols to process
-          Ns = number of samples per symbol
-    mod_type = modulation type: qpsk, 16qam, 64qam, or 256qam
-       alpha = squareroot raised codine pulse shape bandwidth factor.
+    Parameters
+    ----------
+    n_symb : the number of symbols to process
+    ns : number of samples per symbol
+    mod : modulation type: qpsk, 16qam, 64qam, or 256qam
+    alpha : squareroot raised codine pulse shape bandwidth factor.
                For DOCSIS alpha = 0.12 to 0.18. In general alpha can 
                range over 0 < alpha < 1.
-         SRC = pulse shape: 0-> rect, 1-> SRC
-    //////////// Outputs /////////////////////////////////////////////////
-           x = complex baseband digital modulation
-           b = transmitter shaping filter, rectangle or SRC
-     tx_data = xI+1j*xQ = inphase symbol sequence + 
+    pulse: pulse shapes: src, rc, rect
+
+    Returns
+    -------
+    x : complex baseband digital modulation
+    b : transmitter shaping filter, rectangle or SRC
+    tx_data : xI+1j*xQ = inphase symbol sequence +
                1j*quadrature symbol sequence
 
     Mark Wickert November 2014

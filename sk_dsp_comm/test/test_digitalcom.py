@@ -420,3 +420,7 @@ class TestDigitalcom(SKDSPCommTest):
         z_out, H = dc.OFDM_rx(r_out, 32, 64, 100, True, 10, alpha=0.95, ht=hc)
         npt.assert_almost_equal(z_out[:50], z_out_test)
         npt.assert_almost_equal(H[:50], H_out_test)
+
+    def test_BPSK_tx(self):
+        x, b_test, data0 = dc.BPSK_tx(10, 10, pulse='src')
+        self.assertEqual(len(data0), 10)

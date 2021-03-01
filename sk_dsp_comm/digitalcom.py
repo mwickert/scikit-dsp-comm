@@ -773,14 +773,15 @@ def BPSK_tx(N_bits,Ns,ach_fc=2.0,ach_lvl_dB=-100,pulse='rect',alpha = 0.25,M=6):
 
     Examples
     --------
-    >>> x,b,data0 = BPSK_tx(1000,10,'src')
+    >>> x,b,data0 = BPSK_tx(1000,10,pulse='src')
     """
     x0,b,data0 = NRZ_bits(N_bits,Ns,pulse,alpha,M)
     x1p,b,data1p = NRZ_bits(N_bits,Ns,pulse,alpha,M)
     x1m,b,data1m = NRZ_bits(N_bits,Ns,pulse,alpha,M)
-    n = np.arange(len(x0))
-    x1p = x1p*np.exp(1j*2*np.pi*ach_fc/float(Ns)*n)
-    x1m = x1m*np.exp(-1j*2*np.pi*ach_fc/float(Ns)*n)
+    n_range = np.arange(len(x0))
+    exp_val = 2 * np.pi * ach_fc / float(Ns) * n_range
+    x1p = x1p*np.exp(1j * exp_val)
+    x1m = x1m*np.exp(-1j * exp_val)
     ach_lvl = 10**(ach_lvl_dB/20.)
     return x0 + ach_lvl*(x1p + x1m), b, data0
 

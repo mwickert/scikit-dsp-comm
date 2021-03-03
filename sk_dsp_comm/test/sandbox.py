@@ -5,7 +5,7 @@ from sk_dsp_comm import digitalcom as dc
 
 np.random.seed(100)
 
-cc = fec_conv.fec_conv()
+cc = fec_conv.FecConv()
 print(cc.Nstates)
 
 import matplotlib.pyplot as plt

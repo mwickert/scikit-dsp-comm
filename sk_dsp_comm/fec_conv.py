@@ -54,13 +54,14 @@ from math import factorial
 from fractions import Fraction
 import matplotlib.pyplot as plt
 import warnings
-from .digitalcom import Q_fctn
+from .digitalcom import q_fctn
 from logging import getLogger
 log = getLogger(__name__)
 import warnings
 
+
 # Data structure support classes
-class trellis_nodes(object):
+class TrellisNodes(object):
     """
     A structure to hold the trellis from nodes and to nodes.
     Ns is the number of states = :math:`2^{(K-1)}`.
@@ -71,7 +72,8 @@ class trellis_nodes(object):
         self.tn = np.zeros((Ns,1),dtype=int)
         self.out_bits = np.zeros((Ns,1),dtype=int)
 
-class trellis_branches(object):
+
+class TrellisBranches(object):
     """
     A structure to hold the trellis states, bits, and input values
     for both '1' and '0' transitions.
@@ -86,7 +88,8 @@ class trellis_branches(object):
         self.input1 = np.zeros((Ns,1),dtype=int)
         self.input2 = np.zeros((Ns,1),dtype=int)
 
-class trellis_paths(object):
+
+class TrellisPaths(object):
     """
     A structure to hold the trellis paths in terms of traceback_states,
     cumulative_metrics, and traceback_bits. A full decision depth history
@@ -103,13 +106,15 @@ class trellis_paths(object):
         self.cumulative_metric = np.zeros((Ns,self.decision_depth),dtype=float)
         self.traceback_bits = np.zeros((Ns,self.decision_depth),dtype=int)
 
+
 def binary(num, length=8):
         """
         Format an integer to binary without the leading '0b'
         """
         return format(num, '0{}b'.format(length))
 
-class fec_conv(object):
+
+class FECConv(object):
     """
     Class responsible for creating rate 1/2 convolutional code objects, and 
     then encoding and decoding the user code set in polynomials of G. Key
@@ -129,11 +134,11 @@ class fec_conv(object):
     --------
     >>> from sk_dsp_comm import fec_conv
     >>> # Rate 1/2
-    >>> cc1 = fec_conv.fec_conv(('101', '111'), Depth=10)  # decision depth is 10
+    >>> cc1 = fec_conv.FECConv(('101', '111'), Depth=10)  # decision depth is 10
 
     >>> # Rate 1/3
     >>> from sk_dsp_comm import fec_conv
-    >>> cc2 = fec_conv.fec_conv(('101','011','111'), Depth=15)  # decision depth is 15
+    >>> cc2 = fec_conv.FECConv(('101','011','111'), Depth=15)  # decision depth is 15
 
     
     """
@@ -188,9 +193,9 @@ class fec_conv(object):
         self.constraint_length = len(self.G_polys[0]) 
         self.Nstates = 2**(self.constraint_length-1) # number of states
         self.decision_depth = Depth
-        self.input_zero = trellis_nodes(self.Nstates)
-        self.input_one = trellis_nodes(self.Nstates)
-        self.paths = trellis_paths(self.Nstates,self.decision_depth)
+        self.input_zero = TrellisNodes(self.Nstates)
+        self.input_one = TrellisNodes(self.Nstates)
+        self.paths = TrellisPaths(self.Nstates, self.decision_depth)
         self.rate = Fraction(1,len(G))
         
         if(len(G) == 2 or len(G) == 3):
@@ -221,7 +226,7 @@ class fec_conv(object):
         # from state, the u2 u1 bit sequence in decimal form, and the input bit.
         # The index where this information is stored is the to state where survivors
         # are chosen from the two input branches.
-        self.branches = trellis_branches(self.Nstates)
+        self.branches = TrellisBranches(self.Nstates)
 
         for m in range(self.Nstates):
             match_zero_idx = np.where(self.input_zero.tn == m)
@@ -279,7 +284,7 @@ class fec_conv(object):
         >>> EbN0 = 4
         >>> total_bit_errors = 0
         >>> total_bit_count = 0
-        >>> cc1 = fec.fec_conv(('11101','10011'),25)
+        >>> cc1 = fec.FECConv(('11101','10011'),25)
         >>> # Encode with shift register starting state of '0000'
         >>> state = '0000'
         >>> while total_bit_errors < 100:
@@ -287,7 +292,7 @@ class fec_conv(object):
         >>>     x = randint(0,2,N_bits_per_frame)
         >>>     y,state = cc1.conv_encoder(x,state)
         >>>     # Add channel noise to bits, include antipodal level shift to [-1,1]
-        >>>     yn_soft = dc.cpx_AWGN(2*y-1,EbN0-3,1) # Channel SNR is 3 dB less for rate 1/2
+        >>>     yn_soft = dc.cpx_awgn(2*y-1,EbN0-3,1) # Channel SNR is 3 dB less for rate 1/2
         >>>     yn_hard = ((np.sign(yn_soft.real)+1)/2).astype(int)
         >>>     z = cc1.viterbi_decoder(yn_hard,'hard')
         >>>     # Count bit errors
@@ -354,7 +359,7 @@ class fec_conv(object):
         >>> EbN0 = 3
         >>> total_bit_errors = 0
         >>> total_bit_count = 0
-        >>> cc2 = fec.fec_conv(('11111','11011','10101'),25)
+        >>> cc2 = fec.FECConv(('11111','11011','10101'),25)
         >>> # Encode with shift register starting state of '0000'
         >>> state = '0000'
         >>> while total_bit_errors < 100:
@@ -362,7 +367,7 @@ class fec_conv(object):
         >>>     x = randint(0,2,N_bits_per_frame)
         >>>     y,state = cc2.conv_encoder(x,state)
         >>>     # Add channel noise to bits, include antipodal level shift to [-1,1]
-        >>>     yn_soft = dc.cpx_AWGN(2*y-1,EbN0-10*np.log10(3),1) # Channel SNR is 10*log10(3) dB less
+        >>>     yn_soft = dc.cpx_awgn(2*y-1,EbN0-10*np.log10(3),1) # Channel SNR is 10*log10(3) dB less
         >>>     yn_hard = ((np.sign(yn_soft.real)+1)/2).astype(int)
         >>>     z = cc2.viterbi_decoder(yn_hard.real,'hard')
         >>>     # Count bit errors
@@ -575,8 +580,8 @@ class fec_conv(object):
         the  :math:`G_{2}`  polynomial.
 
         >>> import numpy as np
-        >>> from sk_dsp_comm.fec_conv import fec_conv
-        >>> cc = fec_conv(('101','111'))
+        >>> from sk_dsp_comm.fec_conv import FECConv
+        >>> cc = FECConv(('101','111'))
         >>> x = np.array([0, 0, 1, 1, 1, 0, 0, 0, 0, 0])
         >>> state = '00'
         >>> y, state = cc.conv_encoder(x, state)
@@ -646,8 +651,8 @@ class fec_conv(object):
         the  :math:`G_{2}`  polynomial.
 
         >>> import numpy as np
-        >>> from sk_dsp_comm.fec_conv import fec_conv
-        >>> cc = fec_conv(('101','111'))
+        >>> from sk_dsp_comm.fec_conv import FECConv
+        >>> cc = FECConv(('101','111'))
         >>> x = np.array([0, 0, 1, 1, 1, 0, 0, 0, 0, 0])
         >>> state = '00'
         >>> y, state = cc.conv_encoder(x, state)
@@ -717,8 +722,8 @@ class fec_conv(object):
         Examples
         --------
         >>> import matplotlib.pyplot as plt
-        >>> from sk_dsp_comm.fec_conv import fec_conv
-        >>> cc = fec_conv()
+        >>> from sk_dsp_comm.fec_conv import FECConv
+        >>> cc = FECConv()
         >>> cc.trellis_plot()
         >>> plt.show()
         """
@@ -758,15 +763,15 @@ class fec_conv(object):
         Examples
         --------
         >>> import matplotlib.pyplot as plt
-        >>> from sk_dsp_comm.fec_conv import fec_conv
+        >>> from sk_dsp_comm.fec_conv import FECConv
         >>> from sk_dsp_comm import digitalcom as dc
         >>> import numpy as np
-        >>> cc = fec_conv()
+        >>> cc = FECConv()
         >>> x = np.random.randint(0,2,100)
         >>> state = '00'
         >>> y,state = cc.conv_encoder(x,state)
         >>> # Add channel noise to bits translated to +1/-1
-        >>> yn = dc.cpx_AWGN(2*y-1,5,1) # SNR = 5 dB
+        >>> yn = dc.cpx_awgn(2*y-1,5,1) # SNR = 5 dB
         >>> # Translate noisy +1/-1 bits to soft values on [0,7]
         >>> yn = (yn.real+1)/2*7
         >>> z = cc.viterbi_decoder(yn)
@@ -839,7 +844,7 @@ def conv_Pb_bound(R,dfree,Ck,SNRdB,hard_soft,M=2):
                 Pb[n] += Ck[k-dfree]*soft_Pk(k,R,SNRn,M)
             else: # Compute Uncoded Pe
                 if M == 2:
-                    Pb[n] = Q_fctn(np.sqrt(2.*SNRn))
+                    Pb[n] = q_fctn(np.sqrt(2. * SNRn))
                 else:
                     Pb[n] = 4./np.log2(M)*(1 - 1/np.sqrt(M))*\
                             np.gaussQ(np.sqrt(3*np.log2(M)/(M-1)*SNRn));
@@ -857,10 +862,10 @@ def hard_Pk(k,R,SNR,M=2):
     k = int(k)
 
     if M == 2:
-        p = Q_fctn(np.sqrt(2.*R*SNR))
+        p = q_fctn(np.sqrt(2. * R * SNR))
     else:
-        p = 4./np.log2(M)*(1 - 1./np.sqrt(M))*\
-            Q_fctn(np.sqrt(3*R*np.log2(M)/float(M-1)*SNR))
+        p = 4. / np.log2(M) * (1 - 1./np.sqrt(M)) * \
+            q_fctn(np.sqrt(3 * R * np.log2(M) / float(M - 1) * SNR))
     Pk = 0
     #if 2*k//2 == k:
     if np.mod(k,2) == 0:
@@ -884,10 +889,10 @@ def soft_Pk(k,R,SNR,M=2):
     Mark Wickert November 2014
     """
     if M == 2:
-        Pk = Q_fctn(np.sqrt(2.*k*R*SNR))
+        Pk = q_fctn(np.sqrt(2. * k * R * SNR))
     else:
-        Pk = 4./np.log2(M)*(1 - 1./np.sqrt(M))*\
-             Q_fctn(np.sqrt(3*k*R*np.log2(M)/float(M-1)*SNR))
+        Pk = 4. / np.log2(M) * (1 - 1./np.sqrt(M)) * \
+             q_fctn(np.sqrt(3 * k * R * np.log2(M) / float(M - 1) * SNR))
     
     return Pk
 
@@ -905,7 +910,7 @@ if __name__ == '__main__':
          0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1,
          1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1,
          0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1]
-    cc1 = fec_conv()
+    cc1 = FECConv()
     output, states = cc1.conv_encoder(x,'00')
     y = cc1.viterbi_decoder(7*output,'three_bit')
     

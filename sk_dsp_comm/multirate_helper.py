@@ -131,7 +131,7 @@ class multirate_FIR(object):
         """
 
         """
-        fir_d.freqz_resp_list([self.b],[1], mode, fs=fs, Npts = 1024)
+        fir_d.freqz_resp_list([self.b], [1], mode, fs=fs, n_pts= 1024)
         pylab.grid()
         pylab.ylim(ylim)
 

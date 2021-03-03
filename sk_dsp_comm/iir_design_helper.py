@@ -316,7 +316,7 @@ def freqz_cas(sos,w):
     return w, Hcas
 
 
-def freqz_resp_cas_list(sos,mode = 'dB',fs=1.0,Npts = 1024,fsize=(6,4)):
+def freqz_resp_cas_list(sos, mode = 'dB', fs=1.0, n_pts=1024, fsize=(6, 4)):
     """
     A method for displaying cascade digital filter form frequency response 
     magnitude, phase, and group delay. A plot is produced using matplotlib
@@ -341,7 +341,7 @@ def freqz_resp_cas_list(sos,mode = 'dB',fs=1.0,Npts = 1024,fsize=(6,4)):
     if type(sos) == list:
         # We have a list of filters
         N_filt = len(sos)
-    f = np.arange(0,Npts)/(2.0*Npts)
+    f = np.arange(0, n_pts) / (2.0 * n_pts)
     for n in range(N_filt):
         w,H = freqz_cas(sos[n],2*np.pi*f)
         if n == 0:

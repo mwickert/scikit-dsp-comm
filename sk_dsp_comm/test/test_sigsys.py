@@ -12,7 +12,7 @@ class TestSigsys(SKDSPCommTest):
 
     def test_cic_case_1(self):
         correct = np.ones(10) / 10
-        b = ss.CIC(10, 1)
+        b = ss.cic(10, 1)
         diff = correct - b
         diff = np.sum(diff)
         self.assertEqual(diff, 0)
@@ -20,7 +20,7 @@ class TestSigsys(SKDSPCommTest):
     def test_cic_case_2(self):
         correct = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1,
                    0.09, 0.08, 0.07, 0.06, 0.05, 0.04, 0.03, 0.02, 0.01]
-        b = ss.CIC(10, 2)
+        b = ss.cic(10, 2)
         diff = correct - b
         diff = np.sum(diff)
         self.assertEqual(diff, 0)
@@ -55,35 +55,35 @@ class TestSigsys(SKDSPCommTest):
         diff = np.sum(diff)
         self.assertEqual(diff, 0)
 
-    def test_position_CD_fb_approx(self):
+    def test_position_cd_fb_approx(self):
         Ka = 50
-        b, a = ss.position_CD(Ka, 'fb_approx')
+        b, a = ss.position_cd(Ka, 'fb_approx')
         b_check = np.array([254.64790895])
         a_check = np.array([1., 25., 254.64790895])
         npt.assert_almost_equal(b, b_check)
         npt.assert_almost_equal(a, a_check)
 
-    def test_position_CD_fb_exact(self):
+    def test_position_cd_fb_exact(self):
         Ka = 50
-        b, a = ss.position_CD(Ka, 'fb_exact')
+        b, a = ss.position_cd(Ka, 'fb_exact')
         b_check = np.array([318309.88618379])
         a_check = np.array([1.00000000e+00, 1.27500000e+03, 3.12500000e+04,
                             3.18309886e+05])
         npt.assert_almost_equal(b, b_check)
         npt.assert_almost_equal(a, a_check, decimal=3)
 
-    def test_position_CD_open_loop(self):
+    def test_position_cd_open_loop(self):
         Ka = 50
-        b, a = ss.position_CD(Ka, 'open_loop')
+        b, a = ss.position_cd(Ka, 'open_loop')
         b_check = np.array([318309.88618379])
         a_check = np.array([1, 1275, 31250, 0])
         npt.assert_almost_equal(b, b_check)
         npt.assert_almost_equal(a, a_check)
 
-    def test_position_CD_out_type_value_error(self):
+    def test_position_cd_out_type_value_error(self):
         Ka = 50
         with self.assertRaisesRegexp(ValueError, 'out_type must be: open_loop, fb_approx, or fc_exact') as cd_err:
-            b, a = ss.position_CD(Ka, 'value_error')
+            b, a = ss.position_cd(Ka, 'value_error')
 
     def test_cruise_control_H(self):
         wn = 0.1
@@ -393,7 +393,7 @@ class TestSigsys(SKDSPCommTest):
         npt.assert_almost_equal(b, b_check)
 
     def test_PN_gen(self):
-        PN = ss.PN_gen(50, 4)
+        PN = ss.pn_gen(50, 4)
         PN_check = np.array([ 1.,  1.,  1.,  1.,  0.,  1.,  0.,  1.,  1.,  0.,  0.,  1.,  0.,
         0.,  0.,  1.,  1.,  1.,  1.,  0.,  1.,  0.,  1.,  1.,  0.,  0.,
         1.,  0.,  0.,  0.,  1.,  1.,  1.,  1.,  0.,  1.,  0.,  1.,  1.,
@@ -543,7 +543,7 @@ class TestSigsys(SKDSPCommTest):
             ss.m_seq(-1)
 
     def test_BPSK_tx(self):
-        x,b,data0 = ss.BPSK_tx(1000, 10,pulse='src')
+        x,b,data0 = ss.bpsk_tx(1000, 10, pulse='src')
         bit_vals = [0, 1]
         for bit in data0:
             val_check = bit in bit_vals
@@ -551,10 +551,10 @@ class TestSigsys(SKDSPCommTest):
 
     def test_BPSK_tx_value_error(self):
         with self.assertRaisesRegexp(ValueError, 'Pulse shape must be \'rect\' or \'src\'''') as bpsk_err:
-            ss.BPSK_tx(1000, 10, pulse='rc')
+            ss.bpsk_tx(1000, 10, pulse='rc')
 
     def test_NRZ_bits(self):
-        x, b, data = ss.NRZ_bits(25, 8)
+        x, b, data = ss.nrz_bits(25, 8)
         b_check = np.array([ 0.125,  0.125,  0.125,  0.125,  0.125,  0.125,  0.125,  0.125])
         x_vals = [-1, 1]
         data_vals = [0, 1]
@@ -568,14 +568,14 @@ class TestSigsys(SKDSPCommTest):
 
     def test_NRZ_bits_3(self):
         Tspan = 10  # Time span in seconds
-        PN, b, data = ss.NRZ_bits(1000 * Tspan, 8000 / 1000)
+        PN, b, data = ss.nrz_bits(1000 * Tspan, 8000 / 1000)
 
     def test_NRZ_bits_value_error(self):
         with self.assertRaisesRegexp(ValueError, 'pulse type must be rec, rc, or src') as NRZ_err:
-            x,b,data = ss.NRZ_bits(100, 10, pulse='value')
+            x,b,data = ss.nrz_bits(100, 10, pulse='value')
 
     def test_NRZ_bits2(self):
-        x,b = ss.NRZ_bits2(ss.m_seq(3), 10)
+        x,b = ss.nrz_bits2(ss.m_seq(3), 10)
         x_check = np.array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
         1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
         1.,  1.,  1.,  1., -1., -1., -1., -1., -1., -1., -1., -1., -1.,
@@ -591,11 +591,11 @@ class TestSigsys(SKDSPCommTest):
 
     def test_NRZ_bits2_value_error(self):
         with self.assertRaisesRegexp(ValueError, 'pulse type must be rec, rc, or src') as NRZ_err:
-            x,b = ss.NRZ_bits2(ss.m_seq(5), 10, pulse='val')
+            x,b = ss.nrz_bits2(ss.m_seq(5), 10, pulse='val')
 
     def test_bit_errors(self):
-        x, b, data = ss.NRZ_bits(1000000, 10)
-        y = ss.cpx_AWGN(x, 12, 10)
+        x, b, data = ss.nrz_bits(1000000, 10)
+        y = ss.cpx_awgn(x, 12, 10)
         z = signal.lfilter(b, 1, y)
         Pe_hat = ss.bit_errors(z, data, 10, 10)
         npt.assert_almost_equal(Pe_hat, 3.0000030000030001e-06, decimal=5)
@@ -685,17 +685,37 @@ class TestSigsys(SKDSPCommTest):
         with self.assertRaisesRegexp(ValueError, 'shape must be tri or line')as lp_s_err:
             ss.lp_samp(10, 25, 50, 10, shape='square')
 
-    def test_simpleQuant_12_sat(self):
+    def test_os_filter_0(self):
+        y_test = [1.,          1.95105652,  2.76007351,  3.34785876,  3.65687576,  3.65687576, 3.34785876,  2.76007351,
+                  1.95105652,  1.,         -1.,         -2.90211303,  -4.52014702, -5.69571753, -6.31375151,
+                  -6.31375151, -5.69571753, -4.52014702, -2.90211303, -1.]
+        n = np.arange(0, 20)
+        x = np.cos(2 * np.pi * 0.05 * n)
+        b = np.ones(10)
+        y = ss.os_filter(x, b, 2 ** 10)
+        npt.assert_almost_equal(y, y_test)
+
+    def test_oa_filter_0(self):
+        y_test = [1.,          1.95105652,  2.76007351,  3.34785876,  3.65687576, 3.65687576, 3.34785876,  2.76007351,
+                  1.95105652,  1.,         -1.,         -2.90211303, -4.52014702, -5.69571753, -6.31375151, -6.31375151,
+                  -5.69571753, -4.52014702, -2.90211303, -1.]
+        n = np.arange(0, 20)
+        x = np.cos(2 * np.pi * 0.05 * n)
+        b = np.ones(10)
+        y = ss.oa_filter(x, b, 2 ** 10)
+        npt.assert_almost_equal(y, y_test)
+
+    def test_simple_quant_12_sat(self):
         n = np.arange(0, 10)
         x = np.cos(2 * np.pi * 0.211 * n)
         test_q = [0.99951172, 0.24267578, -0.88232422, -0.67089844, 0.55664062, 0.94091797, -0.10058594, -0.98974609,
                   -0.37988281, 0.80517578]
-        q = ss.simpleQuant(x, 12, 1, 'sat')
+        q = ss.simple_quant(x, 12, 1, 'sat')
         npt.assert_almost_equal(q, test_q)
 
-    def test_simpleQuant_value_err(self):
+    def test_simple_quant_value_err(self):
         with self.assertRaisesRegexp(ValueError, "limit must be the string over, sat, or none") as sQ_err:
-            ss.simpleQuant(np.ones(12), 12, 12, 'under')
+            ss.simple_quant(np.ones(12), 12, 12, 'under')
 
     def test_ft_approx(self):
         f_check = [-0.9765625,  -0.95214844, -0.92773438, -0.90332031, -0.87890625, -0.85449219,

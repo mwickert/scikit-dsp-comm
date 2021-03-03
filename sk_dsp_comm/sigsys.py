@@ -59,14 +59,14 @@ log = getLogger(__name__)
 import warnings
 
 
-def CIC(M, K):
+def cic(m, k):
     """
     A functional form implementation of a cascade of integrator comb (CIC) filters.
 
     Parameters
     ----------
-    M : Effective number of taps per section (typically the decimation factor).
-    K : The number of CIC sections cascaded (larger K gives the filter a wider image rejection bandwidth).
+    m : Effective number of taps per section (typically the decimation factor).
+    k : The number of CIC sections cascaded (larger K gives the filter a wider image rejection bandwidth).
 
     Returns
     -------
@@ -81,16 +81,17 @@ def CIC(M, K):
     Mark Wickert July 2013
     """
 
-    if K == 1:
-        b = np.ones(M)
+    if k == 1:
+        b = np.ones(m)
     else:
-        h = np.ones(M)
+        h = np.ones(m)
         b = h
-        for i in range(1, K):
+        for i in range(1, k):
             b = signal.convolve(b, h)  # cascade by convolving impulse responses
 
     # Make filter have unity gain at DC
     return b / np.sum(b)
+
 
 def ten_band_eq_filt(x,GdB,Q=3.5):
     """
@@ -282,7 +283,7 @@ def ex6_2(n):
     return x
 
 
-def position_CD(Ka,out_type = 'fb_exact'):
+def position_cd(Ka, out_type ='fb_exact'):
     """
     CD sled position control case study of Chapter 18.
 
@@ -311,8 +312,8 @@ def position_CD(Ka,out_type = 'fb_exact'):
 
     Examples
     --------
-    >>> b,a = position_CD(Ka,'fb_approx')
-    >>> b,a = position_CD(Ka,'fb_exact')
+    >>> b,a = position_cd(Ka,'fb_approx')
+    >>> b,a = position_cd(Ka,'fb_exact')
     """
     rs = 10/(2*np.pi)
     # Load b and a ndarrays with the coefficients
@@ -478,7 +479,7 @@ def splane(b,a,auto_scale=True,size=[-1,1,-1,1]):
     return M,N
 
 
-def OS_filter(x,h,N,mode=0):
+def os_filter(x, h, N, mode=0):
     """
     Overlap and save transform domain FIR filtering.
     
@@ -503,12 +504,13 @@ def OS_filter(x,h,N,mode=0):
     
     Examples
     --------
+    >>> from numpy import arange, cos, pi, ones
     >>> n = arange(0,100)
     >>> x = cos(2*pi*0.05*n)
     >>> b = ones(10)
-    >>> y = OS_filter(x,h,N)
+    >>> y = os_filter(x,h,N)
     >>> # set mode = 1
-    >>> y, y_mat = OS_filter(x,h,N,1)
+    >>> y, y_mat = os_filter(x,h,N,1)
     """
     
     P = len(h)
@@ -538,7 +540,7 @@ def OS_filter(x,h,N,mode=0):
         return y[P-1:Nx]
 
 
-def OA_filter(x,h,N,mode=0):
+def oa_filter(x, h, N, mode=0):
     """
     Overlap and add transform domain FIR filtering.
     
@@ -564,13 +566,13 @@ def OA_filter(x,h,N,mode=0):
     Examples
     --------
     >>> import numpy as np
-    >>> from sk_dsp_comm.sigsys import OA_filter
+    >>> from sk_dsp_comm.sigsys import oa_filter
     >>> n = np.arange(0,100)
-    >>> x = np.cos(2*pi*0.05*n)
+    >>> x = np.cos(2*np.pi*0.05*n)
     >>> b = np.ones(10)
-    >>> y = OA_filter(x,h,N)
+    >>> y = oa_filter(x,h,N)
     >>> # set mode = 1
-    >>> y, y_mat = OA_filter(x,h,N,1)
+    >>> y, y_mat = oa_filter(x,h,N,1)
     """
     P = len(h)
     L = int(N) - P + 1 # need N >= L + P -1
@@ -691,7 +693,7 @@ def lp_tri(f, fb):
     return x
 
 
-def sinusoidAWGN(x,SNRdB):
+def sinusoid_awgn(x, SNRdB):
     """
     Add white Gaussian noise to a single real sinusoid.
     
@@ -713,7 +715,7 @@ def sinusoidAWGN(x,SNRdB):
     >>> # set the SNR to 10 dB
     >>> n = arange(0,10000)
     >>> x = cos(2*pi*0.04*n)
-    >>> y = sinusoidAWGN(x,10.0)
+    >>> y = sinusoid_awgn(x,10.0)
     """
     # Estimate signal power
     x_pwr = np.var(x)
@@ -723,7 +725,7 @@ def sinusoidAWGN(x,SNRdB):
     return x + noise
 
 
-def simpleQuant(x,Btot,Xmax,Limit):
+def simple_quant(x, b_tot, x_max, limit):
     """
     A simple rounding quantizer for bipolar signals having Btot = B + 1 bits.
     
@@ -734,8 +736,8 @@ def simpleQuant(x,Btot,Xmax,Limit):
     Parameters
     ----------
     x : input signal ndarray to be quantized
-    Btot : total number of bits in the quantizer, e.g. 16
-    Xmax : quantizer full-scale dynamic range is [-Xmax, Xmax]
+    b_tot : total number of bits in the quantizer, e.g. 16
+    x_max : quantizer full-scale dynamic range is [-Xmax, Xmax]
     Limit = Limiting of the form 'sat', 'over', 'none'
     
     Returns
@@ -754,7 +756,7 @@ def simpleQuant(x,Btot,Xmax,Limit):
     >>> from sk_dsp_comm import sigsys as ss
     >>> n = np.arange(0,10000)
     >>> x = np.cos(2*np.pi*0.211*n)
-    >>> y = ss.sinusoidAWGN(x,90)
+    >>> y = ss.sinusoid_awgn(x,90)
     >>> Px, f = psd(y,2**10,Fs=1)
     >>> plt.plot(f, 10*np.log10(Px))
     >>> plt.ylim([-80, 25])
@@ -762,7 +764,7 @@ def simpleQuant(x,Btot,Xmax,Limit):
     >>> plt.xlabel(r'Normalized Frequency $\omega/2\pi$')
     >>> plt.show()
 
-    >>> yq = ss.simpleQuant(y,12,1,'sat')
+    >>> yq = ss.simple_quant(y,12,1,'sat')
     >>> Px, f = psd(yq,2**10,Fs=1)
     >>> plt.plot(f, 10*np.log10(Px))
     >>> plt.ylim([-80, 25])
@@ -770,22 +772,22 @@ def simpleQuant(x,Btot,Xmax,Limit):
     >>> plt.xlabel(r'Normalized Frequency $\omega/2\pi$')
     >>> plt.show()
     """
-    B = Btot-1
-    x = x/Xmax
-    if Limit.lower() == 'over':
-        xq = (np.mod(np.round(x*2**B)+2**B,2**Btot)-2**B)/2**B
-    elif Limit.lower() == 'sat':
+    B = b_tot - 1
+    x = x / x_max
+    if limit.lower() == 'over':
+        xq = (np.mod(np.round(x*2**B) + 2 ** B, 2 ** b_tot) - 2 ** B) / 2 ** B
+    elif limit.lower() == 'sat':
         xq = np.round(x*2**B)+2**B
-        s1 = np.nonzero(np.ravel(xq >= 2**Btot-1))[0]
+        s1 = np.nonzero(np.ravel(xq >= 2 ** b_tot - 1))[0]
         s2 = np.nonzero(np.ravel(xq < 0))[0]
-        xq[s1] = (2**Btot - 1)*np.ones(len(s1))
+        xq[s1] = (2 ** b_tot - 1) * np.ones(len(s1))
         xq[s2] = np.zeros(len(s2))
         xq = (xq - 2**B)/2**B
-    elif Limit.lower() == 'none':
+    elif limit.lower() == 'none':
         xq = np.round(x*2**B)/2**B
     else:
         raise ValueError('limit must be the string over, sat, or none')
-    return xq*Xmax
+    return xq * x_max
 
 
 def prin_alias(f_in,fs):
@@ -1003,7 +1005,7 @@ def fir_iir_notch(fi,fs,r=0.95):
     return b, a
 
 
-def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
+def simple_sa(x, NS, NFFT, fs, NAVG=1, window='boxcar'):
     """
     Spectral estimation using windowing and averaging.
 
@@ -1037,7 +1039,7 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
     >>> from sk_dsp_comm import sigsys as ss
     >>> n = np.arange(0,2048)
     >>> x = np.cos(2*np.pi*1000/10000*n) + 0.01*np.cos(2*np.pi*3000/10000*n)
-    >>> f, Sx = ss.simple_SA(x,128,512,10000)
+    >>> f, Sx = ss.simple_sa(x,128,512,10000)
     >>> plt.plot(f, 10*np.log10(Sx))
     >>> plt.ylim([-80, 0])
     >>> plt.xlabel("Frequency (Hz)")
@@ -1046,7 +1048,7 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
 
     With a hanning window.
 
-    >>> f, Sx = ss.simple_SA(x,256,1024,10000,window='hanning')
+    >>> f, Sx = ss.simple_sa(x,256,1024,10000,window='hanning')
     >>> plt.plot(f, 10*np.log10(Sx))
     >>> plt.xlabel("Frequency (Hz)")
     >>> plt.ylabel("Power Spectral Density (dB)")
@@ -1085,7 +1087,7 @@ def simple_SA(x,NS,NFFT,fs,NAVG=1,window='boxcar'):
 
 def line_spectra(fk,Xk,mode,sides=2,linetype='b',lwidth=2,floor_dB=-100,fsize=(6,4)):
     """
-    Plot the Fouier series line spectral given the coefficients.
+    Plot the Fourier series line spectral given the coefficients.
 
     This function plots two-sided and one-sided line spectra of a periodic
     signal given the complex exponential Fourier series coefficients and
@@ -1943,7 +1945,7 @@ def sqrt_rc_imp(Ns,alpha,M=6):
     return b
 
 
-def PN_gen(N_bits,m=5):
+def pn_gen(n_bits, m=5):
     """
     Maximal length sequence signal generator.
 
@@ -1953,7 +1955,7 @@ def PN_gen(N_bits,m=5):
             
     Parameters
     ----------
-    N_bits : the number of bits to generate
+    n_bits : the number of bits to generate
     m : the number of shift registers. 2,3, .., 12, & 16
 
     Returns
@@ -1967,15 +1969,15 @@ def PN_gen(N_bits,m=5):
     Examples
     --------
     >>> # A 15 bit period signal nover 50 bits
-    >>> PN = PN_gen(50,4)
+    >>> PN = pn_gen(50,4)
     """
     c = m_seq(m)
     Q = len(c)
-    max_periods = int(np.ceil(N_bits/float(Q)))
+    max_periods = int(np.ceil(n_bits / float(Q)))
     PN = np.zeros(max_periods*Q)
     for k in range(max_periods):
         PN[k*Q:(k+1)*Q] = c
-    PN = np.resize(PN, (1,N_bits))
+    PN = np.resize(PN, (1, n_bits))
     return PN.flatten()
 
 
@@ -2043,7 +2045,7 @@ def m_seq(m):
     return c
 
 
-def BPSK_tx(N_bits,Ns,ach_fc=2.0,ach_lvl_dB=-100,pulse='rect',alpha = 0.25,M=6):
+def bpsk_tx(N_bits, Ns, ach_fc=2.0, ach_lvl_dB=-100, pulse='rect', alpha = 0.25, M=6):
     """
     Generates biphase shift keyed (BPSK) transmitter with adjacent channel interference.
 
@@ -2074,14 +2076,14 @@ def BPSK_tx(N_bits,Ns,ach_fc=2.0,ach_lvl_dB=-100,pulse='rect',alpha = 0.25,M=6):
 
     Examples
     --------
-    >>> x,b,data0 = BPSK_tx(1000,10,pulse='src')
+    >>> x,b,data0 = bpsk_tx(1000,10,pulse='src')
     """
     pulse_types = ['rect', 'src']
     if pulse not in pulse_types:
         raise ValueError('Pulse shape must be \'rect\' or \'src\'''')
-    x0,b,data0 = NRZ_bits(N_bits,Ns,pulse,alpha,M)
-    x1p,b,data1p = NRZ_bits(N_bits,Ns,pulse,alpha,M)
-    x1m,b,data1m = NRZ_bits(N_bits,Ns,pulse,alpha,M)
+    x0,b,data0 = nrz_bits(N_bits, Ns, pulse, alpha, M)
+    x1p,b,data1p = nrz_bits(N_bits, Ns, pulse, alpha, M)
+    x1m,b,data1m = nrz_bits(N_bits, Ns, pulse, alpha, M)
     n = np.arange(len(x0))
     x1p = x1p*np.exp(1j*2*np.pi*ach_fc/float(Ns)*n)
     x1m = x1m*np.exp(-1j*2*np.pi*ach_fc/float(Ns)*n)
@@ -2089,7 +2091,7 @@ def BPSK_tx(N_bits,Ns,ach_fc=2.0,ach_lvl_dB=-100,pulse='rect',alpha = 0.25,M=6):
     return x0 + ach_lvl*(x1p + x1m), b, data0
 
 
-def NRZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
+def nrz_bits(n_bits, ns, pulse='rect', alpha=0.25, m=6):
     """
     Generate non-return-to-zero (NRZ) data bits with pulse shaping.
 
@@ -2098,11 +2100,11 @@ def NRZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
 
     Parameters
     ----------
-    N_bits : number of NRZ +/-1 data bits to produce
-    Ns : the number of samples per bit,
+    n_bits : number of NRZ +/-1 data bits to produce
+    ns : the number of samples per bit,
     pulse_type : 'rect' , 'rc', 'src' (default 'rect')
     alpha : excess bandwidth factor(default 0.25)
-    M : single sided pulse duration (default = 6) 
+    m : single sided pulse duration (default = 6)
 
     Returns
     -------
@@ -2119,31 +2121,31 @@ def NRZ_bits(N_bits,Ns,pulse='rect',alpha = 0.25,M=6):
     Examples
     --------
     >>> import matplotlib.pyplot as plt
-    >>> from sk_dsp_comm.sigsys import NRZ_bits
+    >>> from sk_dsp_comm.sigsys import nrz_bits
     >>> from numpy import arange
-    >>> x,b,data = NRZ_bits(100, 10)
+    >>> x,b,data = nrz_bits(100, 10)
     >>> t = arange(len(x))
     >>> plt.plot(t, x)
     >>> plt.ylim([-1.01, 1.01])
     >>> plt.show()
     """
-    data = np.random.randint(0,2,N_bits)
-    n_zeros = np.zeros((N_bits,int(Ns)-1))
-    x = np.hstack((2*data.reshape(N_bits,1)-1,n_zeros))
+    data = np.random.randint(0, 2, n_bits)
+    n_zeros = np.zeros((n_bits, int(ns) - 1))
+    x = np.hstack((2 * data.reshape(n_bits, 1) - 1, n_zeros))
     x =x.flatten()
     if pulse.lower() == 'rect':
-        b = np.ones(int(Ns))
+        b = np.ones(int(ns))
     elif pulse.lower() == 'rc':
-        b = rc_imp(Ns,alpha,M)
+        b = rc_imp(ns, alpha, m)
     elif pulse.lower() == 'src':
-        b = sqrt_rc_imp(Ns,alpha,M)
+        b = sqrt_rc_imp(ns, alpha, m)
     else:
         raise ValueError('pulse type must be rec, rc, or src')
     x = signal.lfilter(b,1,x)
-    return x,b/float(Ns),data
+    return x, b / float(ns), data
 
 
-def NRZ_bits2(data,Ns,pulse='rect',alpha = 0.25,M=6):
+def nrz_bits2(data, Ns, pulse='rect', alpha = 0.25, M=6):
     """
     Generate non-return-to-zero (NRZ) data bits with pulse shaping with user data
 
@@ -2171,10 +2173,10 @@ def NRZ_bits2(data,Ns,pulse='rect',alpha = 0.25,M=6):
     Examples
     --------
     >>> import matplotlib.pyplot as plt
-    >>> from sk_dsp_comm.sigsys import NRZ_bits2
+    >>> from sk_dsp_comm.sigsys import nrz_bits2
     >>> from sk_dsp_comm.sigsys import m_seq
     >>> from numpy import arange
-    >>> x,b = NRZ_bits2(m_seq(5),10)
+    >>> x,b = nrz_bits2(m_seq(5),10)
     >>> t = arange(len(x))
     >>> plt.ylim([-1.01, 1.01])
     >>> plt.plot(t,x)
@@ -2195,7 +2197,7 @@ def NRZ_bits2(data,Ns,pulse='rect',alpha = 0.25,M=6):
     return x,b/float(Ns)
 
 
-def eye_plot(x,L,S=0):
+def eye_plot(x, l, s=0):
     """
     Eye pattern plot of a baseband digital communications waveform.
 
@@ -2205,8 +2207,8 @@ def eye_plot(x,L,S=0):
     Parameters
     ----------
     x : ndarray of the real input data vector/array
-    L : display length in samples (usually two symbols)
-    S : start index
+    l : display length in samples (usually two symbols)
+    s : start index
 
     Returns
     -------
@@ -2222,15 +2224,15 @@ def eye_plot(x,L,S=0):
 
     >>> import matplotlib.pyplot as plt
     >>> from sk_dsp_comm import sigsys as ss
-    >>> x,b, data = ss.NRZ_bits(1000,10,'rc')
+    >>> x,b, data = ss.nrz_bits(1000,10,'rc')
     >>> ss.eye_plot(x,20,60)
     """
     plt.figure(figsize=(6,4))
-    idx = np.arange(0,L+1)
-    plt.plot(idx,x[S:S+L+1],'b')
-    k_max = int((len(x) - S)/L)-1
+    idx = np.arange(0, l + 1)
+    plt.plot(idx, x[s:s + l + 1], 'b')
+    k_max = int((len(x) - s) / l) - 1
     for k in range(1,k_max):
-         plt.plot(idx,x[S+k*L:S+L+1+k*L],'b')
+         plt.plot(idx, x[s + k * l:s + l + 1 + k * l], 'b')
     plt.grid()
     plt.xlabel('Time Index - n')
     plt.ylabel('Amplitude')
@@ -2238,14 +2240,14 @@ def eye_plot(x,L,S=0):
     return 0
 
 
-def scatter(x,Ns,start):
+def scatter(x, ns, start):
     """
     Sample a baseband digital communications waveform at the symbol spacing.
 
     Parameters
     ----------
     x : ndarray of the input digital comm signal
-    Ns : number of samples per symbol (bit)
+    ns : number of samples per symbol (bit)
     start : the array index to start the sampling
 
     Returns
@@ -2265,9 +2267,9 @@ def scatter(x,Ns,start):
     --------
     >>> import matplotlib.pyplot as plt
     >>> from sk_dsp_comm import sigsys as ss
-    >>> x,b, data = ss.NRZ_bits(1000,10,'rc')
+    >>> x,b, data = ss.nrz_bits(1000,10,'rc')
     >>> # Add some noise so points are now scattered about +/-1
-    >>> y = ss.cpx_AWGN(x,20,10)
+    >>> y = ss.cpx_awgn(x,20,10)
     >>> yI,yQ = ss.scatter(y,10,60)
     >>> plt.plot(yI,yQ,'.')
     >>> plt.axis('equal')
@@ -2276,12 +2278,12 @@ def scatter(x,Ns,start):
     >>> plt.grid()
     >>> plt.show()
     """
-    xI = np.real(x[start::Ns])
-    xQ = np.imag(x[start::Ns])
+    xI = np.real(x[start::ns])
+    xQ = np.imag(x[start::ns])
     return xI, xQ
 
 
-def bit_errors(z,data,start,Ns):
+def bit_errors(z, data, start, ns):
     """
     A simple bit error counting function.
     
@@ -2297,7 +2299,7 @@ def bit_errors(z,data,start,Ns):
     z : ndarray of hard decision BPSK data prior to symbol spaced sampling
     data : ndarray of reference bits in 1/0 format
     start : timing reference for the received
-    Ns : the number of samples per symbol
+    ns : the number of samples per symbol
 
     Returns
     -------
@@ -2313,19 +2315,19 @@ def bit_errors(z,data,start,Ns):
     Examples
     --------
     >>> from scipy import signal
-    >>> x,b, data = NRZ_bits(1000,10)
+    >>> x,b, data = nrz_bits(1000,10)
     >>> # set Eb/N0 to 8 dB
-    >>>  y = cpx_AWGN(x,8,10)
+    >>>  y = cpx_awgn(x,8,10)
     >>> # matched filter the signal
     >>> z = signal.lfilter(b,1,y)
     >>> # make bit decisions at 10 and Ns multiples thereafter
     >>> Pe_hat = bit_errors(z,data,10,10)
     """
-    Pe_hat = np.sum(data[0:len(z[start::Ns])]^np.int64((np.sign(np.real(z[start::Ns]))+1)/2))/float(len(z[start::Ns]))
+    Pe_hat = np.sum(data[0:len(z[start::ns])] ^ np.int64((np.sign(np.real(z[start::ns])) + 1) / 2)) / float(len(z[start::ns]))
     return Pe_hat
 
 
-def cpx_AWGN(x,EsN0,Ns):
+def cpx_awgn(x, es_n0, ns):
     """
     Apply white Gaussian noise to a digital communications signal.
 
@@ -2337,7 +2339,7 @@ def cpx_AWGN(x,EsN0,Ns):
     ----------
     x : ndarray noise free complex baseband input signal.
     EsNO : set the channel Es/N0 (Eb/N0 for binary) level in dB
-    Ns : number of samples per symbol (bit)
+    ns : number of samples per symbol (bit)
 
     Returns
     -------
@@ -2350,11 +2352,11 @@ def cpx_AWGN(x,EsN0,Ns):
 
     Examples
     --------
-    >>> x,b, data = NRZ_bits(1000,10)
+    >>> x,b, data = nrz_bits(1000,10)
     >>> # set Eb/N0 = 10 dB
-    >>> y = cpx_AWGN(x,10,10)
+    >>> y = cpx_awgn(x,10,10)
     """
-    w = np.sqrt(Ns*np.var(x)*10**(-EsN0/10.)/2.)*(np.random.randn(len(x)) + 1j*np.random.randn(len(x)))                            
+    w = np.sqrt(ns * np.var(x) * 10 ** (-es_n0 / 10.) / 2.) * (np.random.randn(len(x)) + 1j * np.random.randn(len(x)))
     return x+w       
 
 
@@ -2387,7 +2389,7 @@ def my_psd(x,NFFT=2**10,Fs=1):
     >>> import matplotlib.pyplot as plt
     >>> from numpy import log10
     >>> from sk_dsp_comm import sigsys as ss
-    >>> x,b, data = ss.NRZ_bits(10000,10)
+    >>> x,b, data = ss.nrz_bits(10000,10)
     >>> Px,f = ss.my_psd(x,2**10,10)
     >>> plt.plot(f, 10*log10(Px))
     >>> plt.ylabel("Power Spectral Density (dB)")
@@ -2483,7 +2485,7 @@ def am_rx(x192):
     return m_rx8,t8,m_rx192,x_edet192
 
 
-def am_rx_BPF(N_order = 7, ripple_dB = 1, B = 10e3, fs = 192e3):
+def am_rx_bpf(n_order=7, ripple_dB=1, b=10e3, fs=192e3):
     """
     Bandpass filter design for the AM receiver Case Study of Chapter 17.
 
@@ -2492,9 +2494,9 @@ def am_rx_BPF(N_order = 7, ripple_dB = 1, B = 10e3, fs = 192e3):
     
     Parameters
     ----------
-    N_order : the filter order (default = 7)
+    n_order : the filter order (default = 7)
     ripple_dB : the passband ripple in dB (default = 1)
-    B : the RF bandwidth (default = 10e3)
+    b : the RF bandwidth (default = 10e3)
     fs : the sampling frequency 
 
     Returns
@@ -2509,7 +2511,7 @@ def am_rx_BPF(N_order = 7, ripple_dB = 1, B = 10e3, fs = 192e3):
     >>> import matplotlib.pyplot as plt
     >>> import sk_dsp_comm.sigsys as ss
     >>> # Use the default values
-    >>> b_bpf,a_bpf = ss.am_rx_BPF()
+    >>> b_bpf,a_bpf = ss.am_rx_bpf()
 
     Pole-zero plot of the filter.
 
@@ -2526,7 +2528,7 @@ def am_rx_BPF(N_order = 7, ripple_dB = 1, B = 10e3, fs = 192e3):
     >>> plt.xlabel("Frequency (kHz)")
     >>> plt.show()
     """
-    b_bpf,a_bpf = signal.cheby1(N_order,ripple_dB,2*np.array([75e3-B/2.,75e3+B/2.])/fs,'bandpass')
+    b_bpf,a_bpf = signal.cheby1(n_order, ripple_dB, 2 * np.array([75e3 - b / 2., 75e3 + b / 2.]) / fs, 'bandpass')
     return b_bpf,a_bpf
     
     
@@ -2823,7 +2825,7 @@ def zplane(b,a,auto_scale=True,size=2,detect_mult=True,tol=0.001):
     return M,N
 
 
-def rect_conv(n,N_len):
+def rect_conv(n, n_len):
     """
     The theoretical result of convolving two rectangle sequences.
     
@@ -2834,7 +2836,7 @@ def rect_conv(n,N_len):
     Parameters
     ----------
     n : ndarray of time axis
-    N_len : rectangle pulse duration
+    n_len : rectangle pulse duration
     
     Returns
     -------
@@ -2852,10 +2854,10 @@ def rect_conv(n,N_len):
     """
     y = np.zeros(len(n))
     for k in range(len(n)):
-        if n[k] >= 0 and n[k] < N_len-1:
+        if n[k] >= 0 and n[k] < n_len-1:
             y[k] = n[k] + 1
-        elif n[k] >= N_len-1 and n[k] <= 2*N_len-2:
-            y[k] = 2*N_len-1-n[k]
+        elif n[k] >= n_len-1 and n[k] <= 2*n_len-2:
+            y[k] = 2 * n_len - 1 - n[k]
             
     return y
              
@@ -2884,7 +2886,8 @@ def biquad2(w_num, r_num, w_den, r_den):
     a = np.array([1, -2*r_den*np.cos(w_den), r_den**2])
     return b, a
 
-def plot_na(x,y,mode='stem'):
+
+def plot_na(x, y, mode='stem'):
     pylab.figure(figsize=(5,2))
     frame1 = pylab.gca()
     if mode.lower() == 'stem':
@@ -2921,7 +2924,7 @@ def from_wav(filename):
     return fs, x/32767.
 
 
-def to_wav(filename,rate,x):
+def to_wav(filename, rate, x):
     """
     Write a wave file.
 

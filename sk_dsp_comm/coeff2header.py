@@ -39,10 +39,10 @@ from logging import getLogger
 log = getLogger(__name__)
 
 
-def FIR_header(fname_out, h):
+def fir_header(fname_out, h):
     """
-    Write FIR Filter Header Files 
-    
+    Write FIR Filter Header Files
+
     Mark Wickert February 2015
     """
     M = len(h)
@@ -74,7 +74,7 @@ def FIR_header(fname_out, h):
     f.close()
 
 
-def FIR_fix_header(fname_out, h):
+def fir_fix_header(fname_out, h):
     """
     Write FIR Fixed-Point Filter Header Files 
     
@@ -110,7 +110,7 @@ def FIR_fix_header(fname_out, h):
     f.close()
 
 
-def IIR_sos_header(fname_out, SOS_mat):
+def iir_sos_header(fname_out, SOS_mat):
     """
     Write IIR SOS Header Files
     File format is compatible with CMSIS-DSP IIR 
@@ -155,7 +155,7 @@ def IIR_sos_header(fname_out, SOS_mat):
     f.close()
 
 
-def freqz_resp_list(b, a=np.array([1]), mode='dB', fs=1.0, Npts=1024, fsize=(6, 4)):
+def freqz_resp_list(b, a=np.array([1]), mode='dB', fs=1.0, n_pts=1024, fsize=(6, 4)):
     """
     A method for displaying digital filter frequency response magnitude,
     phase, and group delay. A plot is produced using matplotlib
@@ -174,7 +174,7 @@ def freqz_resp_list(b, a=np.array([1]), mode='dB', fs=1.0, Npts=1024, fsize=(6, 
     mode : display mode: 'dB' magnitude, 'phase' in radians, or
             'groupdelay_s' in samples and 'groupdelay_t' in sec, 
             all versus frequency in Hz
-    Npts : number of points to plot; default is 1024
+    n_pts : number of points to plot; default is 1024
     fsize : figure size; defult is (6,4) inches
 
     Mark Wickert, January 2015
@@ -182,7 +182,9 @@ def freqz_resp_list(b, a=np.array([1]), mode='dB', fs=1.0, Npts=1024, fsize=(6, 
     if type(b) == list:
         # We have a list of filters
         N_filt = len(b)
-    f = np.arange(0, Npts) / (2.0 * Npts)
+    else:
+        return None
+    f = np.arange(0, n_pts) / (2.0 * n_pts)
     for n in range(N_filt):
         w, H = signal.freqz(b[n], a[n], 2 * np.pi * f)
         if n == 0:
@@ -245,7 +247,7 @@ def freqz_resp_list(b, a=np.array([1]), mode='dB', fs=1.0, Npts=1024, fsize=(6, 
             log.info(s1 + s2)
 
 
-def CA_code_header(fname_out, Nca):
+def ca_code_header(fname_out, Nca):
     """
     Write 1023 bit CA (Gold) Code Header Files
 

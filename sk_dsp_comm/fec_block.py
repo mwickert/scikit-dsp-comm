@@ -52,13 +52,13 @@ Mark Wickert and Andrew Smit: October 2018.
 
 import numpy as np
 import scipy.special as special
-from .digitalcom import Q_fctn
+from .digitalcom import q_fctn
 from .fec_conv import binary
 from logging import getLogger
 log = getLogger(__name__)
 
 
-class fec_hamming(object):
+class FECHamming(object):
     """
     Class responsible for creating hamming block codes and then 
     encoding and decoding. Methods provided include hamm_gen,
@@ -234,7 +234,8 @@ class fec_hamming(object):
             decoded_bits[i*self.k:(i+1)*self.k] = np.matmul(self.R,codewords[:,i*self.n:(i+1)*self.n].T).T % 2
         return decoded_bits.astype(int)
 
-class fec_cyclic(object):
+
+class FECCyclic(object):
     """
     Class responsible for creating cyclic block codes and then 
     encoding and decoding. Methods provided include
@@ -482,13 +483,13 @@ def block_single_error_Pb_bound(j,SNRdB,coded=True,M=2):
     for i,SNRn in enumerate(SNR):
         if coded: # compute Hamming code Ps
             if M == 2:
-                Ps[i] = Q_fctn(np.sqrt(k*2.*SNRn/n))
+                Ps[i] = q_fctn(np.sqrt(k * 2. * SNRn / n))
             else:
                 Ps[i] = 4./np.log2(M)*(1 - 1/np.sqrt(M))*\
                         np.gaussQ(np.sqrt(3*np.log2(M)/(M-1)*SNRn))/k
         else: # Compute Uncoded Pb
             if M == 2:
-                Pb[i] = Q_fctn(np.sqrt(2.*SNRn))
+                Pb[i] = q_fctn(np.sqrt(2. * SNRn))
             else:
                 Pb[i] = 4./np.log2(M)*(1 - 1/np.sqrt(M))*\
                         np.gaussQ(np.sqrt(3*np.log2(M)/(M-1)*SNRn))

@@ -201,7 +201,7 @@ html_use_index = True
 htmlhelp_basename = 'scikit-dsp-commdoc'
 
 # Mathjax
-mathjax_path = "scipy-mathjax/MathJax.js?config=scipy-mathjax"
+#mathjax_path = "scipy-mathjax/MathJax.js?config=scipy-mathjax"
 
 # -- Options for LaTeX output ---------------------------------------------
 

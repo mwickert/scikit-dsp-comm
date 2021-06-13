@@ -5,9 +5,6 @@
 [![pypi](https://img.shields.io/pypi/v/scikit-dsp-comm.svg)](https://pypi.python.org/pypi/scikit-dsp-comm)
 [![Docs](https://readthedocs.org/projects/scikit-dsp-comm/badge/?version=latest)](http://scikit-dsp-comm.readthedocs.io/en/latest/?badge=latest)
 
-### New RTL-SDR streaming added!
-A feature story at the end of this readme. Readthedocs also contains a nice collection of Jupyter notebook examples, including RTL-SDR streaming, among the module documentation. The actual notebook files (`.ipynb`) are in the docs folder at  <a href="https://github.com/mwickert/scikit-dsp-comm/tree/master/docs/source/nb_examples">nb_examples</a>. This folder is in the master branch once you have cloned the repo. Click the *docs* badge above to be taken to the documentation.
-
 ## Background
 
  The origin of this package comes from the writing the book Signals and Systems for Dummies, published by Wiley in 2013. The original module for this book is named `ssd.py`. In `scikit-dsp-comm` this module is renamed to `sigsys.py` to better reflect the fact that signal processing and communications theory is founded in signals and systems, a traditional subject in electrical engineering curricula.

@@ -17,11 +17,6 @@ A feature story at the end of this readme. Readthedocs also contains a nice coll
 This package is a collection of functions and classes to support signal processing and communications theory teaching and research. The foundation for this package is `scipy.signal`. The code in particular currently requires Python `>=3.5x`.
 
 
-The real-time audio DSP capabilities of `pyaudio_helper` allow for two channel algorithm development with real-time user control enabled by the `ipywidgets` when running in the Jupyter notebook.
-
-Finally, we now can utilize the real-time DSP capabilities of `pyaudio_helper` to work in combination with streaming of I/Q samples using new functions `rtlsdr_helper`. This allows in particular demodulation of radio signals and downsampling to baseband analog signals for streaming playback of say an FM broadcast station. This new capability is featured as a short *article* at the end of this readme file.
-
-
 **There are presently ten modules that make up scikit-dsp-comm:**
 
 1. `sigsys.py` for basic signals and systems functions both continuous-time and discrete-time, including graphical display tools such as pole-zero plots, up-sampling and down-sampling.
@@ -44,14 +39,10 @@ Presently the collection of modules contains about 125 functions and classes. Th
 
 ### Extras
 
-This package contains the helper modules `rtlsdr_helper`, and `pyaudio_helper` which require the packages [pyrtlsdr](https://pypi.python.org/pypi/pyrtlsdr) and [PyAudio](https://pypi.python.org/pypi/PyAudio). To use the full functionality of these helpers, install the package from the scikit-dsp-comm folder as follows:\
+This package contains the helper modules `rtlsdr_helper`, and `pyaudio_helper` which require the packages [pyrtlsdr](https://pypi.python.org/pypi/pyrtlsdr) and [PyAudio](https://pypi.python.org/pypi/PyAudio). To use the full functionality of these helpers, install the package from the scikit-dsp-comm folder as follows:
 ```
 pip install -e .[helpers]
 ```
-Installation is described in greater detail below.
-
-1. `pyaudio_helper.py` wraps a class around the code required in `PyAudio` (wraps the C++ library `PortAudio`) to set up a non-blocking audio input/output stream. The user only has to write the callback function to implement real-time DSP processing using any of the input/output devices available on the platform. This resulting object also contains a capture buffer for use in post processing and a timing markers for assessing the processing time utilized by the callback function. When developing apps in the Jupyter Notebook there is support for the `IPywidgets` along with threading. 
-
 2. `rtlsdr_helper.py` interfaces with `pyrtldsr` to provide a simple captures means for complex baseband software defined radio (SDR) samples from the low-cost (~$20) RTL-SDR USB hardware dongle. The remaining functions in this module support the implementation of demodulators for FM modulation and examples of complete receivers for FM mono, FM stereo, and tools for FSK demodulation, including bit synchronization. Real-time streaming is a new capability included.
 
 
@@ -83,14 +74,6 @@ All the capability of the package is available less `PyAudio` and the RTL-SDR ra
 With the terminal in the root directory of the cloned repo perform an editable `pip` install using
 
 ```bash
-pip install -e .[helpers]
-```
-
-### Editable Install without Dependencies
-
-To install without the PyAudio and RTL-SDR dependency, and hence not be able to use those modules,
-
-```bash
 pip install -e .
 ```
 
@@ -103,18 +86,3 @@ git pull origin master
 ```
 
 This will update you local repo and automatically update the Python install without the need to run `pip` again. **Note**: If you have any Python kernels running, such as a Jupyter Notebook, you will need to restart the kernel to insure any module changes get reloaded.
-
-------
-
-## Feature: Added Software Defined Radio Streaming to `rtlsdr_helper` with Interface to `pyaudio_helper`
-A recent push to the master branch now allows real-time SDR streaming from the RTL-SDR to `pyaudio_helper`. In this first release of the API, the system block diagram takes the from shown in the figure below:
-
-![Block diagram for RTL-SDR streaming](rtlsdr_helper_streaming_block.png)
-
-This capability is made possible via the new `aynch` and `await` capabilities of Python 3.7. For the details as to how this works you have to dig into the details found in the module `rtlsdr_helper.py` and the examples found in the notebook `rtlsdr_helper_streaming_sample.ipynb`. A screenshot from the sample Jupyter notebook, that implements a broadcast FM receiver, is shown below:
-
- ![Code snippet for an FM radio receiver.](rtlsdr_helper_streaming_FM_receiver.png)
-
-This is just the beginning of making a complete SDR receiver possible in a Jupyter notebook. Not only is the receiver a reality, the algorithms that implement the receiver, in Python, can easily be coded by the user.
-
-To help develop demodulator algorithms a streaming code block interface standard, of sorts, is being developed this summer. The idea is to provide examples of how to write a simple Python class that will manage states in the DSP code that is inside the *Callback Process* block of the block diagram. More details by the end of the summer is expected, along with another sample notebook.

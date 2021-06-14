@@ -19,8 +19,7 @@ from logging import getLogger
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../sphinxext'))
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../../sk_dsp_comm'))
 log = getLogger(__name__)
 try:
@@ -202,7 +201,7 @@ html_use_index = True
 htmlhelp_basename = 'scikit-dsp-commdoc'
 
 # Mathjax
-mathjax_path = "scipy-mathjax/MathJax.js?config=scipy-mathjax"
+#mathjax_path = "scipy-mathjax/MathJax.js?config=scipy-mathjax"
 
 # -- Options for LaTeX output ---------------------------------------------
 

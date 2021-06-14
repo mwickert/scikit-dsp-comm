@@ -274,41 +274,41 @@ def DD_carrier_sync(z, M, BnTs, zeta=0.707, mod_type = 'MPSK', type = 0, open_lo
     return z_prime, a_hat, e_phi, theta_h
 
 
-def time_step(z,Ns,t_step,Nstep):
+def time_step(z, ns, t_step, n_step):
     """
     Create a one sample per symbol signal containing a phase rotation
     step Nsymb into the waveform.
 
     :param z: complex baseband signal after matched filter
-    :param Ns: number of sample per symbol
+    :param ns: number of sample per symbol
     :param t_step: in samples relative to Ns
-    :param Nstep: symbol sample location where the step turns on
+    :param n_step: symbol sample location where the step turns on
     :return: the one sample per symbol signal containing the phase step
 
     Mark Wickert July 2014
     """
-    z_step = np.hstack((z[:Ns*Nstep], z[(Ns*Nstep+t_step):], np.zeros(t_step)))
+    z_step = np.hstack((z[:ns * n_step], z[(ns * n_step + t_step):], np.zeros(t_step)))
     return z_step
 
 
-def phase_step(z,Ns,p_step,Nstep):
+def phase_step(z, ns, p_step, n_step):
     """
     Create a one sample per symbol signal containing a phase rotation
     step Nsymb into the waveform.
 
     :param z: complex baseband signal after matched filter
-    :param Ns: number of sample per symbol
+    :param ns: number of sample per symbol
     :param p_step: size in radians of the phase step
-    :param Nstep: symbol sample location where the step turns on
+    :param n_step: symbol sample location where the step turns on
     :return: the one sample symbol signal containing the phase step
 
     Mark Wickert July 2014
     """
-    nn = np.arange(0,len(z[::Ns]))
+    nn = np.arange(0, len(z[::ns]))
     theta = np.zeros(len(nn))
-    idx = np.where(nn >= Nstep)
+    idx = np.where(nn >= n_step)
     theta[idx] = p_step*np.ones(len(idx))
-    z_rot = z[::Ns]*np.exp(1j*theta)
+    z_rot = z[::ns] * np.exp(1j * theta)
     return z_rot
 
 

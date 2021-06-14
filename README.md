@@ -3,6 +3,7 @@
 # scikit-dsp-comm
 
 [![pypi](https://img.shields.io/pypi/v/scikit-dsp-comm.svg)](https://pypi.python.org/pypi/scikit-dsp-comm)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/scikit-dsp-comm/badges/version.svg)](https://anaconda.org/conda-forge/scikit-dsp-comm)
 [![Docs](https://readthedocs.org/projects/scikit-dsp-comm/badge/?version=latest)](http://scikit-dsp-comm.readthedocs.io/en/latest/?badge=latest)
 
 ### New RTL-SDR streaming added!

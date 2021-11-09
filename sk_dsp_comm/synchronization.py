@@ -224,7 +224,7 @@ def DD_carrier_sync(z, M, BnTs, zeta=0.707, mod_type = 'MPSK', type = 0, open_lo
                 a_hat[nn] = np.sign(z_prime[nn].real) + 1j*0
             elif M == 4:
                 a_hat[nn] = (np.sign(z_prime[nn].real) + \
-                             1j*np.sign(z_prime[nn].imag))/sqrt(2)
+                             1j*np.sign(z_prime[nn].imag))/np.sqrt(2)
             elif M > 4:
                 # round to the nearest integer and fold to nonnegative
                 # integers; detection into M-levels with thresholds at mid points.

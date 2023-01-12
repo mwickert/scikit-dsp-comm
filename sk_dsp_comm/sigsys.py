@@ -1031,6 +1031,8 @@ def simple_sa(x, NS, NFFT, fs, NAVG=1, window='boxcar'):
     -----
     The function also prints the maximum number of averages K possible
     for the input data record.
+    # For a list of the available windows see: 
+    # https://docs.scipy.org/doc/scipy/reference/signal.windows.html#module-scipy.signal.windows
 
     Examples
     --------
@@ -1046,9 +1048,9 @@ def simple_sa(x, NS, NFFT, fs, NAVG=1, window='boxcar'):
     >>> plt.ylabel("Power Spectral Density (dB)")
     >>> plt.show()
 
-    With a hanning window.
+    With a hanning/hann window.
 
-    >>> f, Sx = ss.simple_sa(x,256,1024,10000,window='hanning')
+    >>> f, Sx = ss.simple_sa(x,256,1024,10000,window='hann')
     >>> plt.plot(f, 10*np.log10(Sx))
     >>> plt.xlabel("Frequency (Hz)")
     >>> plt.ylabel("Power Spectral Density (dB)")
@@ -1060,10 +1062,7 @@ def simple_sa(x, NS, NFFT, fs, NAVG=1, window='boxcar'):
     if NAVG > K:
         warnings.warn('NAVG exceeds number of available subrecords')
         return 0,0
-    if window.lower() == 'boxcar' or window.lower() == 'rectangle':
-        w = signal.boxcar(NS)
-    elif window.lower() == 'hanning':
-        w = signal.hanning(NS)
+    w = signal.get_window(window, NS, fftbins=False)
     xsw = np.zeros((K,NS)) + 1j*np.zeros((K,NS))
     for k in range(NAVG):
         xsw[k,] = w*x[k*NS:(k+1)*NS]
@@ -2025,6 +2024,12 @@ def m_seq(m):
         taps = np.array([1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1])
     elif m == 12:
         taps = np.array([1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1])
+    elif m == 13:
+        taps = np.array([1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1])
+    elif m == 14:
+        taps = np.array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1])
+    elif m == 15:
+        taps = np.array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1])
     elif m == 16:
         taps = np.array([1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1])
     else:

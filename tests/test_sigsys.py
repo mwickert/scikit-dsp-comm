@@ -36,7 +36,7 @@ class TestSigsys(SKDSPCommTest):
     def test_ten_band_equalizer_gdb_exception(self):
         w = randn(10)
         gdB = [x for x in range(1, 9)]
-        with self.assertRaisesRegexp(ValueError, "GdB length not equal to ten") as ten_err:
+        with self.assertRaisesRegex(ValueError, "GdB length not equal to ten") as ten_err:
             ss.ten_band_eq_filt(w, gdB)
 
     def test_peaking(self):
@@ -82,7 +82,7 @@ class TestSigsys(SKDSPCommTest):
 
     def test_position_cd_out_type_value_error(self):
         Ka = 50
-        with self.assertRaisesRegexp(ValueError, 'out_type must be: open_loop, fb_approx, or fc_exact') as cd_err:
+        with self.assertRaisesRegex(ValueError, 'out_type must be: open_loop, fb_approx, or fc_exact') as cd_err:
             b, a = ss.position_cd(Ka, 'value_error')
 
     def test_cruise_control_H(self):
@@ -135,7 +135,7 @@ class TestSigsys(SKDSPCommTest):
         T = 10
         vcruise = 75
         vmax = 120
-        with self.assertRaisesRegexp(ValueError, 'tf_mode must be: H, HE, HVU, or HED') as cc_err:
+        with self.assertRaisesRegex(ValueError, 'tf_mode must be: H, HE, HVU, or HED') as cc_err:
             b, a = ss.cruise_control(wn, zeta, T, vcruise, vmax, tf_mode='value_error')
 
     def test_prin_alias(self):
@@ -165,7 +165,7 @@ class TestSigsys(SKDSPCommTest):
         npt.assert_almost_equal(a, a_check)
 
     def test_fir_iir_notch_1(self):
-        with self.assertRaisesRegexp(ValueError, 'Poles on or outside unit circle.') as nfi_err:
+        with self.assertRaisesRegex(ValueError, 'Poles on or outside unit circle.') as nfi_err:
             b, a = ss.fir_iir_notch(1000, 8000, 1)
 
     def test_fir_iir_notch_0(self):
@@ -255,7 +255,7 @@ class TestSigsys(SKDSPCommTest):
     def test_fs_coeff_value_error(self):
         t = np.arange(0, 1, 1 / 1024.)
         x_rect = ss.rect(t - .1, 0.2)
-        with self.assertRaisesRegexp(ValueError, 'Number of samples in xp insufficient for requested N.') as fsc_err:
+        with self.assertRaisesRegex(ValueError, 'Number of samples in xp insufficient for requested N.') as fsc_err:
             Xk, fk = ss.fs_coeff(x_rect, 2 ** 13, 10)
 
     def test_conv_sum(self):
@@ -272,7 +272,7 @@ class TestSigsys(SKDSPCommTest):
     def test_conv_sum_value_error(self):
         nx = np.arange(-5, 10)
         x = ss.drect(nx, 4)
-        with self.assertRaisesRegexp(ValueError, 'Invalid x1 x2 extents specified or valid extent not found!') as cs_err:
+        with self.assertRaisesRegex(ValueError, 'Invalid x1 x2 extents specified or valid extent not found!') as cs_err:
             y, ny = ss.conv_sum(x, nx, x, nx, extent=('v', 'v'))
 
     def test_conv_integral(self):
@@ -297,7 +297,7 @@ class TestSigsys(SKDSPCommTest):
     def test_conv_integral_value_error(self):
         tx = np.arange(-5, 10, 0.01)
         x = ss.rect(tx - 2, 4)
-        with self.assertRaisesRegexp(ValueError, 'Invalid x1 x2 extents specified or valid extent not found!') as ci_err:
+        with self.assertRaisesRegex(ValueError, 'Invalid x1 x2 extents specified or valid extent not found!') as ci_err:
             ss.conv_integral(x, tx, x, tx, extent=('v', 'v'))
 
     def test_delta_eps(self):
@@ -539,7 +539,7 @@ class TestSigsys(SKDSPCommTest):
         npt.assert_equal(c[:25], c_check)
 
     def test_m_seq_value_error(self):
-        with self.assertRaisesRegexp(ValueError, 'Invalid length specified') as ms_err:
+        with self.assertRaisesRegex(ValueError, 'Invalid length specified') as ms_err:
             ss.m_seq(-1)
 
     def test_BPSK_tx(self):
@@ -550,7 +550,7 @@ class TestSigsys(SKDSPCommTest):
             self.assertEqual(val_check, True)
 
     def test_BPSK_tx_value_error(self):
-        with self.assertRaisesRegexp(ValueError, 'Pulse shape must be \'rect\' or \'src\'''') as bpsk_err:
+        with self.assertRaisesRegex(ValueError, 'Pulse shape must be \'rect\' or \'src\'''') as bpsk_err:
             ss.bpsk_tx(1000, 10, pulse='rc')
 
     def test_NRZ_bits(self):
@@ -571,7 +571,7 @@ class TestSigsys(SKDSPCommTest):
         PN, b, data = ss.nrz_bits(1000 * Tspan, 8000 / 1000)
 
     def test_NRZ_bits_value_error(self):
-        with self.assertRaisesRegexp(ValueError, 'pulse type must be rec, rc, or src') as NRZ_err:
+        with self.assertRaisesRegex(ValueError, 'pulse type must be rec, rc, or src') as NRZ_err:
             x,b,data = ss.nrz_bits(100, 10, pulse='value')
 
     def test_NRZ_bits2(self):
@@ -590,7 +590,7 @@ class TestSigsys(SKDSPCommTest):
         npt.assert_equal(b, b_check)
 
     def test_NRZ_bits2_value_error(self):
-        with self.assertRaisesRegexp(ValueError, 'pulse type must be rec, rc, or src') as NRZ_err:
+        with self.assertRaisesRegex(ValueError, 'pulse type must be rec, rc, or src') as NRZ_err:
             x,b = ss.nrz_bits2(ss.m_seq(5), 10, pulse='val')
 
     def test_bit_errors(self):
@@ -664,7 +664,7 @@ class TestSigsys(SKDSPCommTest):
 
     def test_downsample_M(self):
         x = np.zeros(0)
-        with self.assertRaisesRegexp(TypeError, "M must be an int") as tdM:
+        with self.assertRaisesRegex(TypeError, "M must be an int") as tdM:
             ss.downsample(x, 3.0)
 
     def test_rect_conv(self):
@@ -682,7 +682,7 @@ class TestSigsys(SKDSPCommTest):
         npt.assert_almost_equal(a, a_check)
 
     def test_lp_samp_value_err(self):
-        with self.assertRaisesRegexp(ValueError, 'shape must be tri or line')as lp_s_err:
+        with self.assertRaisesRegex(ValueError, 'shape must be tri or line')as lp_s_err:
             ss.lp_samp(10, 25, 50, 10, shape='square')
 
     def test_os_filter_0(self):
@@ -714,7 +714,7 @@ class TestSigsys(SKDSPCommTest):
         npt.assert_almost_equal(q, test_q)
 
     def test_simple_quant_value_err(self):
-        with self.assertRaisesRegexp(ValueError, "limit must be the string over, sat, or none") as sQ_err:
+        with self.assertRaisesRegex(ValueError, "limit must be the string over, sat, or none") as sQ_err:
             ss.simple_quant(np.ones(12), 12, 12, 'under')
 
     def test_ft_approx(self):

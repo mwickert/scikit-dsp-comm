@@ -3,8 +3,9 @@ services:
   - xvfb
 language: python
 python:
-    - "3.5"
-    - "3.6"
-    - "3.7-dev"
+    - "3.7"
+    - "3.8"
+    - "3.9"
+    - "3.10-dev"
 install: pip install tox-travis
 script: tox

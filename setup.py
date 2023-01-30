@@ -39,5 +39,5 @@ setup(name='scikit-dsp-comm',
       extras_require={
             'helpers': ['colorama', 'pyaudio', 'ipywidgets']
       },
-      python_requires = '>=3.5',
+      python_requires = '>=3.7',
      )

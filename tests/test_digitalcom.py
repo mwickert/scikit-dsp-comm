@@ -132,7 +132,7 @@ class TestDigitalcom(SKDSPCommTest):
         npt.assert_almost_equal(t, t_test)
 
     def test_QAM_bb_pulse_error(self):
-        with self.assertRaisesRegexp(ValueError, 'pulse shape must be src, rc, or rect'):
+        with self.assertRaisesRegex(ValueError, 'pulse shape must be src, rc, or rect'):
             dc.qam_bb(10, 2, pulse='value')
 
     def test_QAM_bb_16qam_rect(self):
@@ -190,13 +190,13 @@ class TestDigitalcom(SKDSPCommTest):
         npt.assert_almost_equal(t, t_test)
 
     def test_QAM_bb_mod_error(self):
-        with self.assertRaisesRegexp(ValueError, 'Unknown mod_type'):
+        with self.assertRaisesRegex(ValueError, 'Unknown mod_type'):
             x, b, t = dc.qam_bb(10, 2, mod='unknown')
 
     def test_qam_sep_mod_error(self):
         tx = np.ones(10)
         rx = np.ones(10)
-        with self.assertRaisesRegexp(ValueError, 'Unknown mod_type'):
+        with self.assertRaisesRegex(ValueError, 'Unknown mod_type'):
             dc.qam_sep(tx, rx, 'unknown')
 
     def test_qam_sep_16qam_no_error(self):
@@ -310,7 +310,7 @@ class TestDigitalcom(SKDSPCommTest):
         npt.assert_almost_equal(data[:10], data_test)
 
     def test_mpsk_bb_value_error(self):
-        with self.assertRaisesRegexp(ValueError, "pulse type must be rec, rc, or src"):
+        with self.assertRaisesRegex(ValueError, "pulse type must be rec, rc, or src"):
             x, b, data = dc.mpsk_bb(500, 10, 8, 'error')
 
     def test_ofdm_tx(self):

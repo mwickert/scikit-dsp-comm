@@ -7,5 +7,7 @@ python:
     - "3.8"
     - "3.9"
     - "3.10-dev"
-install: pip install tox-travis
+install:
+    - pip install -U importlib-metadata
+    - pip install tox-travis
 script: tox

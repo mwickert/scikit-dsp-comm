@@ -1936,7 +1936,7 @@ def sqrt_rc_imp(Ns,alpha,M=6):
     Ns *= 1.0
     a = alpha
     for i in range(len(n)):
-       if abs(1 - 16*a**2*(n[i]/Ns)**2) <= np.finfo(np.float).eps/2:
+       if abs(1 - 16*a**2*(n[i]/Ns)**2) <= np.finfo(np.float32).eps/2:
            b[i] = 1/2.*((1+a)*np.sin((1+a)*np.pi/(4.*a))-(1-a)*np.cos((1-a)*np.pi/(4.*a))+(4*a)/np.pi*np.sin((1-a)*np.pi/(4.*a)))
        else:
            b[i] = 4*a/(np.pi*(1 - 16*a**2*(n[i]/Ns)**2))

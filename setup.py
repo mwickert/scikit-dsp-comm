@@ -34,8 +34,8 @@ setup(name='scikit-dsp-comm',
       include_package_data=True,
       license='BSD',
       install_requires=requirements.split(),
-      test_suite='nose.collector',
-      tests_require=['nose','numpy', 'tox'],
+      test_suite='pytest',
+      tests_require=['pytest','numpy', 'tox'],
       extras_require={
             'helpers': ['colorama', 'pyaudio', 'ipywidgets']
       },

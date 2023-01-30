@@ -1,5 +1,6 @@
 include README.md
 include requirements.txt
+include sk_dsp_comm/__version__.py
 include sk_dsp_comm/ca1thru37.txt
 include logo.png
 include Capture_Buffer.png

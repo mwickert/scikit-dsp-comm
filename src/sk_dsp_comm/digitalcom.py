@@ -1255,7 +1255,7 @@ def ofdm_tx(iq_data, nf, nc, npb=0, cp=False, ncp=0):
     --------
     >>> import matplotlib.pyplot as plt
     >>> from sk_dsp_comm import digitalcom as dc
-    >>> x1,b1,IQ_data1 = dc.QAM_bb(50000,1,'16qam')
+    >>> x1,b1,IQ_data1 = dc.qam_bb(50000,1,'16qam')
     >>> x_out = dc.ofdm_tx(IQ_data1,32,64)
     >>> x1,b1,IQ_data1 = dc.qam_bb(50000,1,'16qam')
     >>> x_out = dc.ofdm_tx(IQ_data1,32,64)
@@ -1400,7 +1400,7 @@ def ofdm_rx(x, nf, nc, npb=0, cp=False, ncp=0, alpha=0.95, ht=None):
     >>> from numpy import array
     >>> hc = array([1.0, 0.1, -0.05, 0.15, 0.2, 0.05]) # impulse response spanning five symbols
     >>> # Quick example using the above channel with no cyclic prefix
-    >>> x1,b1,IQ_data1 = dc.QAM_bb(50000,1,'16qam')
+    >>> x1,b1,IQ_data1 = dc.qam_bb(50000,1,'16qam')
     >>> x_out = dc.ofdm_tx(IQ_data1,32,64,0,True,0)
     >>> x1,b1,IQ_data1 = dc.qam_bb(50000,1,'16qam')
     >>> x_out = dc.ofdm_tx(IQ_data1,32,64,0,True,0)

@@ -735,17 +735,17 @@ class FECConv(object):
         plt.axis([-0.01, 1.01, -(self.Nstates-1)-0.05, 0.05])
         for m in range(self.Nstates):
             if branches_from.input1[m] == 0:
-                plt.plot([0, 1],[-branches_from.states1[m], -m],'b')
-                plt.plot([0, 1],[-branches_from.states1[m], -m],'r.')
+                plt.plot([0, 1],[-branches_from.states1[m], [-m]],'b')
+                plt.plot([0, 1],[-branches_from.states1[m], [-m]],'r.')
             if branches_from.input2[m] == 0:
-                plt.plot([0, 1],[-branches_from.states2[m], -m],'b')
-                plt.plot([0, 1],[-branches_from.states2[m], -m],'r.')
+                plt.plot([0, 1],[-branches_from.states2[m], [-m]],'b')
+                plt.plot([0, 1],[-branches_from.states2[m], [-m]],'r.')
             if branches_from.input1[m] == 1:
-                plt.plot([0, 1],[-branches_from.states1[m], -m],'g')
-                plt.plot([0, 1],[-branches_from.states1[m], -m],'r.')
+                plt.plot([0, 1],[-branches_from.states1[m], [-m]],'g')
+                plt.plot([0, 1],[-branches_from.states1[m], [-m]],'r.')
             if branches_from.input2[m] == 1:
-                plt.plot([0, 1],[-branches_from.states2[m], -m],'g')
-                plt.plot([0, 1],[-branches_from.states2[m], -m],'r.')
+                plt.plot([0, 1],[-branches_from.states2[m], [-m]],'g')
+                plt.plot([0, 1],[-branches_from.states2[m], [-m]],'r.')
         #plt.grid()
         plt.xlabel('One Symbol Transition')
         plt.ylabel('-State Index')

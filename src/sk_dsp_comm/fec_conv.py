@@ -554,7 +554,7 @@ class FECConv(object):
 
         return output, state
 
-    def puncture(self,code_bits,puncture_pattern = ('110','101')):
+    def puncture(self,code_bits,puncture_pattern = ('110','101')) -> np.ndarray:
         """
         Apply puncturing to the serial bits produced by convolutionally
         encoding.

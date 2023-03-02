@@ -12,7 +12,7 @@
 
 ## Package High Level Overview
 
-This package is a collection of functions and classes to support signal processing and communications theory teaching and research. The foundation for this package is `scipy.signal`. The code in particular currently requires Python `>=3.5x`.
+This package is a collection of functions and classes to support signal processing and communications theory teaching and research. The foundation for this package is `scipy.signal`. The code in particular currently requires Python `>=3.7x`.
 
 
 **There are presently ten modules that make up scikit-dsp-comm:**

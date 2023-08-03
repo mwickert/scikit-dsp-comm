@@ -1,6 +1,6 @@
-sphinx
+sphinx>=7.1.0,<8.0.0
 numpydoc
-matplotlib>=2.2
+matplotlib>=3.0.0
 recommonmark
 ipykernel
 ipywidgets

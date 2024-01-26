@@ -37,4 +37,4 @@ Presently the collection of modules contains about 125 functions and classes. Th
 
 
 ## Documentation
-Documentation is now housed on `readthedocs` which you can get to by clicking the docs badge near the top of this `README`. Example notebooks can be viewed on [GitHub pages](https://mwickert.github.io/scikit-dsp-comm/). In time more notebook postings will be extracted from [Dr. Wickert's Info Center](https://www.eas.uccs.edu/~mwickert/).
+Documentation is now housed on `readthedocs` which you can get to by clicking the docs badge near the top of this `README`. Example notebooks can be viewed on [GitHub pages](https://mwickert.github.io/scikit-dsp-comm/). In time more notebook postings will be extracted from [Dr. Wickert's Info Center](https://eas.uccs.edu/~mwickert/).

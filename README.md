@@ -37,34 +37,4 @@ Presently the collection of modules contains about 125 functions and classes. Th
 
 
 ## Documentation
-Documentation is now housed on `readthedocs` which you can get to by clicking the docs badge near the top of this `README`. Example notebooks can be viewed on [GitHub pages](https://mwickert.github.io/scikit-dsp-comm/). In time more notebook postings will be extracted from [Dr. Wickert's Info Center](http://www.eas.uccs.edu/~mwickert/).
-
-## Getting Set-up on Your System
-
-The best way to use this package is to clone this repository and then install it. 
-
-```bash
-git clone https://github.com/mwickert/scikit-dsp-comm.git
-```
-
-There are package dependencies for some modules that you may want to avoid. Specifically these are whenever hardware interfacing is involved. Specific hardware and software configuration details are discussed in [wiki pages](https://github.com/mwickert/SP-Comm-Tutorial-using-scikit-dsp-comm/wiki).
-
-For Windows users `pip` install takes care of almost everything. I assume below you have Python on your path, so for example with [Anaconda](https://www.anaconda.com/download/#macos), I suggest letting the installer set these paths up for you.
-
-### Editable Install with Dependencies
-
-With the terminal in the root directory of the cloned repo perform an editable `pip` install using
-
-```bash
-pip install -e .
-```
-
-### Why an Editable Install?
-
-The advantage of the editable `pip` install is that it is very easy to keep `scikit-dsp-comm ` up to date. If you know that updates have been pushed to the master branch, you simply go to your local repo folder and
-
-```bash
-git pull origin master
-```
-
-This will update you local repo and automatically update the Python install without the need to run `pip` again. **Note**: If you have any Python kernels running, such as a Jupyter Notebook, you will need to restart the kernel to insure any module changes get reloaded.
+Documentation is now housed on `readthedocs` which you can get to by clicking the docs badge near the top of this `README`. Example notebooks can be viewed on [GitHub pages](https://mwickert.github.io/scikit-dsp-comm/). In time more notebook postings will be extracted from [Dr. Wickert's Info Center](https://www.eas.uccs.edu/~mwickert/).

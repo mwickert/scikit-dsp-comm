@@ -1467,8 +1467,8 @@ def bin2gray(d_word,b_width):
 
     Mark Wickert November 2018
     """
-    bits_in = to_bin(d_word,b_width)
-    bits_out = np.zeros(b_width,dtype=np.int)
+    bits_in = to_bin(d_word, b_width)
+    bits_out = np.zeros(b_width, dtype=int)
     for k, bit_k in enumerate(bits_in):
         if k > 0:
             bits_out[k] = bit_k^bits_in[k-1]
@@ -1484,8 +1484,8 @@ def gray2bin(d_word,b_width):
 
     Mark Wickert November 2018
     """
-    bits_in = to_bin(d_word,b_width)
-    bits_out = np.zeros(b_width,dtype=np.int)
+    bits_in = to_bin(d_word, b_width)
+    bits_out = np.zeros(b_width, dtype=int)
     for k, bit_k in enumerate(bits_in):
         if k > 0:
             bits_out[k] = bit_k^bits_out[k-1]

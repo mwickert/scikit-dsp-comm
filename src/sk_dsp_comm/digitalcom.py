@@ -1467,8 +1467,8 @@ def bin2gray(d_word,b_width):
 
     Mark Wickert November 2018
     """
-    bits_in = to_bin(d_word,b_width)
-    bits_out = np.zeros(b_width,dtype=np.int)
+    bits_in = to_bin(d_word, b_width)
+    bits_out = np.zeros(b_width, dtype=int)
     for k, bit_k in enumerate(bits_in):
         if k > 0:
             bits_out[k] = bit_k^bits_in[k-1]
@@ -1484,8 +1484,8 @@ def gray2bin(d_word,b_width):
 
     Mark Wickert November 2018
     """
-    bits_in = to_bin(d_word,b_width)
-    bits_out = np.zeros(b_width,dtype=np.int)
+    bits_in = to_bin(d_word, b_width)
+    bits_out = np.zeros(b_width, dtype=int)
     for k, bit_k in enumerate(bits_in):
         if k > 0:
             bits_out[k] = bit_k^bits_out[k-1]
@@ -1772,7 +1772,7 @@ def mpsk_gray_decode(x_hat, mod=4):
                            np.exp(-1j*np.pi/4)) * mod / 2 / np.pi)), mod)
     else:
         #k_hat_gray_theta = np.mod(np.int64(np.rint(np.angle(x_hat)*M/2/np.pi)),M)
-        k_hat_gray_theta = np.mod((np.rint(np.angle(x_hat) * mod / 2 / np.pi)).astype(np.int), mod)
+        k_hat_gray_theta = np.mod((np.rint(np.angle(x_hat) * mod / 2 / np.pi)).astype(np.integer), mod)
 
     data_hat = np.zeros(N_symb*N_word,dtype=int)
     # Create the serial bit stream using Gray decoding, msb to lsb

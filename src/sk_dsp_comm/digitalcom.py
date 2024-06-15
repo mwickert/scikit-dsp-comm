@@ -1772,7 +1772,7 @@ def mpsk_gray_decode(x_hat, mod=4):
                            np.exp(-1j*np.pi/4)) * mod / 2 / np.pi)), mod)
     else:
         #k_hat_gray_theta = np.mod(np.int64(np.rint(np.angle(x_hat)*M/2/np.pi)),M)
-        k_hat_gray_theta = np.mod((np.rint(np.angle(x_hat) * mod / 2 / np.pi)).astype(np.int), mod)
+        k_hat_gray_theta = np.mod((np.rint(np.angle(x_hat) * mod / 2 / np.pi)).astype(np.integer), mod)
 
     data_hat = np.zeros(N_symb*N_word,dtype=int)
     # Create the serial bit stream using Gray decoding, msb to lsb

@@ -422,6 +422,12 @@ class TestDigitalcom(SKDSPCommTest):
         npt.assert_almost_equal(z_out[:50], z_out_test)
         npt.assert_almost_equal(H[:50], H_out_test)
 
+    def test_bin2gray_gray2bin(self):
+        rand_vals = np.random.randint(0, 15, (10))
+        gray_encode = [dc.bin2gray(rv, 4) for rv in rand_vals]
+        gray_decode = [dc.gray2bin(rv, 4) for rv in gray_encode]
+        npt.assert_equal(gray_decode, rand_vals)
+
     def test_BPSK_tx(self):
         x, b_test, data0 = dc.bpsk_tx(10, 10, pulse='src')
         self.assertEqual(len(data0), 10)

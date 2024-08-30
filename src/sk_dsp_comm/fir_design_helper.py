@@ -31,6 +31,7 @@ either expressed or implied, of the FreeBSD Project.
 
 import numpy as np
 import scipy.signal as signal
+from scipy.signal.windows import kaiser
 import matplotlib.pyplot as plt
 from logging import getLogger
 log = getLogger(__name__)
@@ -78,7 +79,7 @@ def firwin_kaiser_lpf(f_pass, f_stop, d_stop, fs = 1.0, n_bump=0, status = True)
     N_taps = M + 1
     # Obtain the Kaiser window
     beta = signal.kaiser_beta(d_stop)
-    w_k = signal.kaiser(N_taps,beta)
+    w_k = kaiser(N_taps,beta)
     n = np.arange(N_taps)
     b_k = wc/np.pi*np.sinc(wc/np.pi*(n-M/2)) * w_k
     b_k /= np.sum(b_k)
@@ -111,7 +112,7 @@ def firwin_kaiser_hpf(f_stop, f_pass, d_stop, fs = 1.0, n_bump=0, status = True)
     N_taps = M + 1
     # Obtain the Kaiser window
     beta = signal.kaiser_beta(d_stop)
-    w_k = signal.kaiser(N_taps,beta)
+    w_k = kaiser(N_taps,beta)
     n = np.arange(N_taps)
     b_k = wc/np.pi*np.sinc(wc/np.pi*(n-M/2)) * w_k
     b_k /= np.sum(b_k)
@@ -152,7 +153,7 @@ def firwin_kaiser_bpf(f_stop1, f_pass1, f_pass2, f_stop2, d_stop,
     N_taps = M + 1
     # Obtain the Kaiser window
     beta = signal.kaiser_beta(d_stop)
-    w_k = signal.kaiser(N_taps,beta)
+    w_k = kaiser(N_taps,beta)
     n = np.arange(N_taps)
     b_k = wc/np.pi*np.sinc(wc/np.pi*(n-M/2)) * w_k
     b_k /= np.sum(b_k)
@@ -200,7 +201,7 @@ def firwin_kaiser_bsf(f_stop1, f_pass1, f_pass2, f_stop2, d_stop,
     N_taps = M + 1
     # Obtain the Kaiser window
     beta = signal.kaiser_beta(d_stop)
-    w_k = signal.kaiser(N_taps,beta)
+    w_k = kaiser(N_taps,beta)
     n = np.arange(N_taps)
     b_k = wc/np.pi*np.sinc(wc/np.pi*(n-M/2)) * w_k
     b_k /= np.sum(b_k)

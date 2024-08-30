@@ -325,7 +325,7 @@ def fir_remez_lpf(f_pass, f_stop, d_pass, d_stop, fs = 1.0, n_bump=5, status = T
     # Bump up the order by N_bump to bring down the final d_pass & d_stop
     N_taps = n
     N_taps += n_bump
-    b = signal.remez(N_taps, ff, aa[0::2], wts,Hz=2)
+    b = signal.remez(N_taps, ff, aa[0::2], weight=wts, fs=2)
     if status:
         log.info('Remez filter taps = %d.' % N_taps)
     return b
@@ -349,7 +349,7 @@ def fir_remez_hpf(f_stop, f_pass, d_pass, d_stop, fs = 1.0, n_bump=5, status = T
     # Bump up the order by N_bump to bring down the final d_pass & d_stop
     N_taps = n
     N_taps += n_bump
-    b = signal.remez(N_taps, ff, aa[0::2], wts,Hz=2)
+    b = signal.remez(N_taps, ff, aa[0::2], weight=wts,fs=2)
     # Transform LPF equivalent to HPF
     n = np.arange(len(b))
     b *= (-1)**n
@@ -374,7 +374,7 @@ def fir_remez_bpf(f_stop1, f_pass1, f_pass2, f_stop2, d_pass, d_stop,
     # Bump up the order by N_bump to bring down the final d_pass & d_stop
     N_taps = n
     N_taps += n_bump
-    b = signal.remez(N_taps, ff, aa[0::2], wts,Hz=2)
+    b = signal.remez(N_taps, ff, aa[0::2], weight=wts,fs=2)
     if status:
         log.info('Remez filter taps = %d.' % N_taps)
     return b
@@ -399,8 +399,7 @@ def fir_remez_bsf(f_pass1, f_stop1, f_stop2, f_pass2, d_pass, d_stop,
         n += 1
     N_taps = n
     N_taps += n_bump
-    b = signal.remez(N_taps, ff, aa[0::2], wts, Hz=2,
-                     maxiter = 25, grid_density = 16)
+    b = signal.remez(N_taps, ff, aa[0::2], weight=wts, fs=2)
     if status:
         log.info('N_bump must be odd to maintain odd filter length')
         log.info('Remez filter taps = %d.' % N_taps)

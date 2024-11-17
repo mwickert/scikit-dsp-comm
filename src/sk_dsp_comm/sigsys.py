@@ -2405,6 +2405,98 @@ def my_psd(x,NFFT=2**10,Fs=1):
     return Px.flatten(), f
     
 
+def psd(x,N_fft,fs=1,overlap_percent=50,scale_noise = True):
+    """
+        Px, f = psd(x,N_fft,fs=1,overlap_percent=50)
+        
+    Averaged periodogram power spectral density estimate
+    (Welch's method with overlapping peridograms and windowing)
+    Amplitude scaling for a noise-like signal is the default.
+    By setting scale_noise = False the scaling assumes sinusoid
+    signals. In both cases the PSD is in a 1 ohm system and two-sided
+    spectra are assumed regardless of a real or complex signal.
+
+    Note: The sinusoid scaling is exact only of the sinusoid lies in
+    the FFT bin center. FFT scalloping loss results in frequency droop
+    when the sinusoid frequency moves away from the bin center.
+
+    Mark Wickert November 2024
+    """
+    Q = len(x)
+    R = int(np.round(overlap_percent/100*N_fft))
+    #  L <=> N_fft
+    if np.isrealobj(x):
+        Px = np.zeros(int(N_fft/2)+1)
+        f = fs*np.arange(0,int(N_fft/2+1))/(N_fft)
+    else:
+        Px = np.zeros(N_fft)
+        f = fs*np.arange(-int(N_fft/2),int(N_fft/2))/N_fft
+    w = signal.windows.hann(N_fft)
+    # w = signal.windows.boxcar(N_fft)
+    U = sum(w**2)/N_fft # for proper noise gain scaling with window
+    U2 = sum(w)/N_fft # for proper sinusoide gain scaling with window
+    i = 0
+    while i*(N_fft-R)+1+N_fft <= Q:
+        i_start = i*(N_fft-R)
+        X_k = np.fft.fft(x[i_start:i_start+N_fft] * w)
+        if np.isrealobj(x):
+            Px += np.abs(X_k[0:int(N_fft/2)+1])**2
+        else:
+            Px += np.abs(np.hstack((X_k[int(N_fft/2):], X_k[0:int(N_fft/2)])))**2
+        i += 1
+    K = i # number of periodograms (|X(e^{jw_k})|^2) averaged
+    # PSD in Watts/Hz for a 1 ohm system when multiplied by sample spacing T
+    if scale_noise:
+        Px /= (K*U*N_fft)
+    else:
+        # For continuous spectrum noise-like signals, for sinusoids need to rescale
+        Px /= (K*N_fft**2*U2**2)
+    return Px, f
+
+
+def fft_caf(x_in,h_ref,Nfft2=1024,N_slice2=0,N_slice_step=1,fs = 1.0):
+    """
+    Compute a streaming CAF having (2*N_slice2 + 1) frequency slices
+    centered on f = 0. The finest frequency resolution is fs/(2*Nfft2).
+
+    Mark Wickert, November 2024
+    """
+    if len(h_ref) > Nfft2:
+        raise ValueError('Error: Must have Nfft2 = %d >= %d = len(h_ref)' % (Nfft2,len(h_ref)))
+    N_x_in = len(x_in)
+    N_slice_tot = 2*N_slice2 + 1
+
+    # Initialize input and output arrays for overlap and save
+    x_state = np.zeros(Nfft2,dtype=complex)
+    X_wrk = np.zeros(2*Nfft2,dtype=complex)
+    y_wrk = np.zeros(2*Nfft2,dtype=complex)
+    y_caf_stream = np.zeros((N_slice_tot,N_x_in),dtype=complex)
+
+    # conjugate and reverse h_ref to implement correlation
+    H_ref = np.fft.fft(np.conj(h_ref[::-1]),2*Nfft2)
+    K_max = N_x_in//Nfft2
+    for k in range(K_max):
+        for j in range(2*N_slice2+1):
+            # Fill the input working vector
+            if np.isrealobj(x_in):
+                x_in = x_in + 0j
+            X_wrk = np.hstack((x_state,x_in[k*Nfft2:(k+1)*Nfft2]))
+            # Transform signal vector to the frequency domain
+            X_wrk = np.fft.fft(X_wrk) 
+            # Frequency domain filter with roll to shift the center frequency
+            j_roll_shift = j*N_slice_step - N_slice2*N_slice_step
+            y_wrk = np.roll(H_ref,j_roll_shift) * X_wrk
+            # Inverse transform
+            y_wrk = np.fft.ifft(y_wrk)
+            # Pack upper half of y_wrk into y_caf_stream with freq offset
+            y_caf_stream[j,k*Nfft2:(k+1)*Nfft2] = y_wrk[Nfft2:]
+        # Update x_state
+        x_state = x_in[k*Nfft2:(k+1)*Nfft2]
+    freq_axis = np.arange(-N_slice2*N_slice_step,N_slice2*N_slice_step+N_slice_step,N_slice_step)*fs/2/Nfft2
+    time_axis = np.arange(0,N_x_in)/fs
+    return y_caf_stream[::-1,:],freq_axis,time_axis
+
+
 def am_tx(m,a_mod,fc=75e3):
     """
     AM transmitter for Case Study of Chapter 17.

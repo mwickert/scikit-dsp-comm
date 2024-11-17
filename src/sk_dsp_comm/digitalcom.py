@@ -91,6 +91,7 @@ def farrow_resample(x, fs_old, fs_new, I_ord=3, alpha = 1/2):
     Intern. Symp. on Circuits Syst., pp. 2641-2645, June 1988.
     
     Mark Wickert April 2003, recoded to Python November 2013
+    added 1st and 2nd-order interpolation October 2024.
 
     Examples
     --------

@@ -2454,6 +2454,47 @@ def psd(x,N_fft,fs=1,overlap_percent=50,scale_noise = True):
     return Px, f
 
 
+def fft_filt_bank(x_in,h_filt,Nfft2=1024,N_slice2=0,N_slice_step=1,fs = 1.0):
+    """
+    Compute a streaming CAF having (2*N_slice2 + 1) frequency slices
+    centered on f = 0. The finest frequency resolution is fs/(2*Nfft2).
+
+    Mark Wickert, November 2024
+    """
+    if len(h_filt) > Nfft2:
+        raise ValueError('Error: Must have Nfft2 = %d >= %d = len(h_ref)' % (Nfft2,len(h_filt)))
+    N_x_in = len(x_in)
+    N_slice_tot = 2*N_slice2 + 1
+
+    # Initialize input and output arrays for overlap and save
+    x_state = np.zeros(Nfft2,dtype=complex)
+    X_wrk = np.zeros(2*Nfft2,dtype=complex)
+    y_wrk = np.zeros(2*Nfft2,dtype=complex)
+    y_filt_bank = np.zeros((N_slice_tot,N_x_in),dtype=complex)
+
+    H_filt = np.fft.fft(h_filt,2*Nfft2)
+    K_max = N_x_in//Nfft2
+    for k in range(K_max):
+        for j in range(2*N_slice2+1):
+            # Fill the input working vector
+            if np.isrealobj(x_in):
+                x_in = x_in + 0j
+            X_wrk = np.hstack((x_state,x_in[k*Nfft2:(k+1)*Nfft2]))
+            # Transform signal vector to the frequency domain
+            X_wrk = np.fft.fft(X_wrk) 
+            # Frequency domain filter with roll to shift the center frequency
+            j_roll_shift = j*N_slice_step - N_slice2*N_slice_step
+            y_wrk = np.roll(H_filt,j_roll_shift) * X_wrk
+            # Inverse transform
+            y_wrk = np.fft.ifft(y_wrk)
+            # Pack upper half of y_wrk into y_caf_stream with freq offset
+            y_filt_bank[j,k*Nfft2:(k+1)*Nfft2] = y_wrk[Nfft2:]
+        # Update x_state
+        x_state = x_in[k*Nfft2:(k+1)*Nfft2]
+    freq_axis = np.arange(-N_slice2*N_slice_step,N_slice2*N_slice_step+N_slice_step,N_slice_step)*fs/2/Nfft2
+    return y_filt_bank,freq_axis
+
+
 def fft_caf(x_in,h_ref,Nfft2=1024,N_slice2=0,N_slice_step=1,fs = 1.0):
     """
     Compute a streaming CAF having (2*N_slice2 + 1) frequency slices
@@ -2494,7 +2535,7 @@ def fft_caf(x_in,h_ref,Nfft2=1024,N_slice2=0,N_slice_step=1,fs = 1.0):
         x_state = x_in[k*Nfft2:(k+1)*Nfft2]
     freq_axis = np.arange(-N_slice2*N_slice_step,N_slice2*N_slice_step+N_slice_step,N_slice_step)*fs/2/Nfft2
     time_axis = np.arange(0,N_x_in)/fs
-    return y_caf_stream[::-1,:],freq_axis,time_axis
+    return y_caf_stream,freq_axis,time_axis
 
 
 def am_tx(m,a_mod,fc=75e3):

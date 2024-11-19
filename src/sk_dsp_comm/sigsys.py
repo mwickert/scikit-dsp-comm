@@ -2398,7 +2398,7 @@ def cpx_awgn2(x, es_n0, ns, var_w_dB = 0.0):
     var_w = 10**(var_w_dB / 10)
     w = np.sqrt(var_w / 2) * (np.random.randn(len(x)) + 1j * np.random.randn(len(x)))
     x_new = x*np.sqrt(1 / ns * var_w / np.var(x) * 10 ** (es_n0 / 10.))
-    return x + w
+    return x_new + w
 
 
 def my_psd(x,NFFT=2**10,Fs=1):

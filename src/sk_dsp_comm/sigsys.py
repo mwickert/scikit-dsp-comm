@@ -2365,6 +2365,42 @@ def cpx_awgn(x, es_n0, ns):
     return x+w       
 
 
+def cpx_awgn2(x, es_n0, ns, var_w_dB = 0.0):
+    """
+    Apply white Gaussian noise to a digital communications signal.
+
+    This function represents a complex baseband white Gaussian noise
+    digital communications channel. The input signal array may be real
+    or complex. The added noise variance is held constant with noise
+    variance 10**(var_w_dB/10). The signal variance changes accordingly.
+
+    Parameters
+    ----------
+    x : ndarray noise free complex baseband input signal.
+    EsNO : set the channel Es/N0 (Eb/N0 for binary) level in dB
+    ns : number of samples per symbol (bit)
+
+    Returns
+    -------
+    y : ndarray x with additive noise added.
+
+    Notes
+    -----
+    Set the channel energy per symbol-to-noise power spectral 
+    density ratio (Es/N0) in dB.
+
+    Examples
+    --------
+    >>> x,b, data = nrz_bits(1000,10)
+    >>> # set Eb/N0 = 10 dB
+    >>> y = cpx_awgn2(x,10,10)
+    """
+    var_w = 10**(var_w_dB / 10)
+    w = np.sqrt(var_w / 2) * (np.random.randn(len(x)) + 1j * np.random.randn(len(x)))
+    x_new = x*np.sqrt(1 / ns * var_w / np.var(x) * 10 ** (es_n0 / 10.))
+    return x + w
+
+
 def my_psd(x,NFFT=2**10,Fs=1):
     """
     A local version of NumPy's PSD function that returns the plot arrays.

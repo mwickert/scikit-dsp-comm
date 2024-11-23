@@ -519,6 +519,101 @@ def PLL_cbb(x,fs,loop_type,Kv,fn,zeta):
 # Development where sample-by-sample processing with states is needed.
 #
 
+
+class NCO:
+
+    def __init__(self, fcenter, fs, kc=1.0, state_init_k: np.unsignedinteger = 0, n_bits: int = 32):
+        """
+        Implement an n-bit fixed-point NCO for signal generation and tracking loops.
+
+        Parameters
+        ----------
+        fcenter : Desired NCO center frequency
+        fs : Sampling Rate (Hz)
+        kc : Gain
+        state_init_k : Initial accumulator state, stored as k_hat
+        n_bits : Implement n-bit fixed point NCO
+        """
+        self.n_bits = n_bits
+        if n_bits <= 8:
+            self.dtype = np.uint8
+        elif n_bits <= 16:
+            self.dtype = np.uint16
+        elif n_bits <= 32:
+            self.dtype = np.uint32
+        elif n_bits <= 64:
+            self.dtype = np.uint64
+        else:
+            raise NotImplementedError("No dtype implemented for size %d bits" % n_bits)
+        self.max_bits_const = self.__max_bits_const__()
+        self.fcenter_hat = fcenter
+        self.fs = fs
+        self.delta_k = self.dtype(np.rint(fcenter * self.max_bits_const) / fs)
+        self.kc = kc
+        self.k_hat = self.dtype(state_init_k)
+        self.k_old = self.dtype(0)
+
+    def __max_bits_const__(self):
+        return 2 ** self.n_bits
+
+    def update(self, e_in):
+        """
+        NCO32_update(e_in)
+        Update the NCO 32-bit phase accumulator
+        """
+        self.k_old = self.k_hat
+        self.k_hat = np.uint32(
+            np.rint(float(self.k_hat) + float(self.delta_k) + float(self.kc * self.max_bits_const * e_in)))
+
+    def out_sin(self):
+        """
+        e_out = NCO32_out_sin()
+        Output sin(k_hat * fs/2**32)
+        """
+        e_out = np.sin(2 * np.pi * self.k_hat / self.max_bits_const)
+        return e_out
+
+    def out_exp(self):
+        """
+        e_out = NCO32_out_exp()
+        Output exp(j*theta_hat)
+        """
+        e_out = np.exp(1j * 2 * np.pi * self.k_hat / self.max_bits_const)
+        return e_out
+
+    def out_square(self):
+        """
+        e_out = NCO32_out_square()
+        50% duty cycle squarewave
+        """
+        if self.k_hat >= 0 and self.k_hat < self.dtype(self.max_bits_const >> 1):
+            return 1.0
+        else:
+            return -1.0
+
+    def pos_edge(self, thresh=None):
+        """
+        edge_bool = NCO32pos-edge(thresh=uint32(2**32 >> 1))
+        Output is true on positive edge of NCO_out_square
+
+        :param thresh: If threshold is not provided, ((2**n_bits) >> 1)
+        """
+        thresh = thresh if thresh else self.dtype(self.max_bits_const >> 1)
+        delta_theta = float(self.k_old) - float(self.k_hat)
+        if delta_theta > thresh:
+            return True
+        else:
+            return False
+
+    def set_fcenter(self, fcenter_new):
+        """
+        NCO32_set_fcenter(self, fcenter_new)
+        Set a new center frequency in Hz. The actual frequency
+        is stored in fcenter_hat.
+        """
+        self.delta_k = self.dtype(np.rint(fcenter_new*self.max_bits_const/self.fs))
+        self.fcenter_hat = self.delta_k/self.max_bits_const*self.fs
+
 class NCO32(object):
 
     def __init__(self,fcenter,fs,kc=1.0,state_init_k = np.uint32(0)):

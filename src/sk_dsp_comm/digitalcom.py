@@ -50,14 +50,14 @@ from logging import getLogger
 log = getLogger(__name__)
 
 
-def farrow_resample(x, fs_old, fs_new, I_ord=3, alpha = 1/2):
+def farrow_resample(x, fs_old, fs_new, i_ord=3, alpha =1 / 2):
     """
     Parameters
     ----------
     x : Input list representing a signal vector needing resampling.
     fs_old : Starting/old sampling frequency.
     fs_new : New sampling frequency.
-    I_ord : polynomial order, 1, 2, or 3
+    i_ord : polynomial order, 1, 2, or 3
     alpha : the shaping factor for I_order=2; alpha=1/2 best
 
     Returns
@@ -130,18 +130,18 @@ def farrow_resample(x, fs_old, fs_new, I_ord=3, alpha = 1/2):
     
    # Interpolate with order 3, 2, or 1 poly over 4, 3, or 2 samples, respectively
     # The delay is the same in all three
-    if I_ord == 3:
+    if i_ord == 3:
         # piecewise cubic in Farrow form
         v3 = signal.lfilter([1/6., -1/2., 1/2., -1/6.],[1],x)
         v2 = signal.lfilter([0, 1/2., -1, 1/2.],[1],x)
         v1 = signal.lfilter([-1/6., 1, -1/2., -1/3.],[1],x)
         v0 = signal.lfilter([0, 0, 1],[1],x)
-    elif I_ord == 2:
+    elif i_ord == 2:
         # piecewise parabolic in Farrow form with alpha
         v2 = signal.lfilter([alpha, -alpha, -alpha, alpha],[1],x)
         v1 = signal.lfilter([-alpha, 1+alpha, alpha-1, -alpha],[1],x)
         v0 = signal.lfilter([0, 0, 1],[1],x)
-    elif I_ord == 1:
+    elif i_ord == 1:
         # piecewise linear interp in farrow form 
         v1 = signal.lfilter([0, 1],[1],x)
         v0 = signal.lfilter([0, 0, 1],[1],x)
@@ -163,10 +163,10 @@ def farrow_resample(x, fs_old, fs_new, I_ord=3, alpha = 1/2):
         n_old = int(np.floor(n*Ts_new/Ts_old))
         mu = (n*Ts_new - n_old*Ts_old)/Ts_old
         # Combine outputs
-        if I_ord == 3:
+        if i_ord == 3:
             y[n] = ((v3[n_old+1]*mu + v2[n_old+1])*mu
                     + v1[n_old+1])*mu + v0[n_old+1]
-        elif I_ord == 2:
+        elif i_ord == 2:
             y[n] = (v2[n_old+1] + v1[n_old+1])*mu + v0[n_old+1]
         else:
             y[n] = mu*v1[n_old+1] + (1 - mu)*v0[n_old+1]

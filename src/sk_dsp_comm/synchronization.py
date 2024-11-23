@@ -541,7 +541,7 @@ class NCO32(object):
         self.k_hat = np.uint32(state_init_k)
         self.k_old = np.uint32(0)
 
-    def NCO32_update(self,e_in):
+    def update(self, e_in):
         """
         NCO32_update(e_in)
         Update the NCO 32-bit phase accumulator
@@ -549,8 +549,7 @@ class NCO32(object):
         self.k_old = self.k_hat
         self.k_hat = np.uint32(np.rint(float(self.k_hat) + float(self.delta_k) + float(self.kc*2**32*e_in)))
 
-   
-    def NCO32_out_sin(self):
+    def out_sin(self):
         """
         e_out = NCO32_out_sin()
         Output sin(k_hat * fs/2**32)
@@ -558,8 +557,7 @@ class NCO32(object):
         e_out = np.sin(2*np.pi * self.k_hat/2**32)
         return e_out
 
-    
-    def NCO32_out_exp(self):
+    def out_exp(self):
         """
         e_out = NCO32_out_exp()
         Output exp(j*theta_hat)
@@ -567,8 +565,7 @@ class NCO32(object):
         e_out = np.exp(1j * 2*np.pi * self.k_hat/2**32)
         return e_out
 
-
-    def NCO32_out_square(self):
+    def out_square(self):
         """
         e_out = NCO32_out_square()
         50% duty cycle squarewave
@@ -578,8 +575,7 @@ class NCO32(object):
         else:
             return -1.0
 
-
-    def NCO32_pos_edge(self, thresh = np.uint32(2**32 >> 1)):
+    def pos_edge(self, thresh=np.uint32(2 ** 32 >> 1)):
         """
         edge_bool = NCO32pos-edge(thresh=uint32(2**32 >> 1))
         Output is true on positive edge of NCO_out_square
@@ -590,8 +586,7 @@ class NCO32(object):
         else:
             return False
 
-
-    def NCO32_set_fcenter(self, fcenter_new):
+    def set_fcenter(self, fcenter_new):
         """
         NCO32_set_fcenter(self, fcenter_new)
         Set a new center frequency in Hz. The actual frequency
@@ -618,7 +613,7 @@ class NCO48(object):
         self.k_hat = np.uint64(state_init_k)
         self.k_old = np.uint64(0)
 
-    def NCO48_update(self,e_in):
+    def update(self, e_in):
         """
         NCO48_update(e_in)
         Update the NCO 48-bit phase accumulator
@@ -627,8 +622,7 @@ class NCO48(object):
         self.k_hat = np.uint64(np.mod(np.rint(float(self.k_hat) + float(self.delta_k) + \
                                      float(self.kc*2**48*e_in)),2**48))
 
-   
-    def NCO48_out_sin(self):
+    def out_sin(self):
         """
         e_out = NC48_out_sin()
         Output sin(k_hat * fs/2**48)
@@ -636,8 +630,7 @@ class NCO48(object):
         e_out = np.sin(2*np.pi * self.k_hat/2**48)
         return e_out
 
-    
-    def NCO48_out_exp(self):
+    def out_exp(self):
         """
         e_out = NCO48_out_exp()
         Output exp(j*theta_hat)
@@ -645,8 +638,7 @@ class NCO48(object):
         e_out = np.exp(1j * 2*np.pi * self.k_hat/2**48)
         return e_out
 
-
-    def NCO48_out_square(self):
+    def out_square(self):
         """
         e_out = NCO48_out_square()
         50% duty cycle squarewave
@@ -656,12 +648,11 @@ class NCO48(object):
         else:
             return -1.0
 
-
-    def NCO48_pos_edge(self, thresh = np.uint32(2**32 >> 1)):
+    def pos_edge(self, thresh=np.uint32(2 ** 48 >> 1)):
         """
         edge_bool = NCO48pos-edge(thresh=uint64(2**48 >> 1))
         Output is true on positive edge of NCO_out_square
-        """    
+        """
         delta_theta = float(self.k_old) - float(self.k_hat)
         if  delta_theta > thresh:
             return True
@@ -669,7 +660,7 @@ class NCO48(object):
             return False
 
 
-    def NCO48_set_fcenter(self, fcenter_new):
+    def set_fcenter(self, fcenter_new):
         """
         NCO48_set_fcenter(self, fcenter_new)
         Set a new center frequency in Hz. The actual frequency
@@ -679,7 +670,7 @@ class NCO48(object):
         self.fcenter_hat = self.delta_k/2**48*self.fs
 
 
-class accumulator(object):
+class Accumulator(object):
     """
     Initialize an accumulator object with the initial state.
     This accumulator object is for use in DPLL loop filters
@@ -688,7 +679,7 @@ class accumulator(object):
         self.m_state = state
 
 
-    def accum_update(self,x_in:float):
+    def update(self, x_in:float):
         """
         accum_update(x_in:float)
         Update the accumulator   
@@ -696,7 +687,7 @@ class accumulator(object):
         self.m_state += x_in
 
 
-    def accum_out(self) -> float:
+    def out(self) -> float:
         """
         y:float = accum_out()
         Formally take the current accumulator value.
@@ -704,13 +695,13 @@ class accumulator(object):
         return self.m_state
     
 
-class loop_filter1(object):
+class LoopFilter1(object):
 
     def __init__(self,alpha2,state = 0.0):
         """
 
         """
-        self.accum = accumulator(state=state)
+        self.accum = Accumulator(state=state)
         self.alpha2 = alpha2
 
     
@@ -720,18 +711,18 @@ class loop_filter1(object):
         A 1st-order loop filter for use in AFC tracking loops that
         employ an accumulator with gain constant alpha2 = Ki
         """
-        self.accum.accum_update(x)
-        y = self.alpha2 * self.accum.accum_out()
+        self.accum.update(x)
+        y = self.alpha2 * self.accum.out()
         return y
     
 
-class loop_filter2(object):
+class LoopFilter2(object):
 
     def __init__(self,alpha1,alpha2,state = 0.0):
         """
 
         """
-        self.accum = accumulator(state=state)
+        self.accum = Accumulator(state=state)
         self.alpha1 = alpha1
         self.alpha2 = alpha2
 
@@ -741,12 +732,12 @@ class loop_filter2(object):
         y = filter(x)
         A lead-lag DSP loop filter for use in PLL tracking loops.
         """
-        self.accum.accum_update(x)
-        y = self.alpha1 * x + self.alpha2 * self.accum.accum_out()
+        self.accum.update(x)
+        y = self.alpha1 * x + self.alpha2 * self.accum.out()
         return y
     
 
-def loop_parms1(Bn, kd, fs, Bn_mode = True):
+def loop_parms1(Bn, kd, fs, bn_mode = True):
     """
         alpha2 = loop_parms1(Bn, kd, fs)
     
@@ -756,7 +747,7 @@ def loop_parms1(Bn, kd, fs, Bn_mode = True):
     as f3, the 3dB lowpass bandwidth.
     """
     # fs = 1/(2*pi*RC) = 
-    if Bn_mode:
+    if bn_mode:
         k2 = 1 - np.exp(-4*Bn/fs)
     else:
         k2 = 1 - np.exp(-2*np.pi*Bn/fs)
@@ -764,13 +755,13 @@ def loop_parms1(Bn, kd, fs, Bn_mode = True):
     return k2/(kc*kd)
 
 
-def loop_parms2(Bn, zeta, kd, fs):
+def loop_parms2(bn, zeta, kd, fs):
     """
     alpha1, alpha2 = loop_parms2(Bn, zeta, kd, fs)
 
     Also alpha1 = Kp and alpha2 = Ki is common.
     """
-    wn = 2*Bn*(zeta + 1/(4*zeta))**(-1)
+    wn = 2 * bn * (zeta + 1 / (4 * zeta)) ** (-1)
     k1 = 2*zeta*wn/fs + 1/2*(wn/fs)**2
     k2 = (wn/fs)**2
     kc = 1.0
@@ -780,20 +771,20 @@ def loop_parms2(Bn, zeta, kd, fs):
 # Loop Pull-Out Frequency"
 #//////////////////////////////////////////////////////////////////
 
-def loop_pull_out(Bn, zeta):
+def loop_pull_out(bn, zeta):
     """
     Delta_f_po = loop_pull_out(Bn, zeta)
     
     2nd-order loop pull-out frequency in Hz from Gardner
     """
-    wn = 2*Bn*(zeta + 1/(4*zeta))**(-1)
+    wn = 2 * bn * (zeta + 1 / (4 * zeta)) ** (-1)
     return 1.8*wn*(zeta + 1.0)/(2*np.pi)
 
 
 # Linear Systems Modeling
 #//////////////////////////////////////////////////////////////////
 
-def Hetran_v1(k1, k2):
+def hetran_v1(k1, k2):
     """
 	b, a = Hetran_v1(k1, k2)
     2nd-order DPLL Loop error function He(z) coefficients
@@ -803,13 +794,13 @@ def Hetran_v1(k1, k2):
     return b, a
 
 
-def phi_phase_step(n, Bn, zeta, fs=125e6):
+def phi_phase_step(n, bn, zeta, fs=125e6):
     """
     phi = phi_phase_step(n, Bn, zeta, fs=125e6)
     Type 2 DPLL Frequency Step response
     """
-    k1, k2 = loop_parms2(Bn,zeta,1.0,fs)
-    b, a = Hetran_v1(k1,k2)
+    k1, k2 = loop_parms2(bn, zeta, 1.0, fs)
+    b, a = hetran_v1(k1, k2)
     print(a)
     phi = np.zeros(len(n))
     for k in range(len(n)):
@@ -817,13 +808,13 @@ def phi_phase_step(n, Bn, zeta, fs=125e6):
     return phi
 
 
-def phi_freq_step(n, Bn, zeta, fs=125e6):
+def phi_freq_step(n, bn, zeta, fs=125e6):
     """
     phi = phi_freq_step(n, Bn, zeta, fs=125e6)
     Type 2 DPLL Frequency Step response
     """
-    k1, k2 = loop_parms2(Bn,zeta,1.0,fs)
-    b, a = Hetran_v1(k1,k2)
+    k1, k2 = loop_parms2(bn, zeta, 1.0, fs)
+    b, a = hetran_v1(k1, k2)
     print(a)
     phi = np.zeros(len(n))
     for k in range(len(n)): # apply a ramp input
@@ -856,7 +847,7 @@ def discrim(x):
 # Stateful Complex Baseband Discriminator
 #//////////////////////////////////////////////////////////////////
 
-class discriminator(object):
+class Discriminator(object):
 
     def __init__(self,f_clk=1.0,state = 0.0 + 0.0j):
         """
@@ -875,7 +866,7 @@ class discriminator(object):
         self.state = state
 
 
-    def discrim_update(self, x_in, f_clk_units = True):
+    def update(self, x_in, f_clk_units = True):
         """
         y_d = discrim_update!(discrim1::Discrim, x_in is a complex sample.
         Compute the disciminator output sample and update the state. The ideal 
@@ -900,7 +891,7 @@ class discriminator(object):
 # DSP-based PLL tracking loop using the components defined in this module.
 #//////////////////////////////////////////////////////////////
 
-def cbb_PLL(x_in_pll, Bn_pll, k_d, fc_pll=0.0, fclk_pll=100e3, pll_open=False):
+def cbb_pll(x_in_pll, bn_pll, k_d, fc_pll=0.0, f_clk_pll=100e3, pll_open=False):
     """
         y_d_pll, y_lf_pll = cbb_PLL(x_in_pll, Bn_pll, k_d, fc_pll=0.0, fclk_pll=100e3, pll_open=False)
 
@@ -910,20 +901,20 @@ def cbb_PLL(x_in_pll, Bn_pll, k_d, fc_pll=0.0, fclk_pll=100e3, pll_open=False):
     """
     N_pll = len(x_in_pll)
     
-    PLL_NCO = NCO32(fc_pll,fclk_pll, 1.0, 0)
+    PLL_NCO = NCO32(fc_pll, f_clk_pll, 1.0, 0)
     x_NCO_pll = np.zeros(N_pll,dtype=complex)
     y_d_pll = np.zeros(N_pll)
     y_lf_pll = np.zeros(N_pll)
     y_lf_pll_old = 0.0
-    alpha1_pll, alpha2_pll = loop_parms2(Bn_pll, 0.707, 2*np.pi, fclk_pll)
+    alpha1_pll, alpha2_pll = loop_parms2(bn_pll, 0.707, 2 * np.pi, f_clk_pll)
     print('PLL (kp, ki) = (%2.3e, %2.3e)' % (alpha1_pll, alpha2_pll))
-    pll_lf = loop_filter2(alpha1_pll,alpha2_pll)
+    pll_lf = LoopFilter2(alpha1_pll, alpha2_pll)
     for k in range(N_pll):
         if pll_open:
-            PLL_NCO.NCO32_update(0.0)
+            PLL_NCO.update(0.0)
         else:
-            PLL_NCO.NCO32_update(y_lf_pll_old)
-        x_NCO_pll[k] = PLL_NCO.NCO32_out_exp()
+            PLL_NCO.update(y_lf_pll_old)
+        x_NCO_pll[k] = PLL_NCO.out_exp()
         # Phase detector
         y_d_pll[k] = np.imag(x_in_pll[k]*np.conj(x_NCO_pll[k]))
         # y_lf_pll[k] = loop_filter2(lf_accum_pll,alpha1_PLL,alpha2_PLL,k_d*y_d_pll[k])
@@ -936,7 +927,7 @@ def cbb_PLL(x_in_pll, Bn_pll, k_d, fc_pll=0.0, fclk_pll=100e3, pll_open=False):
 # DSP-based AFC tracking loop using the components defined in this module.
 #//////////////////////////////////////////////////////////////
 
-def cbb_AFC(x_in_afc, Bn_afc, k_d, fc_afc=0.0, f_clk_afc=100e3, afc_open=False):
+def cbb_afc(x_in_afc, bn_afc, k_d, fc_afc=0.0, f_clk_afc=100e3, afc_open=False):
     """
         y_d_afc, y_lf_afc, x_out_afc = cbb_AFC(x_in_afc, Bn_afc, k_d, fc_afc=0.0, 
                                                f_clk_afc=100e3, afc_open=False)
@@ -949,27 +940,26 @@ def cbb_AFC(x_in_afc, Bn_afc, k_d, fc_afc=0.0, f_clk_afc=100e3, afc_open=False):
     N_afc = len(x_in_afc)
     
     AFC_NCO = NCO32(fc_afc,f_clk_afc, 1.0, 0)
-    discrim_afc = discriminator(f_clk_afc)
+    discrim_afc = Discriminator(f_clk_afc)
     x_NCO_afc = np.zeros(N_afc,dtype=complex)
     x_out_afc = np.zeros(N_afc,dtype=complex)
     y_d_afc = np.zeros(N_afc)
     y_lf_afc = np.zeros(N_afc)
-    y_lf_afc_old = 0.0
-    alpha2_afc = loop_parms1(Bn_afc, 1.0, f_clk_afc)
+    alpha2_afc = loop_parms1(bn_afc, 1.0, f_clk_afc)
     print('AFC: ki = %2.3e' % (alpha2_afc,))
-    afc_lf = loop_filter1(alpha2_afc)
+    afc_lf = LoopFilter1(alpha2_afc)
     y_lf_afc_old = 0
     # Clock event loop
     for k in range(N_afc):
         if afc_open:
-            AFC_NCO.NCO32_update(0.0)
+            AFC_NCO.update(0.0)
         else:
-            AFC_NCO.NCO32_update(y_lf_afc_old/f_clk_afc)
-        x_NCO_afc[k] = AFC_NCO.NCO32_out_exp()
+            AFC_NCO.update(y_lf_afc_old / f_clk_afc)
+        x_NCO_afc[k] = AFC_NCO.out_exp()
         # Frequency Discriminator input mixes input with NCO output conjugated
         # The intent is to frequency translate x_in_afc to 0 Hz
         x_out_afc[k] = x_in_afc[k]*np.conj(x_NCO_afc[k])
-        y_d_afc[k] = discrim_afc.discrim_update(x_out_afc[k])
+        y_d_afc[k] = discrim_afc.update(x_out_afc[k])
         y_lf_afc[k] = afc_lf.filter(y_d_afc[k])
         y_lf_afc_old = y_lf_afc[k]
     return y_d_afc, y_lf_afc, x_out_afc

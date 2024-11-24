@@ -3137,3 +3137,31 @@ def bin_num(n, n_bits):
     f_str = '{:0' + str(n_bits) + 'b}'
     f_res = f_str.format(int(num))
     return f_res
+
+
+def readfile_IQ_frame(fname):
+    '''
+    readfile_IQ_frame(fname)
+    '''
+    # Read as 'float32'
+    data = np.fromfile(fname,dtype=np.float32)
+
+    # deinterleave I and Q
+    if np.any(data[1::2]) != 0:
+        z = data[::2] + 1j*data[1::2]
+    else:
+        z = data[::2]
+    return z
+
+
+def writefile_IQ_frame(z,fname):
+    '''
+    writefile_IQ_frame(z,fname)    
+    '''
+    if z.dtype == 'complex':
+        zIQ = np.hstack((np.array([z.real]).T,np.array([z.imag]).T));
+    else:
+        # Save IQ binary file with imaginary part zero
+        zIQ = np.hstack((np.array([z.real]).T,np.zeros((len(z),1))));
+    zIQ.flatten().astype('float32').tofile(fname)
+    

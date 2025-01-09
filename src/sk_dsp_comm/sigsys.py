@@ -2517,13 +2517,13 @@ def fft_filt_bank(x_in,h_filt,Nfft2=512,N_bands2=0,BS_Hz=0.2,fs = 1.0,N_band_odd
     H_filt = np.fft.fft(h_filt,2*Nfft2)
     K_max = N_x_in//Nfft2
     for k in range(K_max):
+        # Fill the input working vector
+        if np.isrealobj(x_in):
+            x_in = x_in + 0j
+        X_wrk = np.hstack((x_state,x_in[k*Nfft2:(k+1)*Nfft2]))
+        # Transform signal vector to the frequency domain
+        X_wrk = np.fft.fft(X_wrk) 
         for j in range(N_bands_tot):
-            # Fill the input working vector
-            if np.isrealobj(x_in):
-                x_in = x_in + 0j
-            X_wrk = np.hstack((x_state,x_in[k*Nfft2:(k+1)*Nfft2]))
-            # Transform signal vector to the frequency domain
-            X_wrk = np.fft.fft(X_wrk) 
             # Frequency domain filter with roll to shift the center frequency
             if N_band_odd:
                 j_roll_shift = j*N_band_step - N_bands2*N_band_step

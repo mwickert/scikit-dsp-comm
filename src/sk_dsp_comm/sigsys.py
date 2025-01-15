@@ -2492,9 +2492,11 @@ def psd(x,N_fft,fs=1,overlap_percent=50,scale_noise = True):
 
 def fft_filt_bank(x_in,h_filt,Nfft2=512,N_bands2=0,BS_Hz=0.2,fs = 1.0,N_band_odd=True):
     """
-    Compute a streaming CAF having (2*N_bands2 + 1) frequency bands for N_band_odd=True or 
-    (2*N_bands2) frequency slices for N_band_odd=False. The slice centered on f = 0 is 
-    removed if N_band_odd = False. The finest frequency resolution is fs/(2*Nfft2).
+    Compute a streaming filter bank having (2*N_bands2 + 1) frequency bands for N_band_odd=
+    True or (2*N_bands2) frequency slices for N_band_odd=False. The slice centered on f = 0 is 
+    removed if N_band_odd = False. The finest frequency resolution is fs/(2*Nfft2). The user
+    specifies the band spacing with BS_Hz, but the requested value depends on the FFT length
+    and whether BS_Hz*2*Nfft2/fs is an integer. You may want to make Nfft2 not a power of 2.
 
     Mark Wickert, November 2024, updated December 2024
     """
@@ -2508,6 +2510,12 @@ def fft_filt_bank(x_in,h_filt,Nfft2=512,N_bands2=0,BS_Hz=0.2,fs = 1.0,N_band_odd
         N_bands_tot = 2*N_bands2
         N_band_step = int(round(BS_Hz/2*2*Nfft2/fs))
     print('N_band_step = %d' % (N_band_step,))
+
+    BS_Hz_actual = N_band_step * fs/(2*Nfft2)
+    span_Hz = N_bands2 * BS_Hz_actual
+    print('N_band_step = %d and BS_Hz_actual = %3.2f Hz' % (N_band_step,BS_Hz_actual))
+    print('N_bands_tot = %d and span_Hz = +/- %4.2f Hz' % (N_bands_tot,span_Hz))
+
     # Initialize input and output arrays for overlap and save
     x_state = np.zeros(Nfft2,dtype=complex)
     X_wrk = np.zeros(2*Nfft2,dtype=complex)
@@ -2547,7 +2555,7 @@ def fft_filt_bank(x_in,h_filt,Nfft2=512,N_bands2=0,BS_Hz=0.2,fs = 1.0,N_band_odd
     return y_filt_bank,freq_axis,freq_axis_desired
 
 
-def fft_caf(x_in,h_ref,Nfft2=1024,N_slice2=0,N_slice_step=1,fs = 1.0):
+def fft_caf(x_in,h_ref,Nfft2=1024,N_slice2=0,BS_Hz=0.1,fs = 1.0):
     """
     Compute a streaming CAF having (2*N_slice2 + 1) frequency slices
     centered on f = 0. The finest frequency resolution is fs/(2*Nfft2).
@@ -2558,6 +2566,11 @@ def fft_caf(x_in,h_ref,Nfft2=1024,N_slice2=0,N_slice_step=1,fs = 1.0):
         raise ValueError('Error: Must have Nfft2 = %d >= %d = len(h_ref)' % (Nfft2,len(h_ref)))
     N_x_in = len(x_in)
     N_slice_tot = 2*N_slice2 + 1
+    N_slice_step = round(BS_Hz*2*Nfft2/fs)
+    BS_Hz_actual = N_slice_step * fs/(2*Nfft2)
+    span_Hz = N_slice2 * BS_Hz_actual
+    print('N_slice_step = %d and BS_Hz_actual = %3.2fHz' % (N_slice_step,BS_Hz_actual))
+    print('N_slice_tot = %d and span_Hz = +/- %3.2fHz' % (N_slice_tot,span_Hz))
 
     # Initialize input and output arrays for overlap and save
     x_state = np.zeros(Nfft2,dtype=complex)

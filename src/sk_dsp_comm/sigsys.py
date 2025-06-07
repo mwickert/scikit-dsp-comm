@@ -2532,7 +2532,7 @@ def fft_filt_bank(x_in, h_filt, n_fft2=1024, n_slice2=0, n_slice_step=1, fs = 1.
     return y_filt_bank,freq_axis
 
 
-def fft_caf(x_in, h_ref, n_fft2=1024, n_slice2=0, n_slice_step=1, fs = 1.0):
+def fft_caf(x_in, h_ref, n_fft2: int = 1024, n_slice2: int = 0, n_slice_step: float = 1, fs: float = 1.0):
     """
     Compute a streaming CAF having (2*N_slice2 + 1) frequency slices
     centered on f = 0. The finest frequency resolution is fs/(2*Nfft2).
@@ -2560,9 +2560,9 @@ def fft_caf(x_in, h_ref, n_fft2=1024, n_slice2=0, n_slice_step=1, fs = 1.0):
                 x_in = x_in + 0j
             X_wrk = np.hstack((x_state, x_in[k * n_fft2:(k + 1) * n_fft2]))
             # Transform signal vector to the frequency domain
-            X_wrk = np.fft.fft(X_wrk) 
+            X_wrk = np.fft.fft(X_wrk)
             # Frequency domain filter with roll to shift the center frequency
-            j_roll_shift = j * n_slice_step - n_slice2 * n_slice_step
+            j_roll_shift = int(j * n_slice_step - n_slice2 * n_slice_step)
             y_wrk = np.roll(H_ref,j_roll_shift) * X_wrk
             # Inverse transform
             y_wrk = np.fft.ifft(y_wrk)

@@ -29,5 +29,4 @@ Jupyter Notebook Examples
 .. toctree::
    :caption: Synchronization
 
-   ../nb_examples/synchronization/PLL
-   ../nb_examples/synchronization/AFC
+   ../nb_examples/synchronization/synchronization

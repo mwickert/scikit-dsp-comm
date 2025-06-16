@@ -2491,86 +2491,113 @@ def psd(x, n_fft, fs=1, overlap_percent=50, scale_noise = True):
     return Px, f
 
 
-def fft_filt_bank(x_in, h_filt, n_fft2=1024, n_slice2=0, n_slice_step=1, fs = 1.0):
+def fft_filt_bank(x_in,h_filt,Nfft2=512,N_bands2=0,BS_Hz=0.2,fs = 1.0,N_band_odd=True):
     """
-    Compute a streaming CAF having (2*N_slice2 + 1) frequency slices
-    centered on f = 0. The finest frequency resolution is fs/(2*Nfft2).
-
-    Mark Wickert, November 2024
+    Compute a streaming filter bank having (2*N_bands2 + 1) frequency bands for N_band_odd=
+    True or (2*N_bands2) frequency slices for N_band_odd=False. The slice centered on f = 0 is
+    removed if N_band_odd = False. The finest frequency resolution is fs/(2*Nfft2). The user
+    specifies the band spacing with BS_Hz, but the requested value depends on the FFT length
+    and whether BS_Hz*2*Nfft2/fs is an integer. You may want to make Nfft2 not a power of 2.
+    Mark Wickert, November 2024, updated December 2024
     """
-    if len(h_filt) > n_fft2:
-        raise ValueError('Error: Must have Nfft2 = %d >= %d = len(h_ref)' % (n_fft2, len(h_filt)))
+    if len(h_filt) > Nfft2:
+        raise ValueError('Error: Must have Nfft2 = %d >= %d = len(h_ref)' % (Nfft2,len(h_filt)))
     N_x_in = len(x_in)
-    N_slice_tot = 2 * n_slice2 + 1
+    if N_band_odd:
+        N_bands_tot = 2*N_bands2 + 1
+        N_band_step = int(round(BS_Hz*2*Nfft2/fs))
+    else:
+        N_bands_tot = 2*N_bands2
+        N_band_step = int(round(BS_Hz/2*2*Nfft2/fs))
+    print('N_band_step = %d' % (N_band_step,))
+
+    BS_Hz_actual = N_band_step * fs/(2*Nfft2)
+    span_Hz = N_bands2 * BS_Hz_actual
+    print('N_band_step = %d and BS_Hz_actual = %3.2f Hz' % (N_band_step,BS_Hz_actual))
+    print('N_bands_tot = %d and span_Hz = +/- %4.2f Hz' % (N_bands_tot,span_Hz))
 
     # Initialize input and output arrays for overlap and save
-    x_state = np.zeros(n_fft2, dtype=complex)
-    X_wrk = np.zeros(2 * n_fft2, dtype=complex)
-    y_wrk = np.zeros(2 * n_fft2, dtype=complex)
-    y_filt_bank = np.zeros((N_slice_tot,N_x_in),dtype=complex)
+    x_state = np.zeros(Nfft2,dtype=complex)
+    X_wrk = np.zeros(2*Nfft2,dtype=complex)
+    y_wrk = np.zeros(2*Nfft2,dtype=complex)
+    y_filt_bank = np.zeros((N_bands_tot,N_x_in),dtype=complex)
 
-    H_filt = np.fft.fft(h_filt, 2 * n_fft2)
-    K_max = N_x_in // n_fft2
+    H_filt = np.fft.fft(h_filt,2*Nfft2)
+    K_max = N_x_in//Nfft2
     for k in range(K_max):
-        for j in range(2 * n_slice2 + 1):
-            # Fill the input working vector
-            if np.isrealobj(x_in):
-                x_in = x_in + 0j
-            X_wrk = np.hstack((x_state, x_in[k * n_fft2:(k + 1) * n_fft2]))
-            # Transform signal vector to the frequency domain
-            X_wrk = np.fft.fft(X_wrk) 
+        # Fill the input working vector
+        if np.isrealobj(x_in):
+            x_in = x_in + 0j
+        X_wrk = np.hstack((x_state,x_in[k*Nfft2:(k+1)*Nfft2]))
+        # Transform signal vector to the frequency domain
+        X_wrk = np.fft.fft(X_wrk)
+        for j in range(N_bands_tot):
             # Frequency domain filter with roll to shift the center frequency
-            j_roll_shift = j * n_slice_step - n_slice2 * n_slice_step
+            if N_band_odd:
+                j_roll_shift = j*N_band_step - N_bands2*N_band_step
+            else:
+                j_roll_shift = j*2*N_band_step - (2*N_bands2-1)*N_band_step
             y_wrk = np.roll(H_filt,j_roll_shift) * X_wrk
             # Inverse transform
             y_wrk = np.fft.ifft(y_wrk)
             # Pack upper half of y_wrk into y_caf_stream with freq offset
-            y_filt_bank[j, k * n_fft2:(k + 1) * n_fft2] = y_wrk[n_fft2:]
+            y_filt_bank[j,k*Nfft2:(k+1)*Nfft2] = y_wrk[Nfft2:]
         # Update x_state
-        x_state = x_in[k * n_fft2:(k + 1) * n_fft2]
-    freq_axis = np.arange(-n_slice2 * n_slice_step, n_slice2 * n_slice_step + n_slice_step, n_slice_step) * fs / 2 / n_fft2
-    return y_filt_bank,freq_axis
+        x_state = x_in[k*Nfft2:(k+1)*Nfft2]
+    if N_band_odd:
+        freq_axis = np.arange(-N_bands2*N_band_step,N_bands2*N_band_step+N_band_step,
+                              N_band_step)*fs/2/Nfft2
+        freq_axis_desired = np.rint(freq_axis/BS_Hz)*BS_Hz
+    else:
+        freq_axis = np.arange(-(2*N_bands2-1)*N_band_step,N_bands2*N_band_step+2*(N_band_step+1),
+                              2*N_band_step)*fs/2/Nfft2
+        freq_axis_desired = np.rint(freq_axis/(BS_Hz/2))*(BS_Hz/2)
+    return y_filt_bank,freq_axis,freq_axis_desired
 
 
-def fft_caf(x_in, h_ref, n_fft2: int = 1024, n_slice2: int = 0, n_slice_step: float = 1, fs: float = 1.0):
+def fft_caf(x_in,h_ref,Nfft2=1024,N_slice2=0,BS_Hz=0.1,fs = 1.0):
     """
     Compute a streaming CAF having (2*N_slice2 + 1) frequency slices
     centered on f = 0. The finest frequency resolution is fs/(2*Nfft2).
-
     Mark Wickert, November 2024
     """
-    if len(h_ref) > n_fft2:
-        raise ValueError('Error: Must have Nfft2 = %d >= %d = len(h_ref)' % (n_fft2, len(h_ref)))
+    if len(h_ref) > Nfft2:
+        raise ValueError('Error: Must have Nfft2 = %d >= %d = len(h_ref)' % (Nfft2,len(h_ref)))
     N_x_in = len(x_in)
-    N_slice_tot = 2 * n_slice2 + 1
+    N_slice_tot = 2*N_slice2 + 1
+    N_slice_step = round(BS_Hz*2*Nfft2/fs)
+    BS_Hz_actual = N_slice_step * fs/(2*Nfft2)
+    span_Hz = N_slice2 * BS_Hz_actual
+    print('N_slice_step = %d and BS_Hz_actual = %3.2fHz' % (N_slice_step,BS_Hz_actual))
+    print('N_slice_tot = %d and span_Hz = +/- %3.2fHz' % (N_slice_tot,span_Hz))
 
     # Initialize input and output arrays for overlap and save
-    x_state = np.zeros(n_fft2, dtype=complex)
-    X_wrk = np.zeros(2 * n_fft2, dtype=complex)
-    y_wrk = np.zeros(2 * n_fft2, dtype=complex)
+    x_state = np.zeros(Nfft2,dtype=complex)
+    X_wrk = np.zeros(2*Nfft2,dtype=complex)
+    y_wrk = np.zeros(2*Nfft2,dtype=complex)
     y_caf_stream = np.zeros((N_slice_tot,N_x_in),dtype=complex)
 
     # conjugate and reverse h_ref to implement correlation
-    H_ref = np.fft.fft(np.conj(h_ref[::-1]), 2 * n_fft2)
-    K_max = N_x_in // n_fft2
+    H_ref = np.fft.fft(np.conj(h_ref[::-1]),2*Nfft2)
+    K_max = N_x_in//Nfft2
     for k in range(K_max):
-        for j in range(2 * n_slice2 + 1):
+        for j in range(2*N_slice2+1):
             # Fill the input working vector
             if np.isrealobj(x_in):
                 x_in = x_in + 0j
-            X_wrk = np.hstack((x_state, x_in[k * n_fft2:(k + 1) * n_fft2]))
+            X_wrk = np.hstack((x_state,x_in[k*Nfft2:(k+1)*Nfft2]))
             # Transform signal vector to the frequency domain
             X_wrk = np.fft.fft(X_wrk)
             # Frequency domain filter with roll to shift the center frequency
-            j_roll_shift = int(j * n_slice_step - n_slice2 * n_slice_step)
+            j_roll_shift = j*N_slice_step - N_slice2*N_slice_step
             y_wrk = np.roll(H_ref,j_roll_shift) * X_wrk
             # Inverse transform
             y_wrk = np.fft.ifft(y_wrk)
             # Pack upper half of y_wrk into y_caf_stream with freq offset
-            y_caf_stream[j, k * n_fft2:(k + 1) * n_fft2] = y_wrk[n_fft2:]
+            y_caf_stream[j,k*Nfft2:(k+1)*Nfft2] = y_wrk[Nfft2:]
         # Update x_state
-        x_state = x_in[k * n_fft2:(k + 1) * n_fft2]
-    freq_axis = np.arange(-n_slice2 * n_slice_step, n_slice2 * n_slice_step + n_slice_step, n_slice_step) * fs / 2 / n_fft2
+        x_state = x_in[k*Nfft2:(k+1)*Nfft2]
+    freq_axis = np.arange(-N_slice2*N_slice_step,N_slice2*N_slice_step+N_slice_step,N_slice_step)*fs/2/Nfft2
     time_axis = np.arange(0,N_x_in)/fs
     return y_caf_stream,freq_axis,time_axis
 
@@ -3138,3 +3165,31 @@ def bin_num(n, n_bits):
     f_str = '{:0' + str(n_bits) + 'b}'
     f_res = f_str.format(int(num))
     return f_res
+
+
+def readfile_IQ_frame(fname):
+    '''
+    readfile_IQ_frame(fname)
+    '''
+    # Read as 'float32'
+    data = np.fromfile(fname,dtype=np.float32)
+
+    # deinterleave I and Q
+    if np.any(data[1::2]) != 0:
+        z = data[::2] + 1j*data[1::2]
+    else:
+        z = data[::2]
+    return z
+
+
+def writefile_IQ_frame(z,fname):
+    '''
+    writefile_IQ_frame(z,fname)    
+    '''
+    if z.dtype == 'complex':
+        zIQ = np.hstack((np.array([z.real]).T,np.array([z.imag]).T));
+    else:
+        # Save IQ binary file with imaginary part zero
+        zIQ = np.hstack((np.array([z.real]).T,np.zeros((len(z),1))));
+    zIQ.flatten().astype('float32').tofile(fname)
+    

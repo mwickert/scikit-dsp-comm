@@ -918,7 +918,7 @@ def lms_ic(r,M,mu,delta=1):
     Ao : ndarray frequency response of filter
 
     Examples
-    ----------
+    --------
     >>> # import a speech signal
     >>> fs,s = from_wav('OSR_us_000_0030_8k.wav')
     >>> # add interference at 1kHz and 1.5 kHz and
@@ -1598,7 +1598,7 @@ def delta_eps(t,eps):
     Examples
     --------
     >>> import matplotlib.pyplot as plt
-    >>> from numpy import arange
+    >>> import numpy as np
     >>> from sk_dsp_comm.sigsys import delta_eps
     >>> t = np.arange(-2,2,.001)
     >>> d = delta_eps(t,.1)
@@ -2357,9 +2357,10 @@ def cpx_awgn(x, es_n0, ns):
 
     Examples
     --------
-    >>> x,b, data = nrz_bits(1000,10)
+    >>> import sk_dsp_comm.sigsys as ss
+    >>> x,b, data = ss.nrz_bits(1000,10)
     >>> # set Eb/N0 = 10 dB
-    >>> y = cpx_awgn(x,10,10)
+    >>> y = ss.cpx_awgn(x,10,10)
     """
     w = np.sqrt(ns * np.var(x) * 10 ** (-es_n0 / 10.) / 2.) * (np.random.randn(len(x)) + 1j * np.random.randn(len(x)))
     return x+w       
@@ -2392,9 +2393,37 @@ def cpx_awgn2(x, es_n0, ns, var_w = 0.0):
 
     Examples
     --------
-    >>> x,b, data = nrz_bits(1000,10)
+    >>> import sk_dsp_comm.sigsys as ss
+    >>> x,b, data = ss.nrz_bits(1000,10)
     >>> # set Eb/N0 = 10 dB
-    >>> y = cpx_awgn2(x,10,10)
+    >>> y = ss.cpx_awgn2(x,10,10)
+
+    >>> from sk_dsp_comm import digitalcom as dc
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> Ns = 8 # samples per QPSK symbol
+    >>> x_qpsk, b, data = dc.mpsk_gray_encode_bb(10000,Ns,4,'src')
+    >>> Px_qpsk, f_qpsk = ss.psd(x_qpsk,2**10,Ns)
+
+    >>> EsN040 = 40
+    >>> var_w_dB=-40.
+    >>> y_40dB = ss.cpx_awgn2(x_qpsk,40,Ns,var_w=var_w_dB)
+    >>> Py_40dB, f_qpsk = ss.psd(y_40dB,2**10,Ns)
+
+    >>> EsN010 = 10
+    >>> y_10dB = ss.cpx_awgn2(x_qpsk,EsN010,Ns,var_w=var_w_dB)
+    >>> Py_10dB, f_qpsk = ss.psd(y_10dB,2**10,Ns)
+
+    >>> plt.plot(f_qpsk,10*np.log10(Px_qpsk), label='Tx')
+    >>> plt.plot(f_qpsk,10*np.log10(Py_40dB),label='Rx, $E_s/N_0 =$ %2.0fdB' % (EsN040,))
+    >>> plt.plot(f_qpsk,10*np.log10(Py_10dB),label='Rx, $E_s/N_0 =$ %2.0fdB' % (EsN010,))
+    >>> plt.title(r'Shaped QPSK Before & After AWGN2 with %2.0f dB Noise Floor' % (var_w_dB,))
+    >>> plt.xlabel(r'Frequency ($f/Rs$)')
+    >>> plt.ylabel(r'PSD (dB)')
+    >>> # ylim(-60,20)
+    >>> plt.legend()
+    >>> plt.grid()
+    >>> plt.show()
     """
     var_w = 10**(var_w / 10)
     w = np.sqrt(var_w / 2) * (np.random.randn(len(x)) + 1j * np.random.randn(len(x)))

@@ -74,6 +74,7 @@ Before building the documentation, ensure you have the following installed:
 
 1. Create a new `.rst` file in the appropriate directory
 1. Add it to the relevant `toctree` directive in `index.rst` or another appropriate file
+1. Clear all outputs from Jupyter notebooks (ensures that the latest outputs are generated)
 1. Build and test your changes locally
 1. Submit a pull request with your changes
 

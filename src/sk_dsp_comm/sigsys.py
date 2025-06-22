@@ -2473,8 +2473,6 @@ def my_psd(x, n_fft=2 ** 10, fs=1):
 
 def psd(x, n_fft, fs=1, overlap_percent=50, scale_noise = True):
     """
-        Px, f = psd(x,N_fft,fs=1,overlap_percent=50)
-        
     Averaged periodogram power spectral density estimate
     (Welch's method with overlapping peridograms and windowing)
     Amplitude scaling for a noise-like signal is the default.
@@ -2487,6 +2485,50 @@ def psd(x, n_fft, fs=1, overlap_percent=50, scale_noise = True):
     when the sinusoid frequency moves away from the bin center.
 
     Mark Wickert November 2024
+
+    Notes
+    -----
+    A Welch's averaged periodogram spectral estimation function built from the ground up. This function features two
+    calibration modes:
+
+    #. For random processing with continuous spectra, e.g. in particular for white noise the power level corresponds
+       to the variance of the white noise (one ohm system assumed)
+    #. A sinusoids mode that for bin-centered sinusoids the spectrum is calibrated to the actual power,
+       e.g., :math:`A\cos(\omega_0 n) \Leftrightarrow A^2/4` for each of the positive and negative frequency spikes.
+
+    Parameters
+    ----------
+    x : ndarray representing the input signal
+    n_fft : a power of two, e.g., 2**10 = 1024
+    fs : the sampling rate in Hz
+    overlap_percent : percentage of overlap between peridograms
+    scale_noise : boolean, if True the noise is scaled to the variance of the white noise
+
+    Returns
+    -------
+    Px : ndarray of the power spectrum estimate
+    f : ndarray of frequency values
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> m = np.arange(1000000)
+    >>> Nfft = 2*1024
+    >>> s = np.cos(2*np.pi*98.176/Nfft*m) + 3*np.cos(2*np.pi*200/Nfft*m)
+    >>> # Generate complex white Gaussian noise
+    >>> w = 1/np.sqrt(2)*(np.random.randn(len(m)) + 1j*np.random.randn(len(m)));
+    >>> #Px, fx = psd(w+s,Nfft,1.0,scale_noise=True) # set to False for sinusoid calibration
+    >>> Px, fx = ss.psd(w+s,n_fft=Nfft,fs=1.0,)
+    >>> print(max(10*np.log10(Px)))
+    >>> plt.plot(fx,10*np.log10(Px))
+    >>> plt.grid()
+    >>> plt.title(r'Sinusoid + Noise Spectrum using the Noise Scaling Option')
+    >>> plt.xlabel(r'Normalized Frequency ($\omega/(2\pi)$)')
+    >>> plt.ylabel(r'PSD (dB)')
+    >>> plt.ylim(-10,40)
+    >>> plt.show()
     """
     Q = len(x)
     R = int(np.round(overlap_percent / 100 * n_fft))

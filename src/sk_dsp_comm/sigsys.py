@@ -2684,6 +2684,31 @@ def fft_caf(x_in, h_ref, n_fft2=1024, n_slice2=0, bs=0.1, fs=1.0):
     n_slice2 : Number of frequency bands
     bs : Band spacing (Hz)
     fs : Sampling frequency (Hz)
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scipy import signal
+    >>> import matplotlib.pyplot as plt
+    >>> import sk_dsp_comm.fir_design_helper as fir_h
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> fs = 1000
+    >>> fd = 10
+    >>> b_lpf = fir_h.fir_remez_lpf(100,150,0.1,80,fs)
+    >>> print('N_b_lpf = %d' % len(b_lpf))
+    >>> xp = signal.lfilter(b_lpf,1,np.random.randn(2048))
+    >>> xp_ref = xp[900:1200] # create a reference waveform from xp
+    >>> n = np.arange(len(xp))
+    >>> yp = xp * np.exp(1j*2*np.pi*fd/fs*n)
+    >>> # Use a non-power of 2 FFT to exact slice spacings (FFTW is somewhat slower)
+    >>> y_caf_stream,faxis,taxis = ss.fft_caf(yp,xp_ref,n_fft2=1000,n_slice2=80,bs=0.5,fs = 1000.0)
+    >>> plt.figure()
+    >>> plt.imshow(np.abs(y_caf_stream[:,1150:1250]), extent=[taxis[1150], taxis[1250], faxis[-1], faxis[0]], aspect='auto')
+    >>> plt.ylabel(r'Frequency (Hz)')
+    >>> plt.xlabel(r'Time (seconds)')
+    >>> plt.title(r'CAF Magnitude')
+    >>> plt.colorbar()
+    >>> plt.show()
     """
     if len(h_ref) > n_fft2:
         raise ValueError('Error: Must have Nfft2 = %d >= %d = len(h_ref)' % (n_fft2, len(h_ref)))

@@ -2580,6 +2580,40 @@ def fft_filt_bank(x_in, h_filt, n_fft2=512, n_bands2=0, bs=0.2, fs=1.0, n_band_o
     bs : Band spacing (Hz)
     fs : Sampling frequency (Hz)
     n_band_odd : Remove slice centered on f = 0
+
+    Notes
+    -----
+    Input a real or complex signal then send it through a bank of `2*Nslice2+1` filters. The streaming filter bank
+    having (2*N_bands2 + 1) frequency bands for `N_band_odd=True` or (2*N_bands2) frequency slices for
+    `N_band_odd=False`. The band centered on f = 0 is removed if `N_band_odd = False`. The finest frequency resolution
+    is fs/(2*Nfft2). The user specifies the band spacing with `BS_Hz`, but the requested value depends on the FFT length
+    and whether `BS_Hz*2*Nfft2/fs` is an integer. You may want to make Nfft2 other than a power of 2. We use
+    *overlap and save* to implement transform domain filtering and the desired center frequency spacing using `BS_Hz`.
+    The FIR filter coefficients, `b_lpf`, may be real or complex, but the intent is to use a lowpass design with
+    bandwidth such that the bands overlap at the band edges.
+
+    Once the filter is designed you have to make sure `Nfft2 > N_fir_taps` so the transform domain filtering will work
+    properly. You can make `Nfft2` larger if needed, although running with a non-power-of-two FFT length is not as speed
+    efficient.
+
+    Examples
+    --------
+    >>> import sk_dsp_comm.fir_design_helper as fir_h
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> fs_bank = 1000
+    >>> b_lpf_chan = fir_h.fir_remez_lpf(80,110,0.1,70,fs_bank)
+    >>> w = np.random.randn(100000)
+    >>> w_bank,fax, fax_des = ss.fft_filt_bank(w,b_lpf_chan + 0j,n_fft2=512,n_bands2=2,bs=200,fs = fs_bank)
+    >>> for k in range(5):
+    >>>     P_w,f_w = ss.psd(w_bank[k,:],2**10,fs_bank)
+    >>>     plt.plot(f_w,10*np.log10(P_w))
+    >>> plt.title(r'Filter Bank Characterization using White Noise with $\sigma_w^2 = 1$')
+    >>> plt.ylabel(r'Gain (dB)')
+    >>> plt.xlabel(r'Frequency (Hz)')
+    >>> plt.grid()
+    >>> plt.show()
     """
     if len(h_filt) > n_fft2:
         raise ValueError('Error: Must have Nfft2 = %d >= %d = len(h_ref)' % (n_fft2, len(h_filt)))

@@ -1347,7 +1347,7 @@ def ofdm_tx(iq_data, nf, nc, npb=0, cp=False, ncp=0):
     >>> x1,b1,IQ_data1 = dc.qam_bb(50000,1,'16qam')
     >>> x_out = dc.ofdm_tx(IQ_data1,32,64)
     >>> plt.psd(x_out,2**10,1);
-    >>> plt.xlabel(r'Normalized Frequency ($\omega/(2\pi)=f/f_s$)')
+    >>> plt.xlabel(r'Normalized Frequency ($\\omega/(2\\pi)=f/f_s$)')
     >>> plt.ylim([-40,0])
     >>> plt.xlim([-.5,.5])
     >>> plt.show()

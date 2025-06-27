@@ -562,7 +562,7 @@ class NCO:
         Update the NCO 32-bit phase accumulator
         """
         self.k_old = self.k_hat
-        self.k_hat = np.uint32(
+        self.k_hat = self.dtype(
             np.rint(float(self.k_hat) + float(self.delta_k) + float(self.kc * self.max_bits_const * e_in)))
 
     def out_sin(self):

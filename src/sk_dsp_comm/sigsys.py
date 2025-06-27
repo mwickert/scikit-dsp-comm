@@ -738,7 +738,7 @@ def simple_quant(x, b_tot, x_max, limit):
     x : input signal ndarray to be quantized
     b_tot : total number of bits in the quantizer, e.g. 16
     x_max : quantizer full-scale dynamic range is [-Xmax, Xmax]
-    Limit = Limiting of the form 'sat', 'over', 'none'
+    limit = Limiting of the form 'sat', 'over', 'none'
     
     Returns
     -------
@@ -2350,6 +2350,10 @@ def cpx_awgn(x, es_n0, ns):
     -------
     y : ndarray x with additive noise added.
 
+    See Also
+    --------
+    cpx_awgn2
+
     Notes
     -----
     Set the channel energy per symbol-to-noise power spectral 
@@ -2386,10 +2390,29 @@ def cpx_awgn2(x, es_n0, ns, var_w = 0.0):
     -------
     y : ndarray x with additive noise added.
 
+    See Also
+    --------
+    cpx_awgn
+
     Notes
     -----
     Set the channel energy per symbol-to-noise power spectral 
-    density ratio (Es/N0) in dB.
+    density ratio :math:`(E_s/N_0)` in dB.
+
+    The function :func:`cpx_awgn` adds noise to the input signal in order to create an output signal of prescribed
+    :math:`E_s/N_0` in dB. For traditional digital communication modeling this is a good starting point. The fact that
+    the signal amplitude remains fixed makes it easier to understand the impact of additive white Gaussian noise (AWGN)
+    on the signal. A communications receiver usually has some form of automatic gain control (AGC), but the simplest
+    form of AGC will gain level/regulate the total signal power. This means the signal amplitude will not remain
+    constant as the noise increases. At high :math:`E_s/N_0` levels and with a *coherent AGC* the signal level stays
+    very constant.
+
+    This function behaves more like a true receiver front-end where a
+    low-noise amplifier is followed by an analog amplifier signal chain to bring the combined signal and front-end noise
+    amplitude up to a level suitable for analog-to-digital conversion (ADC). The fourth argument, `var_w_dB` can be used
+    set a noise floor representative of the receiver signal chain. The action of an AGC is however not represented by
+    this function. Besides setting the noise floor, the function insures that the :math:`E_s/N_0` ratio remains
+    constant.
 
     Examples
     --------
@@ -2684,6 +2707,12 @@ def fft_caf(x_in, h_ref, n_fft2=1024, n_slice2=0, bs=0.1, fs=1.0):
     n_slice2 : Number of frequency bands
     bs : Band spacing (Hz)
     fs : Sampling frequency (Hz)
+
+    Notes
+    -----
+
+    The Complex Ambiguity Function (CAF) is defined as:
+    :math:`\chi (\tau ,f)=\int _{-\infty }^{\infty }s(t)s^{*}(t-\tau )e^{i2\pi ft}\,dt`.
 
     Examples
     --------

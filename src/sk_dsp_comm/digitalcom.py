@@ -58,7 +58,7 @@ def farrow_resample(x, fs_old, fs_new, i_ord=3, alpha =1 / 2):
     fs_old : Starting/old sampling frequency.
     fs_new : New sampling frequency.
     i_ord : polynomial order, 1, 2, or 3
-    alpha : the shaping factor for I_order=2; alpha=1/2 best
+    alpha : the shaping factor for i_order=2; alpha=1/2 best
 
     Returns
     -------

@@ -58,7 +58,7 @@ def farrow_resample(x, fs_old, fs_new, i_ord=3, alpha =1 / 2):
     fs_old : Starting/old sampling frequency.
     fs_new : New sampling frequency.
     i_ord : polynomial order, 1, 2, or 3
-    alpha : the shaping factor for I_order=2; alpha=1/2 best
+    alpha : the shaping factor for i_order=2; alpha=1/2 best
 
     Returns
     -------
@@ -74,6 +74,11 @@ def farrow_resample(x, fs_old, fs_new, i_ord=3, alpha =1 / 2):
     Time alignment can be found for a integer value M, found with the following:
 
     .. math:: f_{s,out} = f_{s,in} (M - 1) / M
+
+    Using `Iord = 3` minimizes the interpolation error, but is also computationally expensive compared with simple
+    linear interpolation which is `Iord = 1`. In an actual implementation where considerable oversampling is already
+    present, the use linear interpolation to change sampling rates may find favor over the use of an upsampler and
+    interpolation filter.
     
     The filter coefficients used here and a more comprehensive listing can be
     found in H. Meyr, M. Moeneclaey, & S. Fechtel, "Digital Communication 
@@ -99,7 +104,7 @@ def farrow_resample(x, fs_old, fs_new, i_ord=3, alpha =1 / 2):
     The following example uses a QPSK signal with rc pulse shaping, and time alignment at M = 15.
 
     >>> import matplotlib.pyplot as plt
-    >>> from numpy import arange
+    >>> import numpy as np
     >>> from sk_dsp_comm import digitalcom as dc
     >>> Ns = 8
     >>> Rs = 1.
@@ -114,9 +119,9 @@ def farrow_resample(x, fs_old, fs_new, i_ord=3, alpha =1 / 2):
     >>> fsout = fsin * (M-1) / M
     >>> Tsout = 1. / fsout
     >>> xI = dc.farrow_resample(xxI, fsin, fsin)
-    >>> tx = arange(0, len(xI)) / fsin
+    >>> tx = np.arange(0, len(xI)) / fsin
     >>> yI = dc.farrow_resample(xxI, fsin, fsout)
-    >>> ty = arange(0, len(yI)) / fsout
+    >>> ty = np.arange(0, len(yI)) / fsout
     >>> plt.plot(tx - Tsin, xI)
     >>> plt.plot(tx[ts::Ns] - Tsin, xI[ts::Ns], 'r.')
     >>> plt.plot(ty[ts::Ns] - Tsout, yI[ts::Ns], 'g.')
@@ -126,6 +131,63 @@ def farrow_resample(x, fs_old, fs_new, i_ord=3, alpha =1 / 2):
     >>> plt.xlim([0, 20])
     >>> plt.grid()
     >>> plt.show()
+
+    Consider a sum of sinusoids example:
+
+    >>> plt.figure(figsize=(6,8))
+    >>> fs0 = 100
+    >>> # True signal
+    >>> t_fr0 = np.arange(1000)/fs0
+    >>> x_fr0 = np.cos(2*np.pi*12/100*t_fr0) + 2*np.sin(2*np.pi*50/100*t_fr0)
+    >>> # Input signal
+    >>> fs1 = 8
+    >>> n_fr1 = t_fr0[::fs0//fs1]
+    >>> x_fr1 = x_fr0[::fs0//fs1]
+    >>> # I_ord = 3
+    >>> fs2 = 18
+    >>> n_fr2 = dc.farrow_resample(n_fr1, fs1, fs2, i_ord=3)
+    >>> x_fr2 = dc.farrow_resample(x_fr1, fs1, fs2, i_ord=3)
+    >>> # I_ord = 1
+    >>> n_fr3 = dc.farrow_resample(n_fr1, fs1, fs2, i_ord=1)
+    >>> x_fr3 = dc.farrow_resample(x_fr1, fs1, fs2, i_ord=1)
+    >>> # plots
+    >>> plt.subplot(311)
+    >>> plt.plot(t_fr0,x_fr0,'--',label='True')
+    >>> plt.plot(n_fr1,x_fr1,'r.',label='Input @ $f_s = 8$ sps')
+    >>> plt.legend()
+    >>> plt.title(r'Starting Point')
+    >>> plt.xlabel(r'Time (s)')
+    >>> plt.ylabel(r'Amplitude')
+    >>> plt.ylim(-3,0)
+    >>> plt.xlim(3,4)
+    >>> plt.grid()
+    >>> plt.subplot(312)
+    >>> plt.plot(t_fr0,x_fr0,'--',label='True')
+    >>> plt.plot(n_fr2,x_fr2,'m.',label='Resample Cubic @ $f_s = 18$ sps')
+    >>> plt.legend()
+    >>> plt.title(r'Using farrow_resample with I_ord = 3')
+    >>> plt.xlabel(r'Time (s)')
+    >>> plt.ylabel(r'Amplitude')
+    >>> plt.ylim(-3,0)
+    >>> plt.xlim(3,4)
+    >>> plt.grid()
+    >>> plt.subplot(313)
+    >>> plt.plot(t_fr0,x_fr0,'--',label='True')
+    >>> plt.plot(n_fr3,x_fr3,'c.',label='Resample Linear @ $f_s = 18$ sps')
+    >>> plt.legend()
+    >>> plt.title(r'Using farrow_resample with I_ord = 1')
+    >>> plt.xlabel(r'Time (s)')
+    >>> plt.ylabel(r'Amplitude')
+    >>> plt.ylim(-3,0)
+    >>> plt.xlim(3,4)
+    >>> plt.grid()
+    >>> plt.tight_layout()
+    >>> plt.show()
+
+    * The last two plots show upsampling using a Farrow interpolator of I_ord = 3 and 1
+    * The upsampling factor is 18/8 in both cases
+    * Small linear interpolation errors are evident in the third ploit compared to the second plot
+    * With a higher over sampling factor to start with, differences would be smaller
     """
     
    # Interpolate with order 3, 2, or 1 poly over 4, 3, or 2 samples, respectively

@@ -2,9 +2,10 @@ Jupyter Notebook Examples
 =========================
 
 .. toctree::
-   :caption: Continuous-Time Signals and Systems using sigsys
+   :caption: Continuous-Time Signals and Systems Using sigsys
 
-   ../nb_examples/Continuous-Time Signals and Systems using sigsys
+   ../nb_examples/sigsys/Continuous-Time Signals and Systems using sigsys
+   ../nb_examples/sigsys/CAF
 
 .. toctree::
    :caption: FIR and IIR Filter Design
@@ -25,3 +26,8 @@ Jupyter Notebook Examples
    :caption: Block Codes
 
    ../nb_examples/Block_Codes
+
+.. toctree::
+   :caption: Synchronization
+
+   ../nb_examples/synchronization/synchronization

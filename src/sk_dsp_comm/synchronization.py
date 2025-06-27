@@ -743,7 +743,7 @@ class NCO48(object):
         else:
             return -1.0
 
-    def pos_edge(self, thresh=np.uint32(2 ** 48 >> 1)):
+    def pos_edge(self, thresh=np.uint64(2 ** 48 >> 1)):
         """
         edge_bool = NCO48pos-edge(thresh=uint64(2**48 >> 1))
         Output is true on positive edge of NCO_out_square

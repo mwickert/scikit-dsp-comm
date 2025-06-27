@@ -761,7 +761,7 @@ def simple_quant(x, b_tot, x_max, limit):
     >>> plt.plot(f, 10*np.log10(Px))
     >>> plt.ylim([-80, 25])
     >>> plt.ylabel("Power Spectral Density (dB)")
-    >>> plt.xlabel(r'Normalized Frequency $\omega/2\pi$')
+    >>> plt.xlabel(r'Normalized Frequency $\\omega/2\\pi$')
     >>> plt.show()
 
     >>> yq = ss.simple_quant(y,12,1,'sat')
@@ -769,7 +769,7 @@ def simple_quant(x, b_tot, x_max, limit):
     >>> plt.plot(f, 10*np.log10(Px))
     >>> plt.ylim([-80, 25])
     >>> plt.ylabel("Power Spectral Density (dB)")
-    >>> plt.xlabel(r'Normalized Frequency $\omega/2\pi$')
+    >>> plt.xlabel(r'Normalized Frequency $\\omega/2\\pi$')
     >>> plt.show()
     """
     B = b_tot - 1
@@ -2517,7 +2517,7 @@ def psd(x, n_fft, fs=1, overlap_percent=50, scale_noise = True):
     #. For random processing with continuous spectra, e.g. in particular for white noise the power level corresponds
        to the variance of the white noise (one ohm system assumed)
     #. A sinusoids mode that for bin-centered sinusoids the spectrum is calibrated to the actual power,
-       e.g., :math:`A\cos(\omega_0 n) \Leftrightarrow A^2/4` for each of the positive and negative frequency spikes.
+       e.g., :math:`A\\cos(\\omega_0 n) \\Leftrightarrow A^2/4` for each of the positive and negative frequency spikes.
 
     Parameters
     ----------
@@ -2548,7 +2548,7 @@ def psd(x, n_fft, fs=1, overlap_percent=50, scale_noise = True):
     >>> plt.plot(fx,10*np.log10(Px))
     >>> plt.grid()
     >>> plt.title(r'Sinusoid + Noise Spectrum using the Noise Scaling Option')
-    >>> plt.xlabel(r'Normalized Frequency ($\omega/(2\pi)$)')
+    >>> plt.xlabel(r'Normalized Frequency ($\\omega/(2\\pi)$)')
     >>> plt.ylabel(r'PSD (dB)')
     >>> plt.ylim(-10,40)
     >>> plt.show()
@@ -2632,7 +2632,7 @@ def fft_filt_bank(x_in, h_filt, n_fft2=512, n_bands2=0, bs=0.2, fs=1.0, n_band_o
     >>> for k in range(5):
     >>>     P_w,f_w = ss.psd(w_bank[k,:],2**10,fs_bank)
     >>>     plt.plot(f_w,10*np.log10(P_w))
-    >>> plt.title(r'Filter Bank Characterization using White Noise with $\sigma_w^2 = 1$')
+    >>> plt.title(r'Filter Bank Characterization using White Noise with $\\sigma_w^2 = 1$')
     >>> plt.ylabel(r'Gain (dB)')
     >>> plt.xlabel(r'Frequency (Hz)')
     >>> plt.grid()
@@ -2712,7 +2712,7 @@ def fft_caf(x_in, h_ref, n_fft2=1024, n_slice2=0, bs=0.1, fs=1.0):
     -----
 
     The Complex Ambiguity Function (CAF) is defined as:
-    :math:`\chi (\tau ,f)=\int _{-\infty }^{\infty }s(t)s^{*}(t-\tau )e^{i2\pi ft}\,dt`.
+    :math:`\\chi (\\tau ,f)=\\int _{-\\infty }^{\\infty }s(t)s^{*}(t-\\tau )e^{i2\\pi ft}\\,dt`.
 
     Examples
     --------

@@ -519,27 +519,42 @@ def PLL_cbb(x,fs,loop_type,Kv,fn,zeta):
 # Development where sample-by-sample processing with states is needed.
 #
 
-class NCO32(object):
 
-    def __init__(self,fcenter,fs,kc=1.0,state_init_k = np.uint32(0)):
+class NCO:
+
+    def __init__(self, fcenter, fs, kc=1.0, state_init_k: np.unsignedinteger = 0, n_bits: int = 32):
         """
-        Implement a 32-it fixed-point NCO for signal generation and tracking loops.
-        A feature of this class is the method NCO32_pos_edge() which supports the coding 
-        style found in HDL languages. A complex baseband PLL, , is used as an example simulation 
-        function added to this module
-        
-        NCO32(fcenter, fs, kc=1.0, state_init_k = 0)
-        Initialize the NCO with a center frequency in Hz, the
-        sampling rate, the gain kc, and initial accumulator state
-        of the accumulator as k_hat ∈ [0,2**32 - 1).
-        Note: f0 = k0 * fs/2**32 or k0 = uint32(rint(f0*2**32/fs))
+        Implement an n-bit fixed-point NCO for signal generation and tracking loops.
+
+        Parameters
+        ----------
+        fcenter : Desired NCO center frequency
+        fs : Sampling Rate (Hz)
+        kc : Gain
+        state_init_k : Initial accumulator state, stored as k_hat
+        n_bits : Implement n-bit fixed point NCO
         """
-        self.fcenter_hat = fcenter # desired NCO center frequency
-        self.fs = fs # sampling rate
-        self.delta_k = np.uint32(np.rint(fcenter* 2**32/fs))
+        self.n_bits = n_bits
+        if n_bits <= 8:
+            self.dtype = np.uint8
+        elif n_bits <= 16:
+            self.dtype = np.uint16
+        elif n_bits <= 32:
+            self.dtype = np.uint32
+        elif n_bits <= 64:
+            self.dtype = np.uint64
+        else:
+            raise NotImplementedError("No dtype implemented for size %d bits" % n_bits)
+        self.max_bits_const = self.__max_bits_const__()
+        self.fcenter_hat = fcenter
+        self.fs = fs
+        self.delta_k = self.dtype(np.rint(fcenter * self.max_bits_const) / fs)
         self.kc = kc
-        self.k_hat = np.uint32(state_init_k)
-        self.k_old = np.uint32(0)
+        self.k_hat = self.dtype(state_init_k)
+        self.k_old = self.dtype(0)
+
+    def __max_bits_const__(self):
+        return 2 ** self.n_bits
 
     def update(self, e_in):
         """
@@ -547,41 +562,45 @@ class NCO32(object):
         Update the NCO 32-bit phase accumulator
         """
         self.k_old = self.k_hat
-        self.k_hat = np.uint32(np.rint(float(self.k_hat) + float(self.delta_k) + float(self.kc*2**32*e_in)))
+        self.k_hat = self.dtype(
+            np.rint(float(self.k_hat) + float(self.delta_k) + float(self.kc * self.max_bits_const * e_in)))
 
     def out_sin(self):
         """
         e_out = NCO32_out_sin()
         Output sin(k_hat * fs/2**32)
-        """ 
-        e_out = np.sin(2*np.pi * self.k_hat/2**32)
+        """
+        e_out = np.sin(2 * np.pi * self.k_hat / self.max_bits_const)
         return e_out
 
     def out_exp(self):
         """
         e_out = NCO32_out_exp()
         Output exp(j*theta_hat)
-        """   
-        e_out = np.exp(1j * 2*np.pi * self.k_hat/2**32)
+        """
+        e_out = np.exp(1j * 2 * np.pi * self.k_hat / self.max_bits_const)
         return e_out
 
     def out_square(self):
         """
         e_out = NCO32_out_square()
         50% duty cycle squarewave
-        """    
-        if self.k_hat >= 0 and self.k_hat < np.uint32(2**32 >> 1):
+        """
+        if self.k_hat >= 0 and self.k_hat < self.dtype(self.max_bits_const >> 1):
             return 1.0
         else:
             return -1.0
 
-    def pos_edge(self, thresh=np.uint32(2 ** 32 >> 1)):
+    def pos_edge(self, thresh=None):
         """
         edge_bool = NCO32pos-edge(thresh=uint32(2**32 >> 1))
         Output is true on positive edge of NCO_out_square
-        """    
-        delta_theta = np.int64(self.k_old) - np.int64(self.k_hat)
-        if  delta_theta > thresh:
+
+        :param thresh: If threshold is not provided, ((2**n_bits) >> 1)
+        """
+        thresh = thresh if thresh else self.dtype(self.max_bits_const >> 1)
+        delta_theta = float(self.k_old) - float(self.k_hat)
+        if delta_theta > thresh:
             return True
         else:
             return False
@@ -592,82 +611,8 @@ class NCO32(object):
         Set a new center frequency in Hz. The actual frequency
         is stored in fcenter_hat.
         """
-        self.delta_k = np.uint32(np.rint(fcenter_new*2**32/self.fs))
-        self.fcenter_hat = self.delta_k/2**32*self.fs
-    
-
-class NCO48(object):
-
-    def __init__(self,fcenter,fs,kc=1.0,state_init_k = np.uint64(0)):
-        """
-        NCO48(fcenter, fs, kc=1.0, state_init_k = 0)
-        Initialize the NCO with a center frequency in Hz, the
-        sampling rate, the gain kc, and initial accumulator state
-        of the accumulator as k_hat ∈ [0,2**48 - 1).
-        Note: f0 = k0 * fs/2**48 or k0 = uint64(rint(f0*2**48/fs))
-        """
-        self.fcenter_hat = fcenter # desired NCO center frequency
-        self.fs = fs # sampling rate
-        self.delta_k = np.uint64(np.rint(fcenter* 2**48/fs))
-        self.kc = kc
-        self.k_hat = np.uint64(state_init_k)
-        self.k_old = np.uint64(0)
-
-    def update(self, e_in):
-        """
-        NCO48_update(e_in)
-        Update the NCO 48-bit phase accumulator
-        """
-        self.k_old = self.k_hat
-        self.k_hat = np.uint64(np.mod(np.rint(float(self.k_hat) + float(self.delta_k) + \
-                                     float(self.kc*2**48*e_in)),2**48))
-
-    def out_sin(self):
-        """
-        e_out = NC48_out_sin()
-        Output sin(k_hat * fs/2**48)
-        """ 
-        e_out = np.sin(2*np.pi * self.k_hat/2**48)
-        return e_out
-
-    def out_exp(self):
-        """
-        e_out = NCO48_out_exp()
-        Output exp(j*theta_hat)
-        """   
-        e_out = np.exp(1j * 2*np.pi * self.k_hat/2**48)
-        return e_out
-
-    def out_square(self):
-        """
-        e_out = NCO48_out_square()
-        50% duty cycle squarewave
-        """    
-        if self.k_hat >= 0 and self.k_hat < np.uint64(2**64 >> 1):
-            return 1.0
-        else:
-            return -1.0
-
-    def pos_edge(self, thresh=np.uint64(2 ** 48 >> 1)):
-        """
-        edge_bool = NCO48pos-edge(thresh=uint64(2**48 >> 1))
-        Output is true on positive edge of NCO_out_square
-        """
-        delta_theta = float(self.k_old) - float(self.k_hat)
-        if  delta_theta > thresh:
-            return True
-        else:
-            return False
-
-
-    def set_fcenter(self, fcenter_new):
-        """
-        NCO48_set_fcenter(self, fcenter_new)
-        Set a new center frequency in Hz. The actual frequency
-        is stored in fcenter_hat.
-        """
-        self.delta_k = np.uint64(np.rint(fcenter_new*2**48/self.fs))
-        self.fcenter_hat = self.delta_k/2**48*self.fs
+        self.delta_k = self.dtype(np.rint(fcenter_new*self.max_bits_const/self.fs))
+        self.fcenter_hat = self.delta_k/self.max_bits_const*self.fs
 
 
 class Accumulator(object):
@@ -900,8 +845,8 @@ def cbb_pll(x_in_pll, bn_pll, k_d, fc_pll=0.0, f_clk_pll=100e3, pll_open=False):
     Mark Wickert September 2024
     """
     N_pll = len(x_in_pll)
-    
-    PLL_NCO = NCO32(fc_pll, f_clk_pll, 1.0, 0)
+
+    PLL_NCO = NCO(fc_pll, f_clk_pll, 1.0, np.uint32(0), n_bits=32)
     x_NCO_pll = np.zeros(N_pll,dtype=complex)
     y_d_pll = np.zeros(N_pll)
     y_lf_pll = np.zeros(N_pll)
@@ -938,8 +883,8 @@ def cbb_afc(x_in_afc, bn_afc, k_d, fc_afc=0.0, f_clk_afc=100e3, afc_open=False):
     Mark Wickert November 2024
     """
     N_afc = len(x_in_afc)
-    
-    AFC_NCO = NCO32(fc_afc,f_clk_afc, 1.0, 0)
+
+    AFC_NCO = NCO(fc_afc, f_clk_afc, 1.0, np.uint32(0), n_bits=32)
     discrim_afc = Discriminator(f_clk_afc)
     x_NCO_afc = np.zeros(N_afc,dtype=complex)
     x_out_afc = np.zeros(N_afc,dtype=complex)

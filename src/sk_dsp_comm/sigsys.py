@@ -738,7 +738,7 @@ def simple_quant(x, b_tot, x_max, limit):
     x : input signal ndarray to be quantized
     b_tot : total number of bits in the quantizer, e.g. 16
     x_max : quantizer full-scale dynamic range is [-Xmax, Xmax]
-    Limit = Limiting of the form 'sat', 'over', 'none'
+    limit = Limiting of the form 'sat', 'over', 'none'
     
     Returns
     -------
@@ -761,7 +761,7 @@ def simple_quant(x, b_tot, x_max, limit):
     >>> plt.plot(f, 10*np.log10(Px))
     >>> plt.ylim([-80, 25])
     >>> plt.ylabel("Power Spectral Density (dB)")
-    >>> plt.xlabel(r'Normalized Frequency $\omega/2\pi$')
+    >>> plt.xlabel(r'Normalized Frequency $\\omega/2\\pi$')
     >>> plt.show()
 
     >>> yq = ss.simple_quant(y,12,1,'sat')
@@ -769,7 +769,7 @@ def simple_quant(x, b_tot, x_max, limit):
     >>> plt.plot(f, 10*np.log10(Px))
     >>> plt.ylim([-80, 25])
     >>> plt.ylabel("Power Spectral Density (dB)")
-    >>> plt.xlabel(r'Normalized Frequency $\omega/2\pi$')
+    >>> plt.xlabel(r'Normalized Frequency $\\omega/2\\pi$')
     >>> plt.show()
     """
     B = b_tot - 1
@@ -918,7 +918,7 @@ def lms_ic(r,M,mu,delta=1):
     Ao : ndarray frequency response of filter
 
     Examples
-    ----------
+    --------
     >>> # import a speech signal
     >>> fs,s = from_wav('OSR_us_000_0030_8k.wav')
     >>> # add interference at 1kHz and 1.5 kHz and
@@ -1598,7 +1598,7 @@ def delta_eps(t,eps):
     Examples
     --------
     >>> import matplotlib.pyplot as plt
-    >>> from numpy import arange
+    >>> import numpy as np
     >>> from sk_dsp_comm.sigsys import delta_eps
     >>> t = np.arange(-2,2,.001)
     >>> d = delta_eps(t,.1)
@@ -2350,6 +2350,10 @@ def cpx_awgn(x, es_n0, ns):
     -------
     y : ndarray x with additive noise added.
 
+    See Also
+    --------
+    cpx_awgn2
+
     Notes
     -----
     Set the channel energy per symbol-to-noise power spectral 
@@ -2357,15 +2361,16 @@ def cpx_awgn(x, es_n0, ns):
 
     Examples
     --------
-    >>> x,b, data = nrz_bits(1000,10)
+    >>> import sk_dsp_comm.sigsys as ss
+    >>> x,b, data = ss.nrz_bits(1000,10)
     >>> # set Eb/N0 = 10 dB
-    >>> y = cpx_awgn(x,10,10)
+    >>> y = ss.cpx_awgn(x,10,10)
     """
     w = np.sqrt(ns * np.var(x) * 10 ** (-es_n0 / 10.) / 2.) * (np.random.randn(len(x)) + 1j * np.random.randn(len(x)))
     return x+w       
 
 
-def cpx_awgn2(x, es_n0, ns, var_w_dB = 0.0):
+def cpx_awgn2(x, es_n0, ns, var_w = 0.0):
     """
     Apply white Gaussian noise to a digital communications signal.
 
@@ -2377,31 +2382,79 @@ def cpx_awgn2(x, es_n0, ns, var_w_dB = 0.0):
     Parameters
     ----------
     x : ndarray noise free complex baseband input signal.
-    EsNO : set the channel Es/N0 (Eb/N0 for binary) level in dB
+    es_n0 : set the channel Es/N0 (Eb/N0 for binary) level in dB
     ns : number of samples per symbol (bit)
+    var_w : Variance of white noise in dB
 
     Returns
     -------
     y : ndarray x with additive noise added.
 
+    See Also
+    --------
+    cpx_awgn
+
     Notes
     -----
     Set the channel energy per symbol-to-noise power spectral 
-    density ratio (Es/N0) in dB.
+    density ratio :math:`(E_s/N_0)` in dB.
+
+    The function :func:`cpx_awgn` adds noise to the input signal in order to create an output signal of prescribed
+    :math:`E_s/N_0` in dB. For traditional digital communication modeling this is a good starting point. The fact that
+    the signal amplitude remains fixed makes it easier to understand the impact of additive white Gaussian noise (AWGN)
+    on the signal. A communications receiver usually has some form of automatic gain control (AGC), but the simplest
+    form of AGC will gain level/regulate the total signal power. This means the signal amplitude will not remain
+    constant as the noise increases. At high :math:`E_s/N_0` levels and with a *coherent AGC* the signal level stays
+    very constant.
+
+    This function behaves more like a true receiver front-end where a
+    low-noise amplifier is followed by an analog amplifier signal chain to bring the combined signal and front-end noise
+    amplitude up to a level suitable for analog-to-digital conversion (ADC). The fourth argument, `var_w_dB` can be used
+    set a noise floor representative of the receiver signal chain. The action of an AGC is however not represented by
+    this function. Besides setting the noise floor, the function insures that the :math:`E_s/N_0` ratio remains
+    constant.
 
     Examples
     --------
-    >>> x,b, data = nrz_bits(1000,10)
+    >>> import sk_dsp_comm.sigsys as ss
+    >>> x,b, data = ss.nrz_bits(1000,10)
     >>> # set Eb/N0 = 10 dB
-    >>> y = cpx_awgn2(x,10,10)
+    >>> y = ss.cpx_awgn2(x,10,10)
+
+    >>> from sk_dsp_comm import digitalcom as dc
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> Ns = 8 # samples per QPSK symbol
+    >>> x_qpsk, b, data = dc.mpsk_gray_encode_bb(10000,Ns,4,'src')
+    >>> Px_qpsk, f_qpsk = ss.psd(x_qpsk,2**10,Ns)
+
+    >>> EsN040 = 40
+    >>> var_w_dB=-40.
+    >>> y_40dB = ss.cpx_awgn2(x_qpsk,40,Ns,var_w=var_w_dB)
+    >>> Py_40dB, f_qpsk = ss.psd(y_40dB,2**10,Ns)
+
+    >>> EsN010 = 10
+    >>> y_10dB = ss.cpx_awgn2(x_qpsk,EsN010,Ns,var_w=var_w_dB)
+    >>> Py_10dB, f_qpsk = ss.psd(y_10dB,2**10,Ns)
+
+    >>> plt.plot(f_qpsk,10*np.log10(Px_qpsk), label='Tx')
+    >>> plt.plot(f_qpsk,10*np.log10(Py_40dB),label='Rx, $E_s/N_0 =$ %2.0fdB' % (EsN040,))
+    >>> plt.plot(f_qpsk,10*np.log10(Py_10dB),label='Rx, $E_s/N_0 =$ %2.0fdB' % (EsN010,))
+    >>> plt.title(r'Shaped QPSK Before & After AWGN2 with %2.0f dB Noise Floor' % (var_w_dB,))
+    >>> plt.xlabel(r'Frequency ($f/Rs$)')
+    >>> plt.ylabel(r'PSD (dB)')
+    >>> # ylim(-60,20)
+    >>> plt.legend()
+    >>> plt.grid()
+    >>> plt.show()
     """
-    var_w = 10**(var_w_dB / 10)
+    var_w = 10**(var_w / 10)
     w = np.sqrt(var_w / 2) * (np.random.randn(len(x)) + 1j * np.random.randn(len(x)))
     x_new = x*np.sqrt(1 / ns * var_w / np.var(x) * 10 ** (es_n0 / 10.))
     return x_new + w
 
 
-def my_psd(x,NFFT=2**10,Fs=1):
+def my_psd(x, n_fft=2 ** 10, fs=1):
     """
     A local version of NumPy's PSD function that returns the plot arrays.
 
@@ -2411,8 +2464,8 @@ def my_psd(x,NFFT=2**10,Fs=1):
     Parameters
     ----------
     x : ndarray input signal
-    NFFT : a power of two, e.g., 2**10 = 1024
-    Fs : the sampling rate in Hz
+    n_fft : a power of two, e.g., 2**10 = 1024
+    fs : the sampling rate in Hz
 
     Returns
     -------
@@ -2437,14 +2490,12 @@ def my_psd(x,NFFT=2**10,Fs=1):
     >>> plt.xlabel("Frequency (Hz)")
     >>> plt.show()
     """
-    Px,f = pylab.mlab.psd(x,NFFT,Fs)
+    Px,f = pylab.mlab.psd(x, n_fft, fs)
     return Px.flatten(), f
     
 
-def psd(x,N_fft,fs=1,overlap_percent=50,scale_noise = True):
+def psd(x, n_fft, fs=1, overlap_percent=50, scale_noise = True):
     """
-        Px, f = psd(x,N_fft,fs=1,overlap_percent=50)
-        
     Averaged periodogram power spectral density estimate
     (Welch's method with overlapping peridograms and windowing)
     Amplitude scaling for a noise-like signal is the default.
@@ -2457,148 +2508,275 @@ def psd(x,N_fft,fs=1,overlap_percent=50,scale_noise = True):
     when the sinusoid frequency moves away from the bin center.
 
     Mark Wickert November 2024
+
+    Notes
+    -----
+    A Welch's averaged periodogram spectral estimation function built from the ground up. This function features two
+    calibration modes:
+
+    #. For random processing with continuous spectra, e.g. in particular for white noise the power level corresponds
+       to the variance of the white noise (one ohm system assumed)
+    #. A sinusoids mode that for bin-centered sinusoids the spectrum is calibrated to the actual power,
+       e.g., :math:`A\\cos(\\omega_0 n) \\Leftrightarrow A^2/4` for each of the positive and negative frequency spikes.
+
+    Parameters
+    ----------
+    x : ndarray representing the input signal
+    n_fft : a power of two, e.g., 2**10 = 1024
+    fs : the sampling rate in Hz
+    overlap_percent : percentage of overlap between peridograms
+    scale_noise : boolean, if True the noise is scaled to the variance of the white noise
+
+    Returns
+    -------
+    Px : ndarray of the power spectrum estimate
+    f : ndarray of frequency values
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> m = np.arange(1000000)
+    >>> Nfft = 2*1024
+    >>> s = np.cos(2*np.pi*98.176/Nfft*m) + 3*np.cos(2*np.pi*200/Nfft*m)
+    >>> # Generate complex white Gaussian noise
+    >>> w = 1/np.sqrt(2)*(np.random.randn(len(m)) + 1j*np.random.randn(len(m)));
+    >>> #Px, fx = psd(w+s,Nfft,1.0,scale_noise=True) # set to False for sinusoid calibration
+    >>> Px, fx = ss.psd(w+s,n_fft=Nfft,fs=1.0,)
+    >>> print(max(10*np.log10(Px)))
+    >>> plt.plot(fx,10*np.log10(Px))
+    >>> plt.grid()
+    >>> plt.title(r'Sinusoid + Noise Spectrum using the Noise Scaling Option')
+    >>> plt.xlabel(r'Normalized Frequency ($\\omega/(2\\pi)$)')
+    >>> plt.ylabel(r'PSD (dB)')
+    >>> plt.ylim(-10,40)
+    >>> plt.show()
     """
     Q = len(x)
-    R = int(np.round(overlap_percent/100*N_fft))
+    R = int(np.round(overlap_percent / 100 * n_fft))
     #  L <=> N_fft
     if np.isrealobj(x):
-        Px = np.zeros(int(N_fft/2)+1)
-        f = fs*np.arange(0,int(N_fft/2+1))/(N_fft)
+        Px = np.zeros(int(n_fft / 2) + 1)
+        f = fs * np.arange(0, int(n_fft / 2 + 1)) / (n_fft)
     else:
-        Px = np.zeros(N_fft)
-        f = fs*np.arange(-int(N_fft/2),int(N_fft/2))/N_fft
-    w = signal.windows.hann(N_fft)
+        Px = np.zeros(n_fft)
+        f = fs * np.arange(-int(n_fft / 2), int(n_fft / 2)) / n_fft
+    w = signal.windows.hann(n_fft)
     # w = signal.windows.boxcar(N_fft)
-    U = sum(w**2)/N_fft # for proper noise gain scaling with window
-    U2 = sum(w)/N_fft # for proper sinusoide gain scaling with window
+    U = sum(w**2) / n_fft # for proper noise gain scaling with window
+    U2 = sum(w) / n_fft # for proper sinusoide gain scaling with window
     i = 0
-    while i*(N_fft-R)+1+N_fft <= Q:
-        i_start = i*(N_fft-R)
-        X_k = np.fft.fft(x[i_start:i_start+N_fft] * w)
+    while i*(n_fft - R)+1+n_fft <= Q:
+        i_start = i*(n_fft - R)
+        X_k = np.fft.fft(x[i_start:i_start + n_fft] * w)
         if np.isrealobj(x):
-            Px += np.abs(X_k[0:int(N_fft/2)+1])**2
+            Px += np.abs(X_k[0:int(n_fft / 2) + 1]) ** 2
         else:
-            Px += np.abs(np.hstack((X_k[int(N_fft/2):], X_k[0:int(N_fft/2)])))**2
+            Px += np.abs(np.hstack((X_k[int(n_fft / 2):], X_k[0:int(n_fft / 2)]))) ** 2
         i += 1
     K = i # number of periodograms (|X(e^{jw_k})|^2) averaged
     # PSD in Watts/Hz for a 1 ohm system when multiplied by sample spacing T
     if scale_noise:
-        Px /= (K*U*N_fft)
+        Px /= (K * U * n_fft)
     else:
         # For continuous spectrum noise-like signals, for sinusoids need to rescale
-        Px /= (K*N_fft**2*U2**2)
+        Px /= (K * n_fft ** 2 * U2 ** 2)
     return Px, f
 
 
-def fft_filt_bank(x_in,h_filt,Nfft2=512,N_bands2=0,BS_Hz=0.2,fs = 1.0,N_band_odd=True):
+def fft_filt_bank(x_in, h_filt, n_fft2=512, n_bands2=0, bs=0.2, fs=1.0, n_band_odd=True):
     """
     Compute a streaming filter bank having (2*N_bands2 + 1) frequency bands for N_band_odd=
-    True or (2*N_bands2) frequency slices for N_band_odd=False. The slice centered on f = 0 is 
+    True or (2*N_bands2) frequency slices for N_band_odd=False. The slice centered on f = 0 is
     removed if N_band_odd = False. The finest frequency resolution is fs/(2*Nfft2). The user
     specifies the band spacing with BS_Hz, but the requested value depends on the FFT length
     and whether BS_Hz*2*Nfft2/fs is an integer. You may want to make Nfft2 not a power of 2.
-
     Mark Wickert, November 2024, updated December 2024
+
+    Parameters
+    ----------
+    x_in : Input data samples
+    h_filt : Filter coefficients
+    n_fft2 : FFT size
+    n_bands2 : Number of frequency bands as described above.
+    bs : Band spacing (Hz)
+    fs : Sampling frequency (Hz)
+    n_band_odd : Remove slice centered on f = 0
+
+    Notes
+    -----
+    Input a real or complex signal then send it through a bank of `2*Nslice2+1` filters. The streaming filter bank
+    having (2*N_bands2 + 1) frequency bands for `N_band_odd=True` or (2*N_bands2) frequency slices for
+    `N_band_odd=False`. The band centered on f = 0 is removed if `N_band_odd = False`. The finest frequency resolution
+    is fs/(2*Nfft2). The user specifies the band spacing with `BS_Hz`, but the requested value depends on the FFT length
+    and whether `BS_Hz*2*Nfft2/fs` is an integer. You may want to make Nfft2 other than a power of 2. We use
+    *overlap and save* to implement transform domain filtering and the desired center frequency spacing using `BS_Hz`.
+    The FIR filter coefficients, `b_lpf`, may be real or complex, but the intent is to use a lowpass design with
+    bandwidth such that the bands overlap at the band edges.
+
+    Once the filter is designed you have to make sure `Nfft2 > N_fir_taps` so the transform domain filtering will work
+    properly. You can make `Nfft2` larger if needed, although running with a non-power-of-two FFT length is not as speed
+    efficient.
+
+    Examples
+    --------
+    >>> import sk_dsp_comm.fir_design_helper as fir_h
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> fs_bank = 1000
+    >>> b_lpf_chan = fir_h.fir_remez_lpf(80,110,0.1,70,fs_bank)
+    >>> w = np.random.randn(100000)
+    >>> w_bank,fax, fax_des = ss.fft_filt_bank(w,b_lpf_chan + 0j,n_fft2=512,n_bands2=2,bs=200,fs = fs_bank)
+    >>> for k in range(5):
+    >>>     P_w,f_w = ss.psd(w_bank[k,:],2**10,fs_bank)
+    >>>     plt.plot(f_w,10*np.log10(P_w))
+    >>> plt.title(r'Filter Bank Characterization using White Noise with $\\sigma_w^2 = 1$')
+    >>> plt.ylabel(r'Gain (dB)')
+    >>> plt.xlabel(r'Frequency (Hz)')
+    >>> plt.grid()
+    >>> plt.show()
     """
-    if len(h_filt) > Nfft2:
-        raise ValueError('Error: Must have Nfft2 = %d >= %d = len(h_ref)' % (Nfft2,len(h_filt)))
+    if len(h_filt) > n_fft2:
+        raise ValueError('Error: Must have Nfft2 = %d >= %d = len(h_ref)' % (n_fft2, len(h_filt)))
     N_x_in = len(x_in)
-    if N_band_odd:
-        N_bands_tot = 2*N_bands2 + 1
-        N_band_step = int(round(BS_Hz*2*Nfft2/fs))
+    if n_band_odd:
+        N_bands_tot = 2 * n_bands2 + 1
+        N_band_step = int(round(bs * 2 * n_fft2 / fs))
     else:
-        N_bands_tot = 2*N_bands2
-        N_band_step = int(round(BS_Hz/2*2*Nfft2/fs))
+        N_bands_tot = 2 * n_bands2
+        N_band_step = int(round(bs / 2 * 2 * n_fft2 / fs))
     print('N_band_step = %d' % (N_band_step,))
 
-    BS_Hz_actual = N_band_step * fs/(2*Nfft2)
-    span_Hz = N_bands2 * BS_Hz_actual
+    BS_Hz_actual = N_band_step * fs / (2 * n_fft2)
+    span_Hz = n_bands2 * BS_Hz_actual
     print('N_band_step = %d and BS_Hz_actual = %3.2f Hz' % (N_band_step,BS_Hz_actual))
     print('N_bands_tot = %d and span_Hz = +/- %4.2f Hz' % (N_bands_tot,span_Hz))
 
     # Initialize input and output arrays for overlap and save
-    x_state = np.zeros(Nfft2,dtype=complex)
-    X_wrk = np.zeros(2*Nfft2,dtype=complex)
-    y_wrk = np.zeros(2*Nfft2,dtype=complex)
+    x_state = np.zeros(n_fft2, dtype=complex)
+    X_wrk = np.zeros(2 * n_fft2, dtype=complex)
+    y_wrk = np.zeros(2 * n_fft2, dtype=complex)
     y_filt_bank = np.zeros((N_bands_tot,N_x_in),dtype=complex)
 
-    H_filt = np.fft.fft(h_filt,2*Nfft2)
-    K_max = N_x_in//Nfft2
+    H_filt = np.fft.fft(h_filt, 2 * n_fft2)
+    K_max = N_x_in // n_fft2
     for k in range(K_max):
         # Fill the input working vector
         if np.isrealobj(x_in):
             x_in = x_in + 0j
-        X_wrk = np.hstack((x_state,x_in[k*Nfft2:(k+1)*Nfft2]))
+        X_wrk = np.hstack((x_state, x_in[k * n_fft2:(k + 1) * n_fft2]))
         # Transform signal vector to the frequency domain
-        X_wrk = np.fft.fft(X_wrk) 
+        X_wrk = np.fft.fft(X_wrk)
         for j in range(N_bands_tot):
             # Frequency domain filter with roll to shift the center frequency
-            if N_band_odd:
-                j_roll_shift = j*N_band_step - N_bands2*N_band_step
+            if n_band_odd:
+                j_roll_shift = j * N_band_step - n_bands2 * N_band_step
             else:
-                j_roll_shift = j*2*N_band_step - (2*N_bands2-1)*N_band_step
+                j_roll_shift = j * 2 * N_band_step - (2 * n_bands2 - 1) * N_band_step
             y_wrk = np.roll(H_filt,j_roll_shift) * X_wrk
             # Inverse transform
             y_wrk = np.fft.ifft(y_wrk)
             # Pack upper half of y_wrk into y_caf_stream with freq offset
-            y_filt_bank[j,k*Nfft2:(k+1)*Nfft2] = y_wrk[Nfft2:]
+            y_filt_bank[j, k * n_fft2:(k + 1) * n_fft2] = y_wrk[n_fft2:]
         # Update x_state
-        x_state = x_in[k*Nfft2:(k+1)*Nfft2]
-    if N_band_odd:
-        freq_axis = np.arange(-N_bands2*N_band_step,N_bands2*N_band_step+N_band_step,
-                              N_band_step)*fs/2/Nfft2
-        freq_axis_desired = np.rint(freq_axis/BS_Hz)*BS_Hz
+        x_state = x_in[k * n_fft2:(k + 1) * n_fft2]
+    if n_band_odd:
+        freq_axis = np.arange(-n_bands2 * N_band_step, n_bands2 * N_band_step + N_band_step,
+                              N_band_step) * fs / 2 / n_fft2
+        freq_axis_desired = np.rint(freq_axis / bs) * bs
     else:
-        freq_axis = np.arange(-(2*N_bands2-1)*N_band_step,N_bands2*N_band_step+2*(N_band_step+1),
-                              2*N_band_step)*fs/2/Nfft2
-        freq_axis_desired = np.rint(freq_axis/(BS_Hz/2))*(BS_Hz/2)
+        freq_axis = np.arange(-(2 * n_bands2 - 1) * N_band_step, n_bands2 * N_band_step + 2 * (N_band_step + 1),
+                              2 * N_band_step) * fs / 2 / n_fft2
+        freq_axis_desired = np.rint(freq_axis / (bs / 2)) * (bs / 2)
     return y_filt_bank,freq_axis,freq_axis_desired
 
 
-def fft_caf(x_in,h_ref,Nfft2=1024,N_slice2=0,BS_Hz=0.1,fs = 1.0):
+def fft_caf(x_in, h_ref, n_fft2=1024, n_slice2=0, bs=0.1, fs=1.0):
     """
     Compute a streaming CAF having (2*N_slice2 + 1) frequency slices
     centered on f = 0. The finest frequency resolution is fs/(2*Nfft2).
-
     Mark Wickert, November 2024
+
+    Parameters
+    ----------
+    x_in : Input data samples
+    h_ref : Reference signal
+    n_fft2 : FFT size
+    n_slice2 : Number of frequency bands
+    bs : Band spacing (Hz)
+    fs : Sampling frequency (Hz)
+
+    Notes
+    -----
+
+    The Complex Ambiguity Function (CAF) is defined as:
+    :math:`\\chi (\\tau ,f)=\\int _{-\\infty }^{\\infty }s(t)s^{*}(t-\\tau )e^{i2\\pi ft}\\,dt`.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scipy import signal
+    >>> import matplotlib.pyplot as plt
+    >>> import sk_dsp_comm.fir_design_helper as fir_h
+    >>> from sk_dsp_comm import sigsys as ss
+    >>> fs = 1000
+    >>> fd = 10
+    >>> b_lpf = fir_h.fir_remez_lpf(100,150,0.1,80,fs)
+    >>> print('N_b_lpf = %d' % len(b_lpf))
+    >>> xp = signal.lfilter(b_lpf,1,np.random.randn(2048))
+    >>> xp_ref = xp[900:1200] # create a reference waveform from xp
+    >>> n = np.arange(len(xp))
+    >>> yp = xp * np.exp(1j*2*np.pi*fd/fs*n)
+    >>> # Use a non-power of 2 FFT to exact slice spacings (FFTW is somewhat slower)
+    >>> y_caf_stream,faxis,taxis = ss.fft_caf(yp,xp_ref,n_fft2=1000,n_slice2=80,bs=0.5,fs = 1000.0)
+    >>> plt.figure()
+    >>> plt.imshow(np.abs(y_caf_stream[:,1150:1250]), extent=[taxis[1150], taxis[1250], faxis[-1], faxis[0]], aspect='auto')
+    >>> plt.ylabel(r'Frequency (Hz)')
+    >>> plt.xlabel(r'Time (seconds)')
+    >>> plt.title(r'CAF Magnitude')
+    >>> plt.colorbar()
+    >>> plt.show()
     """
-    if len(h_ref) > Nfft2:
-        raise ValueError('Error: Must have Nfft2 = %d >= %d = len(h_ref)' % (Nfft2,len(h_ref)))
+    if len(h_ref) > n_fft2:
+        raise ValueError('Error: Must have Nfft2 = %d >= %d = len(h_ref)' % (n_fft2, len(h_ref)))
     N_x_in = len(x_in)
-    N_slice_tot = 2*N_slice2 + 1
-    N_slice_step = round(BS_Hz*2*Nfft2/fs)
-    BS_Hz_actual = N_slice_step * fs/(2*Nfft2)
-    span_Hz = N_slice2 * BS_Hz_actual
+    N_slice_tot = 2 * n_slice2 + 1
+    N_slice_step = round(bs * 2 * n_fft2 / fs)
+    BS_Hz_actual = N_slice_step * fs / (2 * n_fft2)
+    span_Hz = n_slice2 * BS_Hz_actual
     print('N_slice_step = %d and BS_Hz_actual = %3.2fHz' % (N_slice_step,BS_Hz_actual))
     print('N_slice_tot = %d and span_Hz = +/- %3.2fHz' % (N_slice_tot,span_Hz))
 
     # Initialize input and output arrays for overlap and save
-    x_state = np.zeros(Nfft2,dtype=complex)
-    X_wrk = np.zeros(2*Nfft2,dtype=complex)
-    y_wrk = np.zeros(2*Nfft2,dtype=complex)
+    x_state = np.zeros(n_fft2, dtype=complex)
+    X_wrk = np.zeros(2 * n_fft2, dtype=complex)
+    y_wrk = np.zeros(2 * n_fft2, dtype=complex)
     y_caf_stream = np.zeros((N_slice_tot,N_x_in),dtype=complex)
 
     # conjugate and reverse h_ref to implement correlation
-    H_ref = np.fft.fft(np.conj(h_ref[::-1]),2*Nfft2)
-    K_max = N_x_in//Nfft2
+    H_ref = np.fft.fft(np.conj(h_ref[::-1]), 2 * n_fft2)
+    K_max = N_x_in // n_fft2
     for k in range(K_max):
-        for j in range(2*N_slice2+1):
+        for j in range(2 * n_slice2 + 1):
             # Fill the input working vector
             if np.isrealobj(x_in):
                 x_in = x_in + 0j
-            X_wrk = np.hstack((x_state,x_in[k*Nfft2:(k+1)*Nfft2]))
+            X_wrk = np.hstack((x_state, x_in[k * n_fft2:(k + 1) * n_fft2]))
             # Transform signal vector to the frequency domain
-            X_wrk = np.fft.fft(X_wrk) 
+            X_wrk = np.fft.fft(X_wrk)
             # Frequency domain filter with roll to shift the center frequency
-            j_roll_shift = j*N_slice_step - N_slice2*N_slice_step
+            j_roll_shift = j * N_slice_step - n_slice2 * N_slice_step
             y_wrk = np.roll(H_ref,j_roll_shift) * X_wrk
             # Inverse transform
             y_wrk = np.fft.ifft(y_wrk)
             # Pack upper half of y_wrk into y_caf_stream with freq offset
-            y_caf_stream[j,k*Nfft2:(k+1)*Nfft2] = y_wrk[Nfft2:]
+            y_caf_stream[j, k * n_fft2:(k + 1) * n_fft2] = y_wrk[n_fft2:]
         # Update x_state
-        x_state = x_in[k*Nfft2:(k+1)*Nfft2]
-    freq_axis = np.arange(-N_slice2*N_slice_step,N_slice2*N_slice_step+N_slice_step,N_slice_step)*fs/2/Nfft2
+        x_state = x_in[k * n_fft2:(k + 1) * n_fft2]
+    freq_axis = np.arange(-n_slice2 * N_slice_step, n_slice2 * N_slice_step + N_slice_step,
+                          N_slice_step) * fs / 2 / n_fft2
     time_axis = np.arange(0,N_x_in)/fs
     return y_caf_stream,freq_axis,time_axis
 

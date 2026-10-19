@@ -667,6 +667,36 @@ class TestSigsys(SKDSPCommTest):
         with self.assertRaisesRegex(TypeError, "M must be an int") as tdM:
             ss.downsample(x, 3.0)
 
+    def test_downsample_incomplete_block(self):
+        x = np.arange(5)
+        for phase, expected in [(0, [0, 3]), (1, [1, 4]), (2, [2])]:
+            with self.subTest(phase=phase):
+                npt.assert_equal(ss.downsample(x, 3, phase), expected)
+
+    def test_downsample_shorter_than_factor(self):
+        x = np.array([1., 2.])
+        for phase, expected in [(0, [1.]), (1, [2.]), (2, []), (3, [])]:
+            with self.subTest(phase=phase):
+                npt.assert_equal(ss.downsample(x, 4, phase), expected)
+
+    def test_downsample_noncontiguous_complex(self):
+        x = np.arange(10, dtype=np.float32).astype(np.complex64)[::2]
+        x += 1j * x
+        original = x.copy()
+        y = ss.downsample(x, 2)
+        npt.assert_equal(y, [0, 4 + 4j, 8 + 8j])
+        npt.assert_equal(x, original)
+        self.assertEqual(y.dtype, x.dtype)
+
+    def test_downsample_negative_phase(self):
+        x = np.arange(8)
+        npt.assert_equal(ss.downsample(x, 3, -2), [1, 4, 7])
+        npt.assert_equal(ss.downsample(x, 3, -1), [2, 5])
+        for phase in [-4, 3]:
+            with self.subTest(phase=phase):
+                with self.assertRaises(IndexError):
+                    ss.downsample(x, 3, phase)
+
     def test_rect_conv(self):
         n = np.arange(-5, 20)
         y = ss.rect_conv(n, 6)

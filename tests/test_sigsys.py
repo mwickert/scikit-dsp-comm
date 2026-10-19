@@ -705,6 +705,30 @@ class TestSigsys(SKDSPCommTest):
         y = ss.oa_filter(x, b, 2 ** 10)
         npt.assert_almost_equal(y, y_test)
 
+    def test_os_filter_complex(self):
+        self.check_complex_overlap_filter(ss.os_filter)
+
+    def test_oa_filter_complex(self):
+        self.check_complex_overlap_filter(ss.oa_filter)
+
+    def check_complex_overlap_filter(self, method):
+        real_x = np.array([1., 3., 2., -1.])
+        complex_x = real_x + 1j * np.array([2., -1., 4., 2.])
+        real_h = np.array([0.25, 0.5, 0.25])
+        complex_h = real_h + 1j * np.array([0.5, -0.25, 0.5])
+        for x, h in [(complex_x, real_h), (real_x, complex_h),
+                     (complex_x, complex_h)]:
+            for mode in [0, 1]:
+                with self.subTest(x=x, h=h, mode=mode):
+                    expected = np.convolve(x, h)[:len(x)]
+                    result = method(x, h, 16, mode)
+                    y = result[0] if mode else result
+                    npt.assert_allclose(y, expected, atol=1e-14)
+                    self.assertTrue(np.iscomplexobj(y))
+                    if mode:
+                        npt.assert_allclose(result[1], expected[None, :],
+                                            atol=1e-14)
+
     def test_simple_quant_12_sat(self):
         n = np.arange(0, 10)
         x = np.cos(2 * np.pi * 0.211 * n)

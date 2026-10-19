@@ -513,6 +513,7 @@ def os_filter(x, h, N, mode=0):
     >>> y, y_mat = os_filter(x,h,N,1)
     """
     
+    dtype = complex if np.iscomplexobj(x) or np.iscomplexobj(h) else float
     P = len(h)
     # zero pad start of x so first frame can recover first true samples of x
     x = np.hstack((np.zeros(P-1),x))
@@ -521,9 +522,9 @@ def os_filter(x, h, N, mode=0):
     Nframe = int(np.ceil(Nx/float(L)))
     # zero pad end of x to full number of frames needed
     x = np.hstack((x,np.zeros(Nframe*L-Nx)))
-    y = np.zeros(int(Nframe*N))
+    y = np.zeros(int(Nframe*N), dtype=dtype)
     # create an instrumentation matrix to observe the overlap and save behavior
-    y_mat = np.zeros((Nframe,int(Nframe*N)))
+    y_mat = np.zeros((Nframe,int(Nframe*N)), dtype=dtype)
 
     H = fft.fft(h,N)
     # begin the filtering operation
@@ -531,7 +532,9 @@ def os_filter(x, h, N, mode=0):
         xk = x[k*L:k*L+N]
         Xk = fft.fft(xk,N)
         Yk = H*Xk
-        yk = np.real(fft.ifft(Yk)) # imag part should be zero
+        yk = fft.ifft(Yk)
+        if dtype is float:
+            yk = np.real(yk)
         y[k*L+P-1:k*L+N] = yk[P-1:]
         y_mat[k,k*L:k*L+N] = yk
     if mode == 1:
@@ -574,22 +577,25 @@ def oa_filter(x, h, N, mode=0):
     >>> # set mode = 1
     >>> y, y_mat = oa_filter(x,h,N,1)
     """
+    dtype = complex if np.iscomplexobj(x) or np.iscomplexobj(h) else float
     P = len(h)
     L = int(N) - P + 1 # need N >= L + P -1
     Nx = len(x)
     Nframe = int(np.ceil(Nx/float(L)))
     # zero pad to full number of frames needed
     x = np.hstack((x,np.zeros(Nframe*L-Nx)))
-    y = np.zeros(Nframe*N)
+    y = np.zeros(Nframe*N, dtype=dtype)
     # create an instrumentation matrix to observe the overlap and add behavior
-    y_mat = np.zeros((Nframe,Nframe*N))
+    y_mat = np.zeros((Nframe,Nframe*N), dtype=dtype)
     H = fft.fft(h,N)
     # begin the filtering operation
     for k in range(Nframe):
         xk = x[k*L:(k+1)*L]
         Xk = fft.fft(xk,N)
         Yk = H*Xk
-        yk = np.real(fft.ifft(Yk))
+        yk = fft.ifft(Yk)
+        if dtype is float:
+            yk = np.real(yk)
         y[k*L:k*L+N] += yk
         y_mat[k,k*L:k*L+N] = yk
     if mode == 1:

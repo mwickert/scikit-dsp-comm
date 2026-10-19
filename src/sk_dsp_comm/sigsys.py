@@ -3077,10 +3077,9 @@ def downsample(x,M,p=0):
     """
     if not isinstance(M, int):
         raise TypeError("M must be an int")
-    x = x[0:int(np.floor(len(x)/M))*M]
-    x = x.reshape((int(np.floor(len(x)/M)),M))
-    y = x[:,p]
-    return y
+    # Resolve the phase as a column index, preserving negative indices and bounds.
+    p = range(M)[p]
+    return x[p::M]
 
 
 def unique_cpx_roots(rlist,tol = 0.001):
